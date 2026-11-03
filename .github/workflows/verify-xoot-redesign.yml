@@ -51,6 +51,8 @@ jobs:
         run: node scripts/ops/verify-xooter-journey.mjs "$RUNNER_TEMP/xoot-worker-sql/node_modules/@electric-sql/pglite/dist/index.js"
       - name: Verify closed notification schema compatibility, rollback and history provenance
         run: node scripts/ops/verify-closed-xooter-notifications.mjs "$RUNNER_TEMP/xoot-worker-sql/node_modules/@electric-sql/pglite/dist/index.js"
+      - name: Verify disabled private Geoapify fixture budget and receipt contracts
+        run: node scripts/ops/verify-geoapify-evaluation.mjs "$RUNNER_TEMP/xoot-worker-sql/node_modules/@electric-sql/pglite/dist/index.js"
       - name: Verify public email PNG embedding and other-resource isolation in Chromium
         run: node scripts/ops/verify-mail-artwork-embedding.mjs
       - name: Verify handoff Xooter navigation, responsive account access and theme surfaces
@@ -163,3 +165,12 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: xoot-referral-synthetic-test
         run: node scripts/ops/test-service-zones-postgres.mjs
+      - name: Prove private Geoapify lease and nonce dispatch with twenty PostgreSQL connections
+        env:
+          XOOT_PG_TEST_INTENT: geoapify-evaluation
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-referral-pg/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-referral-synthetic-test
+        run: node scripts/ops/test-geoapify-evaluation-postgres.mjs

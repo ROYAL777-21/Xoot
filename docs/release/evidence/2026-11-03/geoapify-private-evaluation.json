@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-03",
+  "baseCommit": "ad6e4efb47289cd742d88b10791b5803780e7262",
+  "implementationCommit": "0332b933f65306330da152cc9ba164970f144c71",
+  "policy": "xoot-geoapify-public-fixtures-v1",
+  "migration": "supabase/migrations/20261103180614_geoapify_private_staging_evaluation.sql",
+  "migrationNormalizedSha256": "057ebf0785b57743d4e351e72c8261e54417cdb8902777fc8925a2b6485ceb54",
+  "providerRequests": 0,
+  "hostedWrites": 0,
+  "trialDefault": {
+    "enabled": false,
+    "authorizedAttempts": 0,
+    "hardLifetimeCeiling": 20,
+    "onceOnlyFixtureCount": 3
+  },
+  "checks": {
+    "focusedUnitTests": {
+      "passed": 40
+    },
+    "actualSqlAssertionSites": {
+      "passed": 42,
+      "runtime": "PGlite0.5.8",
+      "multiConnectionProof": false
+    },
+    "edgeTypecheck": "passed",
+    "webTypecheck": "passed",
+    "scopedEslint": "passed",
+    "tableColumnSchemaGuard": "6 passed",
+    "productionRpcNameGuard": "25 passed;4 expected failures for new unapplied Geo functions; no types edited",
+    "negativeControls": [
+      "country guard omitted:3 required failures,restored",
+      "dispatch nonce binding omitted:SQL assertion failure,restored"
+    ],
+    "realPostgresConcurrency": {
+      "status": "passed",
+      "testedHead": "a19c2c06f015127aedd97749ffac55c88bd8ffd8",
+      "job": "https://github.com/ROYAL777-21/Xoot/actions/runs/41636876930/job/125920185308",
+      "independentConnections": 20,
+      "claims": 1,
+      "authorizations": 1,
+      "noncachedFinishes": 1,
+      "sharedCeiling": 2,
+      "providerRequests": 0
+    },
+    "stagingCredentialAcceptance": "not performed",
+    "providerFixtureAcceptance": "not performed",
+    "previousHeadRequiredCi": {
+      "codeql": "passed",
+      "securityReview": "passed",
+      "actualProductionTypeMatch": "passed",
+      "design": "4 expected new RPC failures plus missing .env.example entry; example fixed in follow-up; current head rerun required"
+    }
+  },
+  "preserved": [
+    "Mapbox maps",
+    "Directions",
+    "private GPS/ETA",
+    "paused Mapbox allowances",
+    "approved homepage",
+    "notification CI steps"
+  ],
+  "stagingKeyPresence": "Owner-saved; root verified name only; no value read and no provider request",
+  "scope": "Local implementation evidence before root actual staging setup; later actual receipts are linked separately",
+  "originalAuthoredMigration": "20261103065737_geoapify_private_staging_evaluation.sql",
+  "actualStagingEvidenceDirectory": "../2026-11-04"
+}

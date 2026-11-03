@@ -74,6 +74,7 @@ jobs:
           version: 2.113.0
 
       - name: Generate from the live schema and diff
+        id: generate_types
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           # Production is the default because it is the schema the app actually serves. Staging is
@@ -81,7 +82,10 @@ jobs:
           PROJECT_REF: ${{ inputs.environment == 'staging' && 'fxmxyabdjqviqbcxmvlp' || 'mvlrkelahhsyjrwgsxaf' }}
         run: |
           set -uo pipefail
-          supabase gen types typescript --project-id "$PROJECT_REF" > /tmp/generated.ts
+          if ! supabase gen types typescript --project-id "$PROJECT_REF" > /tmp/generated.ts; then
+            echo "::error::Type generation failed; incomplete output is not schema evidence."
+            exit 1
+          fi
 
           # A failed generation writes an empty or tiny file. Diffing that against the real one
           # would report thousands of removed lines and read like catastrophic drift, when the
@@ -91,6 +95,10 @@ jobs:
             echo "::error::Type generation produced only $lines lines — the CLI call failed, this is not schema drift."
             exit 1
           fi
+
+          # A complete successful export can be useful evidence even when the committed
+          # production schema correctly differs from the selected staging project.
+          echo "complete=true" >> "$GITHUB_OUTPUT"
 
           if diff -u src/integrations/supabase/types.ts /tmp/generated.ts > /tmp/types.diff; then
             echo "## Types match \`$PROJECT_REF\`" >> "$GITHUB_STEP_SUMMARY"
@@ -136,3 +144,14 @@ jobs:
           echo "diff is $(wc -l < /tmp/types.diff) lines total"
           echo "::error::Committed types.ts does not match $PROJECT_REF — see the diff above."
           exit 1
+
+      - name: Save complete generated schema and full diff even on mismatch
+        if: ${{ always() && steps.generate_types.outputs.complete == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-types-${{ inputs.environment == 'staging' && 'staging' || 'production' }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/generated.ts
+            /tmp/types.diff
+          if-no-files-found: error
+          retention-days: 3

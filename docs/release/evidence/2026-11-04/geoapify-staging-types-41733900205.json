@@ -1,0 +1,55 @@
+{
+  "recordedOn": "2026-11-04",
+  "project": "fxmxyabdjqviqbcxmvlp",
+  "environment": "staging",
+  "cliVersion": "2.113.0",
+  "sourceCommit": "e4f66486c52fea1a451be1fa5e5a7fadd03b0d1b",
+  "workflow": "verify-types.yml",
+  "dispatchCount": 1,
+  "runId": 41733900205,
+  "runUrl": "https://github.com/ROYAL777-21/Xoot/actions/runs/41733900205",
+  "jobId": 126258016577,
+  "overallConclusion": "failure",
+  "generationComplete": true,
+  "comparison": "mismatch versus committed production types",
+  "artifactUpload": "success",
+  "artifact": {
+    "id": 13276518571,
+    "name": "live-types-staging-41733900205-1",
+    "url": "https://github.com/ROYAL777-21/Xoot/actions/runs/41733900205/artifacts/13276518571",
+    "expiresAt": "2026-11-06T22:48:22Z",
+    "localArchive": "geoapify-staging-types-41733900205.zip",
+    "archiveBytes": 22702,
+    "archiveSha256": "26f70ba0d35f143850dcdc053f05b55dd3504baa09e7ed0eb143718cd0fe2e2c"
+  },
+  "files": {
+    "generated.ts": {
+      "bytes": 187873,
+      "lines": 6183,
+      "sha256": "76738764c8e7cae25823f9bb4caec6dbab85e715c783d8c23410d0e9cb5d262e"
+    },
+    "types.diff": {
+      "bytes": 55410,
+      "lines": 1752,
+      "sha256": "699093de311079931e980da5021cdd249b8af8b92b29f7e47cacd199d8d6e034"
+    }
+  },
+  "comparedProductionTypesSha256": "717a676d56df9d33b67e02fdf5a9348897faf5c2d9d2ddf0087b2f9d04ac34a8",
+  "actualRpcDeclarations": {
+    "geoapify_evaluation_worker_authorized": "geoapify_evaluation_worker_authorized: { Args: never; Returns: boolean }",
+    "claim_geoapify_evaluation": "claim_geoapify_evaluation: {\n        Args: { p_fixture_id: string; p_nonce: string }\n        Returns: Json\n      }",
+    "authorize_geoapify_evaluation": "authorize_geoapify_evaluation: {\n        Args: { p_attempt_id: string; p_nonce: string }\n        Returns: Json\n      }",
+    "finish_geoapify_evaluation": "finish_geoapify_evaluation: {\n        Args: {\n          p_attempt_id: string\n          p_nonce: string\n          p_reason: string\n          p_report: Json\n          p_state: string\n        }\n        Returns: Json\n      }"
+  },
+  "productionTypesEdited": false,
+  "productionRpcContractWaived": false,
+  "providerRequests": 0,
+  "policyEnabled": false,
+  "localReceiptValidation": {
+    "sourceFunctionBodyHashesMatched": 5,
+    "runtimeSourceHashesMatched": 5,
+    "emptyImportMap": true,
+    "actualMigrationVersion": "20261103180614",
+    "policyDisabledZeroAllowanceUsageAndAttempts": true
+  }
+}

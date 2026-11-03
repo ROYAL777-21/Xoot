@@ -1,5 +1,38 @@
 # Agent worklog
 
+## REVIEW — 4 November — actual Geo staging source and complete CLI evidence
+
+Rebased PR115 onto approved 75674d60 and renamed the original migration to actual history
+20261103180614 with a 100% unchanged SQL body (normalized SHA256 057ebf07). Exact runner/docs
+paths now follow that version. Root-supplied redacted receipts record two private RLS tables,
+all five actual prosrc hashes, invoker/empty paths/service-only RPC grants, disabled revision 1,
+zero allowance/usage/attempts, deployed v1/JWT on, five frozen runtime matches/empty import map
+and anonymous 401. Local hashing validates all five SQL bodies and five runtime files against
+those receipts. Actual provider metadata is Xoot Staging Address Trial, Free, one key; only the
+owner-saved staging secret name is recorded. There were zero provider calls or policy changes.
+The narrow verify-types artifact change retains CLI 2.113.0 and existing action v4, uploads only
+complete generated.ts/types.diff with three-day retention, and preserves comparison failure.
+One staging dispatch, 41733900205 at e4f66486, completed generation/upload and failed the honest
+production comparison. Its exact 22,702-byte archive matches GitHub's digest and is committed
+with a provenance manifest: 6,183 generated lines, 1,752 full diff lines and all four actual Geo
+RPC declarations. Production types are untouched; the production RPC contract remains red.
+Source bookkeeping and actual SQL tests pass; root owns trial acceptance and final review.
+
+## HOLDING — 4 November — actual Geo staging receipts and complete type artifacts
+
+Root authorizes bookkeeping on PR115 after its actual staging-only migration/deployment. Rebase
+onto approved 75674d60, rename the reviewed SQL to actual version 20261103180614 with its body
+100% unchanged, update only exact runner/docs references, and record redacted real staging
+schema/runtime receipts. Root reports Free project Xoot Staging Address Trial, one key, with
+GEOAPIFY_API_KEY owner-saved/name-verified. The trial remains disabled, allowance/usage/attempts
+zero, and Mapbox maps/Directions/GPS and paused budgets remain unchanged. Also add a narrow
+artifact upload to the existing pinned verify-types workflow so the complete generated types
+and diff survive a legitimate mismatch. Use the existing CLI/action pins, dispatch that draft
+workflow once against staging, and capture actual complete staging types as evidence. Preserve
+production types and the four unresolved production RPC checks; no guard waiver, invented
+types, production DDL, hosted policy change or provider call. Root owns .render-check receipts
+and independent security review; do not touch its separate frozen security worktree.
+
 ## REVIEW — 3 November — actual approved release and notification runtime readback
 
 Root records approved release60260f19, the successful targeted production/staging function
@@ -59,6 +92,28 @@ validators reuse the existing pinned PGlite runtime in required redesign CI; all
 The pushed claim preceded code. Parent cross-review and green required CI precede any guarded
 closed-schema apply; actual production type generation and PR108 rebase follow legitimate DDL.
 No hosted schema/data, provider credential, allowance, sender or schedule was changed here.
+## REVIEW — 3 November — closed Geoapify public-fixture trial
+
+Separate evaluate-geoapify source now accepts only three officially sourced public civic fixture
+IDs on the exact staging project, with JWT retained and the presented service credential proven
+through its own PostgREST RPC. Two private RLS tables/four invoker RPCs and one private monotonic
+trigger bind claim/authorize/finish to fixture, nonce, lease and budget revision. Owner-disabled,
+zero allowance, hard lifetime ceiling20, once-only fixture receipts, no renewal or ambiguous retry.
+Provider quality checks use actual country/house/street/province/confidence and reviewed source
+attribution; output asserts no verified address/coverage/supply. No Mapbox allowance/maps/Directions/
+GPS change, public query, customer address or fallback. The new SDK is pinned to locked2.108.1.
+40 focused checks and42 actual SQL assertion sites pass locally; country/nonce defects were
+planted, failed and restored. Targeted Edge TS/lint/table schema guard pass. Existing RPC gate
+correctly fails four unapplied Geo functions; no production types or gate exemptions were edited.
+The Release-owned redesign workflow reuses its existing PGlite/PostgreSQL17.6 runtime. Actual CI
+41636876930 job125920185308 on a19c2c06 passes the 20-connection proof: one claim, one dispatch
+authorization, one noncached finish, shared ceiling two, unchanged Mapbox sentinel. CodeQL,
+security-review and genuine production types match pass. Design CI additionally found the new
+secret missing from functions/.env.example; that real omission is fixed without a guard waiver.
+Fresh rebased-head CI and root schema/source cross-review remain required. Root owns Free account/private
+GEOAPIFY_API_KEY setup and any subsequent staging-only migration/deploy/calls; none occurred here.
+The default provider endpoint is not asserted EU-only or approved for PII; region/DPA/processor
+review remains separate. Runbook/evidence: docs/release/geoapify-private-evaluation-20261103.md.
 
 ## REVIEW — 2 November — worker navigation handoff and reachable mobile account
 
@@ -126,6 +181,20 @@ Mobile AGENTS and exact Expo 56 AppleAuthentication docs have been read. Release
 Correctness paths are intentionally crossed to make one truthful readiness boundary; root
 will cross-review and owns deployment. No Apple enrollment, key creation, provider enablement,
 build, hosted change or signed-device claim is authorised by this claim. PR112 remains immutable.
+## HOLDING — 3 November — private Geoapify Free staging evaluation
+
+Claim feature/geoapify-private-evaluation-20261102 from approved fa005086. Root approved a
+separate two-table/four-RPC trial boundary: owner-disabled and zero allowance initially, a
+nonrenewing lifetime ceiling of 20 attempts, fixed public civic fixture IDs only, lease/nonce
+bound authorization before fetch, and receipts without provider keys or keyed URLs. The new
+JWT-protected/service-only handler must fail closed outside the exact staging project and
+must never accept customer addresses, alter coverage/verified supply, call a fallback provider,
+or touch existing Mapbox allowances, maps, Directions or private GPS/ETA. Correctness owns the
+adapter/auth/budget contracts; Release owns staging-only migration/deployment ordering and
+schema review. No hosted write or provider request will occur until root coordinates private
+credentials and explicit trial activation. New production RPC type gates will remain honestly
+blocked rather than be hand-filled. This branch will deliver focused unit/SQL proof and a draft
+PR for independent review; root retains deployment. Nav PR113 remains immutable.
 
 ## REVIEW — 2 November — quote-bound Care+ booking tip
 

@@ -76,6 +76,10 @@ verify_jwt = true
 [functions.xooter-email-dispatch]
 verify_jwt = true
 
+# Fixed public civic fixtures only. Service-role probe + exact staging gate remain in handler.
+[functions.evaluate-geoapify]
+verify_jwt = true
+
 [functions.create-masked-call]
 verify_jwt = true
 
