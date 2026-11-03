@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.108.1';
 import { getAllowedOrigins } from '../_shared/action-utils.ts';
 import { createXooterCommunicationsHandler } from './handler.ts';
 const url=Deno.env.get('SUPABASE_URL')!;

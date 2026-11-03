@@ -1,4 +1,4 @@
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.108.1';
 import nodemailer from 'npm:nodemailer@10.3.1';
 import {createXooterEmailDispatch} from './handler.ts';
 import {createBrevoSmtpSender} from './smtp.ts';
