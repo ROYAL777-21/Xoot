@@ -1,5 +1,20 @@
 # Agent worklog
 
+## HOLDING — 3 November — actual closed-schema receipt and production types
+
+Parent Release/Correctness cross-review verified all twelve immutable package blobs, the
+required green fa1bf21f CI and 123 actual isolated SQL assertions. Applied unchanged wrapper
+5c968a71 to production as actual20261103071458. Twelve function bodies/authority, four private
+RLS tables, three trigger bindings and four exact executed-history hashes read back. Sending
+is disabled0/20, with no allowlist/project/review/schedule; existing business counts are unchanged.
+Parent takes over this clean branch to rename only the delivered wrapper filename, preserve its
+body, record readback and regenerate types using pinned CLI2.113.0 against the actual project.
+Fresh required checks precede source promotion. No handwritten types, backfill, send activation,
+budget renewal, genuine worker verification or tracking/payment switch change is included.
+The authenticated-only self-bound preferences RPC remains explicitly reviewed; advisor warnings
+are recorded, never silenced by broader grants. Production lifecycle credentials were saved
+privately by the founder; presence is not a successful production SMTP delivery.
+
 ## REVIEW — 3 November — isolated closed notification schema package
 
 The schema-only branch is rebased onto approved navigation release 7a480fe6, preserving its
