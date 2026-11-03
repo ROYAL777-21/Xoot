@@ -1,0 +1,295 @@
+{
+  "kind": "actual-notification-interface-runtime-delivery",
+  "readback": "2026-11-03T17:58:01.036Z",
+  "sourceCommit": "60260f191fc046794db4e2fa94092dda841b97ab",
+  "functions": [
+    {
+      "slug": "xooter-communications",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "bundleSha256": "2605da8a28f9787cc978e27df86ae888f6e01637ae0dc4abb26a58adf1bcf326",
+      "files": [
+        {
+          "name": "functions/xooter-communications/index.ts",
+          "sha256": "931f24355a60a8279276892c04b4e62ff00e21025f0871d0807e4e440a6c48e1",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/_shared/action-utils.ts",
+          "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/xooter-communications/handler.ts",
+          "sha256": "622d3a35d7ce69d11ec744bc24e0d160c7648406fe81860df79b57b13510d2ae",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/import_map.json",
+          "emptyImports": true
+        }
+      ]
+    },
+    {
+      "slug": "xooter-email-dispatch",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "bundleSha256": "e6253b10aca4311bd79338648b13cc996ab2b8aebad0f0a71a2953a0316f8944",
+      "files": [
+        {
+          "name": "functions/xooter-email-dispatch/index.ts",
+          "sha256": "00ee3f482c58c7f661ba4312e6caed918399bdb93f7bccdc463bbc40a6f775c2",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/xooter-email-dispatch/handler.ts",
+          "sha256": "64f88cebad96072d8c2d5aeedfcd5ad41ada7c1c502d4bb8afb9b67796a6cd8d",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/xooter-email-dispatch/smtp.ts",
+          "sha256": "3671cf9d8ae4b55cb36032e99fec7edc40c4c63dd1b74f19d27ec96bd173624f",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/import_map.json",
+          "emptyImports": true
+        }
+      ]
+    },
+    {
+      "slug": "submit-xooter-application",
+      "version": 9,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "bundleSha256": "40daec06f6cad8bb4cdc6e4701cd0f8f84b85a800d72662f21b81a42aa91b3a4",
+      "files": [
+        {
+          "name": "functions/submit-xooter-application/index.ts",
+          "sha256": "cb377ecdd1a5f0b455d711f96a9619ba02a46b47aaa060dcde873a7529df4f2d",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/_shared/action-utils.ts",
+          "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/submit-xooter-application/document-persistence.ts",
+          "sha256": "49907312c9f9dcb716029f3e5642ac3d948e33667aae9b682893b9fcfc789650",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/import_map.json",
+          "emptyImports": true
+        }
+      ]
+    },
+    {
+      "slug": "admin-reject-xooter",
+      "version": 9,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "bundleSha256": "b4522304ed03bb64ae16a9e3c46fb58fe2812659634cbf4767447f428afdd41f",
+      "files": [
+        {
+          "name": "functions/admin-reject-xooter/index.ts",
+          "sha256": "64511cf200643fd7d824e2df7384dd251e16f937fb88546a5f906cbc050ac049",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/_shared/action-utils.ts",
+          "sha256": "78dffd56d5030ce43725ce20f02c2578665166d2a97c6bee6ae356c1f27c9fee",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/_shared/admin-action-utils.ts",
+          "sha256": "dfeb0ad45b376c4857bc968490b628d812ec915fbbd5db33cdaf73850a4f8593",
+          "matchesSource": true
+        },
+        {
+          "name": "functions/import_map.json",
+          "emptyImports": true
+        }
+      ]
+    }
+  ],
+  "workflows": {
+    "production": "41687003069",
+    "staging": "41687009396",
+    "requiredSource": "41685322197"
+  },
+  "vercel": {
+    "id": "dpl_DXmcWgq4bZsTcMneGfCpJomxw8sQ",
+    "state": "READY"
+  },
+  "web": {
+    "date": "2026-11-03T17:58:46.467Z",
+    "build": {
+      "commit": "60260f191fc046794db4e2fa94092dda841b97ab",
+      "builtAt": "2026-11-03T17:42:17.403Z",
+      "pricingRule": "ZD-026",
+      "bookingFeeCents": 3900
+    },
+    "entry": "/assets/index-DmOThHcG.js",
+    "updatesRoute": true,
+    "workerAccount": true,
+    "anonymousRequests": [
+      {
+        "project": "mvlrkelahhsyjrwgsxaf",
+        "slug": "xooter-communications",
+        "status": 401,
+        "anonymousDenied": true
+      },
+      {
+        "project": "mvlrkelahhsyjrwgsxaf",
+        "slug": "xooter-email-dispatch",
+        "status": 401,
+        "anonymousDenied": true
+      },
+      {
+        "project": "mvlrkelahhsyjrwgsxaf",
+        "slug": "submit-xooter-application",
+        "status": 401,
+        "anonymousDenied": true
+      },
+      {
+        "project": "mvlrkelahhsyjrwgsxaf",
+        "slug": "admin-reject-xooter",
+        "status": 401,
+        "anonymousDenied": true
+      },
+      {
+        "project": "fxmxyabdjqviqbcxmvlp",
+        "slug": "xooter-communications",
+        "status": 401,
+        "anonymousDenied": true
+      },
+      {
+        "project": "fxmxyabdjqviqbcxmvlp",
+        "slug": "xooter-email-dispatch",
+        "status": 401,
+        "anonymousDenied": true
+      },
+      {
+        "project": "fxmxyabdjqviqbcxmvlp",
+        "slug": "submit-xooter-application",
+        "status": 401,
+        "anonymousDenied": true
+      },
+      {
+        "project": "fxmxyabdjqviqbcxmvlp",
+        "slug": "admin-reject-xooter",
+        "status": 401,
+        "anonymousDenied": true
+      }
+    ],
+    "providerRequests": 0
+  },
+  "policyReadback": {
+    "readback": "2026-11-03T18:00:32.342Z",
+    "policies": {
+      "production": {
+        "counts": {
+          "events": 0,
+          "outbox": 3,
+          "journeys": 0,
+          "notifications": 3
+        },
+        "policy": {
+          "used": 0,
+          "enabled": false,
+          "maximum": 20,
+          "reviewed": false,
+          "project_ref": null,
+          "allowed_count": 0
+        },
+        "schedules": 0
+      },
+      "staging": {
+        "counts": {
+          "events": 1,
+          "outbox": 11,
+          "journeys": 1,
+          "notifications": 17
+        },
+        "policy": {
+          "used": 1,
+          "enabled": false,
+          "maximum": 20,
+          "reviewed": true,
+          "project_ref": "fxmxyabdjqviqbcxmvlp",
+          "allowed_count": 1
+        },
+        "schedules": 0
+      }
+    },
+    "metadata": {
+      "production": [
+        {
+          "slug": "admin-reject-xooter",
+          "version": 9,
+          "status": "ACTIVE",
+          "verifyJwt": true,
+          "bundleSha256": "b4522304ed03bb64ae16a9e3c46fb58fe2812659634cbf4767447f428afdd41f"
+        },
+        {
+          "slug": "submit-xooter-application",
+          "version": 9,
+          "status": "ACTIVE",
+          "verifyJwt": true,
+          "bundleSha256": "40daec06f6cad8bb4cdc6e4701cd0f8f84b85a800d72662f21b81a42aa91b3a4"
+        },
+        {
+          "slug": "xooter-communications",
+          "version": 1,
+          "status": "ACTIVE",
+          "verifyJwt": true,
+          "bundleSha256": "2605da8a28f9787cc978e27df86ae888f6e01637ae0dc4abb26a58adf1bcf326"
+        },
+        {
+          "slug": "xooter-email-dispatch",
+          "version": 1,
+          "status": "ACTIVE",
+          "verifyJwt": true,
+          "bundleSha256": "e6253b10aca4311bd79338648b13cc996ab2b8aebad0f0a71a2953a0316f8944"
+        }
+      ],
+      "staging": [
+        {
+          "slug": "submit-xooter-application",
+          "version": 31,
+          "status": "ACTIVE",
+          "verifyJwt": true,
+          "bundleSha256": "40daec06f6cad8bb4cdc6e4701cd0f8f84b85a800d72662f21b81a42aa91b3a4"
+        },
+        {
+          "slug": "admin-reject-xooter",
+          "version": 29,
+          "status": "ACTIVE",
+          "verifyJwt": true,
+          "bundleSha256": "b4522304ed03bb64ae16a9e3c46fb58fe2812659634cbf4767447f428afdd41f"
+        },
+        {
+          "slug": "xooter-communications",
+          "version": 5,
+          "status": "ACTIVE",
+          "verifyJwt": true,
+          "bundleSha256": "2605da8a28f9787cc978e27df86ae888f6e01637ae0dc4abb26a58adf1bcf326"
+        },
+        {
+          "slug": "xooter-email-dispatch",
+          "version": 6,
+          "status": "ACTIVE",
+          "verifyJwt": true,
+          "bundleSha256": "e6253b10aca4311bd79338648b13cc996ab2b8aebad0f0a71a2953a0316f8944"
+        }
+      ]
+    }
+  },
+  "stagingBundleMatchesProduction": true,
+  "providerRequests": 0,
+  "deliveryLimit": "Production SMTP/inbox acceptance and complete notification journeys remain pending; no sender or schedule enabled"
+}

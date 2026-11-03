@@ -1,6 +1,27 @@
 # Xoot production checklist
 
-## 3 November evening — Apple removal live; notification interface promotion in progress
+## 3 November evening — Apple removal and Xooter Updates delivered; sending stays closed
+
+Approved release60260f191fc046794db4e2fa94092dda841b97ab (PR108) passed required41685322197.
+Production dpl_DXmcWgq4bZsTcMneGfCpJomxw8sQ is READY and canonical build-info returns that exact
+revision, ZD-026 and R39. The served entry contains the actual /xooter/updates route and handoff
+account navigation. Targeted deployment41687003069 (production) and41687009396 (staging) succeeded
+for xooter-communications, xooter-email-dispatch, submit-xooter-application and admin-reject-xooter.
+All twelve actual production source/frozen-import files match reviewed source, all four import
+maps are empty, and the same four bundle hashes are deployed on staging. All eight anonymous
+endpoint checks return401, with JWT verification retained. See [runtime evidence](evidence/2026-11-03/notification-runtime.json).
+
+Production policy remains disabled0/20, with no allowlist/project/review/schedule and unchanged
+0journeys/0events/3notifications/3outbox rows. Staging remains disabled1/20 with one authorized
+test alias and no schedule. This releases the interface and guarded account/application writers,
+not production SMTP acceptance or the full customer/worker lifecycle. No provider request was
+made by these readback checks. Actual account and signed-device acceptance remain separate.
+
+The founder privately saved staging GEOAPIFY_API_KEY; its secret name is confirmed without
+reading the value. The Geoapify public-fixture evaluator remains an unmerged staging-only trial,
+pending independent schema review, actual hosted/type/runtime and provider receipts. Saving a
+key does not establish address coverage or reopen either paused Mapbox Permanent allowance.
+Mapbox maps, Directions and private GPS/ETA remain in place. No paid upgrade is authorized.
 
 PR116 passed required41682265406, CodeQL, Semgrep and PostgreSQL privilege checks, then merged
 as74db3c267e5944c8f3908d431ca9cfb637db54d6. Productiondpl_2TZPVwK2h4AV7kGYZKVtzBX23ngK is READY;
@@ -15,8 +36,8 @@ onto the Apple/navigation/schema releases without changing any applied SQL or ge
 the existing shell now exposes its actual Updates route through the reviewed optional flag.
 Two new notification SDK entrypoints are pinned to the reviewed lock version2.108.1. Forty-four
 focused preference/navigation/handler/type-contract checks and local typecheck pass. Final
-rebased CI, four-function deployment and frozen runtime readback remain required before this
-interface/handler delivery is called live; the sender is disabled with no schedule or refill.
+rebased CI, four-function deployment and frozen runtime readback have passed as recorded above;
+the sender remains disabled with no schedule or refill.
 
 The founder confirms the Xoot logo has no registered trademark. Gmail's requested VMC tick is
 therefore pending trademark eligibility, certificate purchase approval and safe DMARC enforcement;
@@ -24,7 +45,8 @@ ordinary sender authentication is separate. No fake badge or paid plan is added.
 Google support picker currently offers only the founder's Gmail and no managed group; a free
 Google identity for the existing support@xoot.co.za Zoho inbox is prepared for private owner
 completion. Do not claim that public personal contact has already been replaced. Geoapify Free
-account setup is reported ready; its staging key/project and bounded provider proof remain pending.
+account setup and its staging key are owner-reported saved; the key name is verified and bounded
+provider proof remains pending.
 
 ## 3 November — verified Google branding; closed notification schema and actual types
 
