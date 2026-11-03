@@ -6,6 +6,7 @@ import { AppleLogo, GoogleLogo } from "@/components/xoot/ProviderLogos";
 import { haptic } from "@/lib/haptics";
 import { TermsNotice } from "@/components/xoot/TermsNotice";
 import { Mail, Phone } from "lucide-react";
+import { isAppleSignInReady } from "@/lib/apple-auth-readiness";
 
 /**
  * First-run welcome — Direction A.
@@ -109,14 +110,16 @@ export default function Welcome() {
           {/* Right-padded so the last button never sits under the floating concierge
               button. Icon-only, so each carries an explicit accessible name. */}
           <div className="flex gap-2 pr-16">
-            <Button
-              variant="outline"
-              className="h-12 flex-1 rounded-full"
-              onClick={() => go("/auth?provider=apple")}
-              aria-label="Continue with Apple"
-            >
-              <AppleLogo className="size-[1.15rem]" />
-            </Button>
+            {isAppleSignInReady("web") && (
+              <Button
+                variant="outline"
+                className="h-12 flex-1 rounded-full"
+                onClick={() => go("/auth?provider=apple")}
+                aria-label="Continue with Apple"
+              >
+                <AppleLogo className="size-[1.15rem]" />
+              </Button>
+            )}
             <Button
               variant="outline"
               className="h-12 flex-1 rounded-full"

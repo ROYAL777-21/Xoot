@@ -27,6 +27,8 @@ const MODULES = [
   "zoey-geometry.ts",
   "design-tokens.ts",
   "safety.ts",
+  // Provider configuration and real per-surface acceptance, not device capability alone.
+  "apple-auth-readiness.ts",
   // Generated from design/Xoot_App.html. The native app needs the same token values as the
   // web app, and it cannot read the CSS copy, so the TypeScript one crosses the root here.
   "kit-tokens.ts",

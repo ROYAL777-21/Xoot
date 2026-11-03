@@ -57,6 +57,20 @@ Run the 123-assertion SQL contract in required redesign CI before any guarded pr
 the parent owns actual schema application and subsequent legitimate production type generation.
 Notification PR108 remains separate and draft until that schema/type dependency is delivered.
 
+## REVIEW — 3 November — Apple choices remain closed until actual readiness
+
+Web Auth/Welcome and native availability/start now share a dependency-free reviewed
+readiness record. Provider configuration and each independently accepted surface remain
+false; Google/email copy and flow, nonce/state, ID-token exchange and PKCE are preserved.
+No extra auth-page fetch, enrollment, key/provider change, paid call or signed build.
+Original four regressions failed; 83 focused cases, web/mobile types, scoped lint and
+unsafe-DOM scan pass. Actual component Chromium checks at320/390/1024 show no Apple choices,
+one Google choice and no overflow/external requests. Full local run was not green:
+2165pass/7fail/7skip. All57 cases in its four failing behavior files pass isolated with
+unchanged deadlines; the token-byte guard passes10 after verified LF-only local checkout
+normalization. Unrelated generated newline noise is excluded. Evidence records all failures;
+required isolated CI and root Release/Correctness review remain mandatory before promotion.
+
 ## HOLDING — 2 November — honest Apple sign-in readiness
 
 Claim fix/apple-signin-readiness-20261102 from approved fa0050862. Actual production public

@@ -1,0 +1,17 @@
+{
+  "scope": "Apple readiness UI guard only; no provider or native-build activation",
+  "productionPublicAuthSettingsObservedAt": "2026-11-02T20:27:26Z",
+  "productionPublicAuthSettings": { "apple": false, "google": true, "email": true, "disableSignup": false },
+  "readinessDefaults": { "providerConfigured": false, "webAccepted": false, "iosSignedBuildAccepted": false, "androidBrowserAccepted": false },
+  "focusedTests": { "files": 9, "passed": 83, "failed": 0 },
+  "broadLocalRun": { "files": 209, "passed": 2165, "failed": 7, "skipped": 7, "durationSeconds": 621.96 },
+  "isolatedBehaviorRecheck": { "files": 4, "passed": 57, "failed": 0, "deadlinesChanged": false },
+  "isolatedKitRecheck": { "passed": 10, "failed": 0, "localCRLFNormalisationOnly": true, "committedTokenChanges": false },
+  "webTypecheck": "passed",
+  "mobileTypecheck": "passed",
+  "scopedLint": "passed",
+  "unsafeDOMScan": "passed",
+  "browserFixture": { "actualComponents": ["Auth", "Welcome"], "widths": [320, 390, 1024], "appleChoices": 0, "googleChoicesPerSurface": 1, "horizontalOverflow": false, "externalRequests": 0, "pageErrors": 0 },
+  "realAppleOAuthOrSignedDeviceAcceptance": "not performed; provider disabled and no enrolled team authorised",
+  "requiredCI": "must pass before merge"
+}
