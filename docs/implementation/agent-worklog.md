@@ -1,5 +1,16 @@
 # Agent worklog
 
+## HOLDING — 3 November — notification interface on the approved schema/navigation release
+
+Rebase PR108 onto approved ad6e4efb. Preserve the current handoff Xooter shell, all required
+CI steps and the exact applied SQL/types delivered by PR114. The old duplicate wrapper is
+removed only after proving it is byte-identical to the immutable actual20261103071458 source;
+all canonical applied SQL and generated types match the release. Wire the real Updates route
+through the shell's reviewed updatesAvailable flag and pin only the two new SDK entrypoints.
+No email sender, schedule, allowance, role, money or tracking activation is included. Verify
+owner isolation, existing normal-JWT staging evidence and frozen deployed source after the
+required source checks. Root also retains the separate Apple-removal and customer/Geo trials.
+
 ## HOLDING — 3 November — actual closed-schema receipt and production types
 
 Parent Release/Correctness cross-review verified all twelve immutable package blobs, the
