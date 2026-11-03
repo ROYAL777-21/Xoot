@@ -18,6 +18,21 @@ business counters are unchanged. Checked-in notification-runtime.json contains r
 versions and counts only. No SMTP connection or geocoder request was performed. Source/type,
 JWT/device, full-journey and production delivery acceptance remain distinct evidence.
 
+## HOLDING — 3 November — paused worker email allowlist hardening
+
+Claim fix/xooter-email-null-allowlist-20261103 from approved60260f19 in the separate
+work/xoot-notification-policy-20261103 checkout. Independent catalog reads found the same
+NULL-array revocation defect in both deployed worker authorize functions: old prosrcSHA
+4a94e45ce0dd6ff3892b6788356e0dc0bd48124133af86872b28d425ec55b9e3. Both policies are paused,
+production0/20 and staging1/20, and neither current allowlist contains NULL. Prepare only a
+forward migration with paused/no-active-mail prerequisites, policy-before-events locking,
+NULL-free allowlist validation and a null-safe final membership check. Preserve applied SQL,
+function ABI/owner/ACL, every budget/receipt and all closed controls. This crosses Release
+migrations/CI and Correctness regression ownership explicitly; parent cross-review is required.
+Prove the old-body leak and real SQL denial/rollback/preservation contracts locally, then open
+a draft PR. No hosted apply, sender/schedule activation, reset/refill or generated-type edit.
+The separate customer agent owns its unapplied policy fix; other working trees stay untouched.
+
 ## HOLDING — 3 November — notification interface on the approved schema/navigation release
 
 Rebase PR108 onto approved ad6e4efb. Preserve the current handoff Xooter shell, all required
