@@ -1,5 +1,20 @@
 # Agent worklog
 
+## HOLDING — 4 November — actual Geo staging receipts and complete type artifacts
+
+Root authorizes bookkeeping on PR115 after its actual staging-only migration/deployment. Rebase
+onto approved 75674d60, rename the reviewed SQL to actual version 20261103180614 with its body
+100% unchanged, update only exact runner/docs references, and record redacted real staging
+schema/runtime receipts. Root reports Free project Xoot Staging Address Trial, one key, with
+GEOAPIFY_API_KEY owner-saved/name-verified. The trial remains disabled, allowance/usage/attempts
+zero, and Mapbox maps/Directions/GPS and paused budgets remain unchanged. Also add a narrow
+artifact upload to the existing pinned verify-types workflow so the complete generated types
+and diff survive a legitimate mismatch. Use the existing CLI/action pins, dispatch that draft
+workflow once against staging, and capture actual complete staging types as evidence. Preserve
+production types and the four unresolved production RPC checks; no guard waiver, invented
+types, production DDL, hosted policy change or provider call. Root owns .render-check receipts
+and independent security review; do not touch its separate frozen security worktree.
+
 ## REVIEW — 3 November — actual approved release and notification runtime readback
 
 Root records approved release60260f19, the successful targeted production/staging function
