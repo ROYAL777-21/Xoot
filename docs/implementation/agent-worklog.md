@@ -1,5 +1,21 @@
 # Agent worklog
 
+## REVIEW — 3 November — isolated closed notification schema package
+
+The schema-only branch is rebased onto approved navigation release 7a480fe6, preserving its
+worklog and required browser check. Twelve copied files are byte-identical to reviewed 2c01bf2a:
+three canonical staging migrations, closed wrapper 5c968a71, builder/manifest/validators,
+synthetic fixtures/contracts and the authenticated-only preferences grants guard. No Edge/UI
+caller, production-generated type or production type-contract assertion is changed.
+Local verification passes 123 closed-schema SQL assertions, the separate 89 core/email assertions
+and planted trigger/outbox/old-receipt controls, 10 production-schema/grants tests, web typecheck,
+scoped lint and JavaScript syntax checks. The old grants guard failed after adding the SQL;
+the reviewed role-specific port passes and still detects a planted anonymous grant. Both SQL
+validators reuse the existing pinned PGlite runtime in required redesign CI; all prior steps stay.
+The pushed claim preceded code. Parent cross-review and green required CI precede any guarded
+closed-schema apply; actual production type generation and PR108 rebase follow legitimate DDL.
+No hosted schema/data, provider credential, allowance, sender or schedule was changed here.
+
 ## REVIEW — 2 November — worker navigation handoff and reachable mobile account
 
 The worker shell now uses source-style glass tabs and a warm desktop sidebar, original logo,
