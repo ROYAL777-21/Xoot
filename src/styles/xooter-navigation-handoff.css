@@ -1,0 +1,47 @@
+/* Source: uploaded app/Frame.jsx and navigation/TabBar.jsx. Worker routes stay real. */
+.xoot-worker-shell { display:flex; min-height:100vh; min-height:100dvh; background:var(--xoot-surface-page); color:var(--xoot-text-primary); font-family:var(--xoot-font-core); }
+.xoot-worker-sidebar { display:none; }
+.xoot-worker-content { flex:1; min-width:0; }
+.xoot-worker-main { min-width:0; padding-bottom:calc(104px + env(safe-area-inset-bottom)); }
+.xoot-worker-mobile-header { display:flex; align-items:center; gap:12px; min-height:68px; padding:calc(10px + env(safe-area-inset-top)) 20px 10px; }
+.xoot-worker-mobile-header>a:first-child { display:inline-flex; align-items:center; min-height:44px; text-decoration:none; }
+.xoot-worker-mobile-header>span { color:var(--xoot-text-secondary); font-size:12px; font-weight:600; }
+.xoot-worker-updates { display:grid; place-items:center; width:44px; height:44px; margin-left:auto; border-radius:50%; background:var(--xoot-surface-card); color:var(--xoot-text-primary); box-shadow:var(--xoot-shadow-1); }
+.xoot-worker-tab-dock { position:fixed; z-index:50; bottom:calc(14px + env(safe-area-inset-bottom)); inset-inline:16px; max-width:460px; margin-inline:auto; }
+.xoot-worker-tabs { display:flex; align-items:stretch; gap:2px; min-width:0; padding:5px; border-radius:999px; background:var(--xoot-glass-light); backdrop-filter:blur(var(--xoot-glass-blur-heavy)) saturate(150%); -webkit-backdrop-filter:blur(var(--xoot-glass-blur-heavy)) saturate(150%); box-shadow:var(--xoot-shadow-4),inset 0 0 0 1px var(--xoot-glass-light-edge); }
+.xoot-worker-tab { display:flex; flex:1; min-width:0; height:56px; padding:0 2px; align-items:center; justify-content:center; flex-direction:column; gap:3px; border:0; border-radius:var(--xoot-radius-lg); color:var(--xoot-text-secondary); font-family:var(--xoot-font-core); font-size:var(--xoot-micro); font-weight:700; letter-spacing:var(--xoot-track-tight); line-height:1; text-decoration:none; white-space:nowrap; cursor:pointer; transition:background .16s ease,color .16s ease; }
+.xoot-worker-tab.is-active { background:var(--xoot-surface-card); color:hsl(var(--brand)); box-shadow:var(--xoot-shadow-2); }
+.xoot-worker-tab.is-active svg { stroke-width:2.5; }
+.xoot-worker-account-disclosure { flex:1; min-width:0; }
+.xoot-worker-account-disclosure>summary { list-style:none; }
+.xoot-worker-account-disclosure>summary::-webkit-details-marker { display:none; }
+.xoot-worker-account-disclosure[open]>summary { background:var(--xoot-surface-brand-soft); color:hsl(var(--brand)); }
+.xoot-worker-account-panel { position:absolute; inset-inline:0; bottom:calc(100% + 12px); max-height:calc(80dvh - 100px); overflow:auto; padding:20px; border:1px solid var(--xoot-border-color); border-radius:28px; background:var(--xoot-surface-card); box-shadow:var(--xoot-shadow-4); }
+.xoot-worker-account-panel h2 { margin:0 0 8px; font-family:var(--xoot-font-display); font-size:27px; font-weight:400; line-height:1.2; }
+.xoot-worker-account-panel nav { display:flex; flex-direction:column; gap:5px; margin-top:12px; }
+.xoot-worker-account-email { margin:0; overflow-wrap:anywhere; color:var(--xoot-text-secondary); font-size:12px; line-height:1.5; }
+.xoot-worker-side-link { display:flex; align-items:center; gap:10px; min-height:48px; padding:5px 10px; border-radius:17px; color:var(--xoot-text-secondary); font-size:13px; font-weight:600; text-decoration:none; transition:background .16s ease,color .16s ease; }
+.xoot-worker-side-icon { display:grid; place-items:center; flex:0 0 34px; width:34px; height:34px; border-radius:12px; }
+.xoot-worker-side-link:hover { background:var(--xoot-surface-sunken); color:var(--xoot-text-primary); }
+.xoot-worker-side-link.is-active { background:var(--xoot-surface-brand-soft); color:hsl(var(--brand)); font-weight:700; }
+.xoot-worker-side-link.is-active .xoot-worker-side-icon { background:var(--xoot-surface-card); box-shadow:var(--xoot-shadow-1); }
+.xoot-worker-side-link.is-active svg { stroke-width:2.5; }
+.xoot-worker-sign-out { display:flex; align-items:center; gap:10px; width:100%; min-height:44px; margin-top:10px; padding:8px 13px; border:0; border-radius:14px; background:transparent; color:var(--xoot-text-secondary); font-family:inherit; font-size:13px; font-weight:600; text-align:left; cursor:pointer; }
+.xoot-worker-sign-out:hover { background:var(--xoot-surface-sunken); color:var(--xoot-text-primary); }
+.xoot-worker-sign-out:disabled { cursor:wait; opacity:.65; }
+.xoot-worker-shell a:focus-visible,.xoot-worker-shell button:focus-visible,.xoot-worker-shell summary:focus-visible { outline:2px solid hsl(var(--brand)); outline-offset:3px; }
+@media(min-width:1024px) {
+  .xoot-worker-sidebar { position:sticky; top:16px; display:flex; flex:0 0 244px; flex-direction:column; align-self:flex-start; max-height:calc(100dvh - 32px); min-height:min(700px,calc(100dvh - 32px)); margin:16px; padding:24px 16px 18px; overflow:auto; border:1px solid var(--xoot-border-color); border-radius:32px; background:var(--xoot-surface-card); box-shadow:var(--xoot-shadow-2); }
+  .xoot-worker-brand { position:relative; display:flex; align-items:flex-start; flex-direction:column; gap:4px; min-height:88px; padding:0 12px; overflow:hidden; }
+  .xoot-worker-brand>a { display:inline-flex; align-items:center; min-height:44px; text-decoration:none; }
+  .xoot-worker-brand>span { color:var(--xoot-text-secondary); font-size:11px; font-weight:600; }
+  .xoot-worker-brand-flower { position:absolute; top:3px; right:0; width:64px; height:64px; pointer-events:none; }
+  .xoot-worker-section-label { margin:20px 12px 10px; color:var(--xoot-text-muted); font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+  .xoot-worker-sidebar-links { display:flex; flex:1; flex-direction:column; gap:7px; }
+  .xoot-worker-sidebar-account { margin:24px 8px 0; padding-top:18px; border-top:1px solid var(--xoot-border-color); }
+  .xoot-worker-sidebar-account .xoot-worker-sign-out { padding-left:0; }
+  .xoot-worker-main { padding-bottom:0; }
+  .xoot-worker-mobile-header,.xoot-worker-tab-dock { display:none; }
+}
+@media(max-width:359px) { .xoot-worker-tab-dock { inset-inline:8px; } .xoot-worker-tab { height:54px; font-size:10px; } }
+@media(prefers-reduced-motion:reduce) { .xoot-worker-shell * { scroll-behavior:auto!important; transition:none!important; } }

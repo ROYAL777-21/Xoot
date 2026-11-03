@@ -1,5 +1,18 @@
 # Agent worklog
 
+## REVIEW — 2 November — worker navigation handoff and reachable mobile account
+
+The worker shell now uses source-style glass tabs and a warm desktop sidebar, original logo,
+static flower and source fonts. All existing routes remain; mobile You opens Profile/Verification/
+sign-out and closes on destination, outside tap, Escape or owner change. Existing owner-aware
+sign-out is retained. Optional updatesAvailable defaultsfalse until the parent ships PR108's
+real route. Seven focused cases pass (six initial failures on the old layout); seven real
+Chromium viewport/theme cases pass with44px targets,0overflow,0external calls and0console errors.
+The fixture contains only a clearly labelled synthetic identity, uses isolated cache and does
+not assert genuine worker/device acceptance. Rebased onto approvedfa005086, preserving Care+
+tip files and both worklog claims. The required redesign workflow gains the isolated browser
+check; this Release-owned edit needs parent review before merge. No production setting changed.
+
 ## REVIEW — 2 November — quote-bound Care+ booking tip
 
 The shared booking review now shows the actual positive booking_fee line as the prospective
@@ -22,6 +35,18 @@ entitlement changes. Keep the handoff styling/public light scope, preserve the d
 and avoid paid provider requests. Focused rendered/pricing regression checks and independent
 Release/Correctness review precede merge; parent owns promotion. Root owns notifications and
 another agent owns the Xooter tab bar. This claim does not assert full Care+ settlement readiness.
+
+## HOLDING — 2 November — Xooter handoff navigation
+
+Claim design/xooter-navigation-handoff-20261102 from approved productionc4ebafc7. The founder
+requests a worker sidebar/tab bar matching the supplied handoff. Port its warm surfaces,
+typography, lilac active treatment and restrained flower detail to the existing navigation;
+keep every real route, sign-out/account boundary, keyboard access and device/user app theme.
+No verification, availability, money, tracking or provider setting changes. Root owns the
+separate notification journey; retain its Your updates entry through an optional default-off
+shell flag until that route ships. Preserve the approved public homepage. Isolated responsive
+rendering and route/accessibility checks precede independent review and required CI. No merge
+or deployment from this delegated branch.
 
 ## LIVE — 2 November — accepted destination release and bounded email image follow-up
 

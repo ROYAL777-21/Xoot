@@ -1,13 +1,12 @@
 import { ReactNode, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Briefcase, GraduationCap, Wallet, ShieldCheck, User, LogOut } from "lucide-react";
-import { Logo } from "@/components/kit/Logo";
+import { useNavigate } from "react-router-dom";
+import { House, Briefcase, GraduationCap, Wallet, ShieldCheck, User, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { XooterNavigation } from "./XooterNavigation";
 
 const nav = [
-  { to: "/xooter", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/xooter", label: "Dashboard", icon: House, end: true },
   { to: "/xooter/jobs", label: "Jobs", icon: Briefcase },
   { to: "/xooter/training", label: "Training", icon: GraduationCap },
   { to: "/xooter/earnings", label: "Earnings", icon: Wallet },
@@ -15,7 +14,7 @@ const nav = [
   { to: "/xooter/profile", label: "Profile", icon: User },
 ];
 
-export const XooterShell = ({ children }: { children: ReactNode }) => {
+export const XooterShell = ({ children, updatesAvailable = false }: { children: ReactNode; updatesAvailable?: boolean }) => {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const [signingOut, setSigningOut] = useState(false);
@@ -33,67 +32,7 @@ export const XooterShell = ({ children }: { children: ReactNode }) => {
     } finally { setSigningOut(false); }
   };
 
-  return (
-    <div className="min-h-screen flex bg-background">
-      <aside className="liquid-glass-nav hidden lg:flex m-3 flex-col w-64 rounded-4xl p-5 sticky top-3 h-[calc(100vh-1.5rem)]">
-        <NavLink to="/" aria-label="Xoot home" className="liquid-glass-readable flex items-center gap-2 mb-7">
-          <Logo size={29} />
-          <span className="text-xs text-muted-foreground">For Xooters</span>
-        </NavLink>
-
-        <nav className="liquid-glass-readable flex-1 space-y-1.5">
-          {nav.map((n) => {
-            const Icon = n.icon;
-            return (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                end={n.end}
-                className={({ isActive }) =>
-                  `xoot-liquid-nav-item interactive-press liquid-glass-interactive flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                    isActive ? "bg-accent/15 text-accent-ink" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                  }`
-                }
-              >
-                <Icon className="h-4 w-4" />
-                {n.label}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        <div className="liquid-glass-readable border-t border-border/60 pt-4 mt-4">
-          <p className="text-xs text-muted-foreground truncate mb-2">{user?.email}</p>
-          <Button variant="ghost" size="sm" disabled={signingOut} onClick={() => void handleSignOut()} className="interactive-press liquid-glass-interactive w-full justify-start rounded-2xl">
-            <LogOut className="h-4 w-4 mr-2" /> {signingOut ? "Signing out…" : "Sign out"}
-          </Button>
-        </div>
-      </aside>
-
-      <nav className="liquid-glass-nav lg:hidden fixed bottom-3 inset-x-3 z-40 rounded-[1.75rem] px-2 py-2">
-        <div className="liquid-glass-readable flex items-stretch justify-around gap-1">
-          {nav.slice(0, 5).map((n) => {
-            const Icon = n.icon;
-            return (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                end={n.end}
-                className={({ isActive }) =>
-                  `xoot-liquid-nav-item interactive-press liquid-glass-interactive tap-target flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1.5 py-1 text-[10px] leading-tight font-semibold transition-colors ${
-                    isActive ? "text-sage-deep" : "text-muted-foreground"
-                  }`
-                }
-              >
-                <Icon className="h-5 w-5" />
-                {n.label}
-              </NavLink>
-            );
-          })}
-        </div>
-      </nav>
-
-      <main className="flex-1 pb-24 lg:pb-0 min-w-0">{children}</main>
-    </div>
-  );
+  const items = updatesAvailable ? [...nav, { to: "/xooter/updates", label: "Your updates", icon: Bell }] : nav;
+  return <XooterNavigation key={user?.id ?? "signed-out"} items={items} email={user?.email}
+    signingOut={signingOut} onSignOut={() => void handleSignOut()}>{children}</XooterNavigation>;
 };
