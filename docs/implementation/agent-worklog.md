@@ -1,5 +1,17 @@
 # Agent worklog
 
+## HOLDING — 3 November — private customer lifecycle first slice
+
+Claim feature/customer-notification-journey-20261103 from approved release7a480fe6. The founder
+requires customer notifications with the same detail and safeguards as the Xooter journey.
+Prepare confirmed-account welcome, explicit incomplete-setup and first-booking reminders,
+private preferences and atomic event/notification/outbox receipts. Separate customer delivery
+policy and quota; no reuse/refill of worker attempts, schedules, historical backfill, production
+sender activation or real email. Existing booking/payment/receipt/gift/reward/native journeys
+remain explicitly unfinished. Read-only provider branding audit is delivered to root; root owns
+Google/Brevo/DNS and reusable skill. Any schema/privileged handler crosses Release/Correctness
+and needs independent review before hosted delivery. Keep generated production types genuine;
+no map, GPS/ETA, matching, money, public homepage or other agent source changes.
 ## REVIEW — 2 November — worker navigation handoff and reachable mobile account
 
 The worker shell now uses source-style glass tabs and a warm desktop sidebar, original logo,
