@@ -31,9 +31,25 @@
       "country guard omitted:3 required failures,restored",
       "dispatch nonce binding omitted:SQL assertion failure,restored"
     ],
-    "realPostgresConcurrency": "pending required existing PG17.6 CI job; local Docker daemon unavailable",
+    "realPostgresConcurrency": {
+      "status": "passed",
+      "testedHead": "a19c2c06f015127aedd97749ffac55c88bd8ffd8",
+      "job": "https://github.com/ROYAL777-21/Xoot/actions/runs/41636876930/job/125920185308",
+      "independentConnections": 20,
+      "claims": 1,
+      "authorizations": 1,
+      "noncachedFinishes": 1,
+      "sharedCeiling": 2,
+      "providerRequests": 0
+    },
     "stagingCredentialAcceptance": "not performed",
-    "providerFixtureAcceptance": "not performed"
+    "providerFixtureAcceptance": "not performed",
+    "previousHeadRequiredCi": {
+      "codeql": "passed",
+      "securityReview": "passed",
+      "actualProductionTypeMatch": "passed",
+      "design": "4 expected new RPC failures plus missing .env.example entry; example fixed in follow-up; current head rerun required"
+    }
   },
   "preserved": [
     "Mapbox maps",
@@ -42,5 +58,6 @@
     "paused Mapbox allowances",
     "approved homepage",
     "notification CI steps"
-  ]
+  ],
+  "stagingKeyPresence": "Owner-saved; root verified name only; no value read and no provider request"
 }

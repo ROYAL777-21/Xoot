@@ -70,6 +70,17 @@ production types have not been edited: the existing RPC contract currently fails
 new functions. Keep the PR draft and that gate intact until a real reviewed schema/type path is
 resolved; no exemption, dynamic RPC-name hiding or fictional migration receipt is appropriate.
 
+The trial can be evaluated from an independently reviewed **unmerged draft**: root applies the
+closed migration only to staging, exports genuine staging-generated types/evidence, verifies all
+four actual function signatures/ACLs, then deploys this exact source only to staging for the
+private acceptance. Keep the production type file and failing production RPC gate intact; this
+is not permission to merge or deploy a failing production release. No trial schema is needed in
+production merely to compare three public fixture responses. A later releasable integration needs
+either a separately reviewed per-project source/type/deploy contract backed by actual staging
+types, or actual approved dormant production DDL followed by real production type generation.
+Neither route is implemented or authorized by this trial, and no classification/guard exemption
+is introduced here.
+
 ## Owner secret and coordinated acceptance (not performed)
 
 Use a separate Geoapify Free project named **Xoot Staging Public Fixture Evaluation**. The owner
@@ -77,6 +88,8 @@ creates/verifies the Free account privately and pastes its key only into **`GEOA
 [Zoot Staging Edge secrets](https://supabase.com/dashboard/project/fxmxyabdjqviqbcxmvlp/functions/secrets).
 There is no Vercel/VITE/public key and no production Geoapify secret in this trial. Never copy a
 key, Authorization header, keyed provider URL or dashboard screenshot into chat/source/logs.
+Root reports the staging key was owner-saved and verified by name only. Its value was not read;
+presence alone is not successful provider authentication or an authorized allowance.
 
 After independent review and root coordination, inspect the disabled/zero budget and real RPC
 ACLs. The owner may authorize **three** attempts, once, while `used=0`, `enabled=false` and the
@@ -105,9 +118,15 @@ Removing the country check fails three targeted cases; removing dispatch nonce b
 the SQL contract. Both defects were restored before validation. The table/column schema guard
 passes; the RPC-name guard has exactly four expected unapplied-schema failures.
 
-The existing PostgreSQL 17.6 CI job now reuses its pinned driver/service for an actual 20-connection
-claim/authorize/finish/quota test; no extra job or provider request is introduced. Local Docker's
-daemon was unavailable, so local PGlite is **not** claimed as multi-connection proof. Required CI,
+The [PostgreSQL 17.6 CI job](https://github.com/ROYAL777-21/Xoot/actions/runs/41636876930/job/125920185308)
+passed on head `a19c2c06f015127aedd97749ffac55c88bd8ffd8`: 20 independent connections admitted
+one claim, one authorization and one noncached finish; the shared ceiling of two and unchanged
+Mapbox sentinel held. This reuses its pinned driver/service; no extra job or provider request is
+introduced. CodeQL, security review and actual production type matching passed on that head.
+The design suite had four expected Geo RPC-name failures plus a missing `.env.example` secret
+entry; that real setup omission is corrected in this follow-up, without changing the RPC guard.
+Local Docker's daemon was unavailable, so local PGlite is **not** claimed as concurrency proof.
+Fresh required CI for the current head,
 independent source review, staging DDL readback, actual service/user credential checks and the
 three provider receipts remain required. This narrow public-fixture trial does not establish
 autocomplete coverage, every real address, production readiness, native/device acceptance or

@@ -72,9 +72,12 @@ GPS change, public query, customer address or fallback. The new SDK is pinned to
 40 focused checks and42 actual SQL assertion sites pass locally; country/nonce defects were
 planted, failed and restored. Targeted Edge TS/lint/table schema guard pass. Existing RPC gate
 correctly fails four unapplied Geo functions; no production types or gate exemptions were edited.
-The Release-owned redesign workflow reuses its existing PGlite/PostgreSQL17.6 runtime for the
-closed SQL and20-connection proof; this edit and schema need root cross-review. Local Docker is
-unavailable, so actual multi-connection CI proof remains pending. Root owns Free account/private
+The Release-owned redesign workflow reuses its existing PGlite/PostgreSQL17.6 runtime. Actual CI
+41636876930 job125920185308 on a19c2c06 passes the 20-connection proof: one claim, one dispatch
+authorization, one noncached finish, shared ceiling two, unchanged Mapbox sentinel. CodeQL,
+security-review and genuine production types match pass. Design CI additionally found the new
+secret missing from functions/.env.example; that real omission is fixed without a guard waiver.
+Fresh rebased-head CI and root schema/source cross-review remain required. Root owns Free account/private
 GEOAPIFY_API_KEY setup and any subsequent staging-only migration/deploy/calls; none occurred here.
 The default provider endpoint is not asserted EU-only or approved for PII; region/DPA/processor
 review remains separate. Runbook/evidence: docs/release/geoapify-private-evaluation-20261103.md.
