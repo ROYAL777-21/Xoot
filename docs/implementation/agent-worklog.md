@@ -1,5 +1,21 @@
 # Agent worklog
 
+## SOURCE REVIEW — 4 November — customer updates UI and closed SMTP transport
+
+The customer app now prepares Your updates from You, owner-bound saved choices and the real
+notification inbox link, with source flowers/fonts and Back to You. Entry is confirmed-user
+AppShell work that never blocks the screen; one weak in-memory promise deduplicates route
+remounts without caching personal DTOs. Account/session changes discard stale responses and
+saves require server acknowledgement.34new API/SMTP,10new UI and60existing neighboring cases
+pass; web and both Deno entrypoint checks pass, SDK2.108.1/Nodemailer10.3.1 pinned. Five actual
+compiled Chromium viewport/theme cases pass without overflow, runtime errors or provider
+requests, including44px label targets and keyboard save. A real short desktop tap target was
+found and fixed. The isolated static build replaces a cold/HMR fixture failure; no deadline
+was weakened. Scoped lint passes. Customer policy remains source-disabled0/20 with no schedule,
+optional email or backfill. Coree2fcc5b0/80SQLchecks are unchanged. Parent owns cross-review,
+current-release rebase, genuine JWT/provider acceptance, actual types/schema/runtime and CI;
+no hosted provider or maps/GPS/ETA/money/worker policy was changed. The required redesign
+workflow gains scoped customer SQL/browser checks and needs Release review before merging.
 ## REVIEW — 3 November — customer allowlist NULL membership refusal
 
 Independent root review of the unapplied92326f2a source found PostgreSQL three-valued logic

@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ArrowLeft, Calendar, CircleUserRound, House, ListChecks, Trophy } from "lucide-react";
 import { haptic } from "@/lib/haptics";
+import { CustomerJourneyEntry } from "@/components/notifications/CustomerJourneyEntry";
 import "@/styles/today-handoff.css";
 
 const tabs = [
@@ -18,6 +19,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   const fromYou = ["/app/plans", "/app/gifts", "/app/favorites", "/app/support", "/app/insurance"].includes(pathname) || pathname.startsWith("/app/properties/");
 
   return <div className="xoot-app-shell">
+    <CustomerJourneyEntry />
     <main className={showTabs ? "xoot-app-main has-tabs" : "xoot-app-main"}>
       {!showTabs && !hasOwnBack && <nav className="xoot-app-back" aria-label="Page navigation"><NavLink to={fromYou ? "/app/profile" : "/app"}><ArrowLeft size={20} aria-hidden="true" />{fromYou ? "You" : "Home"}</NavLink></nav>}
       {children}

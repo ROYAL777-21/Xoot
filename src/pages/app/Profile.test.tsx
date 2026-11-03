@@ -57,6 +57,7 @@ describe("Profile handoff integration", () => {
       [/Receipts & invoices/, "/app/bookings"], [/Manage more/, "/app/properties"], [/Saved Xooters/, "/app/favorites"],
       [/Refer & earn/, "/app/loyalty#refer"], [/Widgets/, "/app/widgets"],
       [/Your calendar/, "/app/calendar"],
+      [/Your updates/, "/app/profile/updates"],
       [/Airbnb host dashboard/, "/app/properties/airbnb"], [/Small office dashboard/, "/app/properties/office"],
       [/XootCover/, "/app/insurance"], [/Get help/, "/app/support"], [/How Xoot works/, "/#how"], [/Privacy & your data/, "/legal/privacy"],
     ] as const;
@@ -64,7 +65,7 @@ describe("Profile handoff integration", () => {
     for (const [name, destination] of destinations) expect(links.find(link => name.test(link.textContent ?? ""))).toHaveAttribute("href", destination);
     expect(screen.getByText("R12.34")).toBeInTheDocument();
     const buttons = screen.getAllByRole("button");
-    for (const name of [/Payment methods/, /Notifications/]) expect(buttons.find(button => name.test(button.textContent ?? ""))).toBeDisabled();
+    for (const name of [/Payment methods/]) expect(buttons.find(button => name.test(button.textContent ?? ""))).toBeDisabled();
     expect(screen.getByLabelText(/Same Xooter/)).toBeDisabled();
     expect(screen.getByLabelText(/Remind me/)).toBeDisabled();
   });

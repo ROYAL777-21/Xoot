@@ -60,10 +60,34 @@ automatically resent. Success requires the deterministic customer Message-ID and
 outbox status `completed`. No customer recipient, full name or household detail is copied into
 outbox payloads, logs or lock-screen previews.
 
-The proposed customer dispatcher retains a frozen local copy of the independently reviewed
+The source customer dispatcher retains a frozen local copy of the independently reviewed
 SMTP transport and handoff email presentation. Its own kind/route allowlist, Message-ID
 namespace and customer RPCs prevent accidental reuse of worker-only recipients or receipts.
 Any later shared transport change requires redeploy/readback of every importing handler.
+
+## Customer app and delivery order
+
+The source `Your updates` page is reachable from You and returns there with its Back control.
+It shows actual own saved preferences, a link to the existing private notification inbox and
+the handoff flowers/fonts. It makes unscheduled reminders and unavailable optional email
+clear. No default consent or success is invented when the server fails. A failed/stale save
+requires reload, and former-owner responses are discarded on account/session changes.
+
+The AppShell entry runs after normal Auth and does not delay the customer screen. Route
+remounts share one in-memory promise for the actual Auth session; the cache retains no DTO,
+profile, token or address. Its failure is retryable while the rest of the app remains usable.
+The customer API passes the presented bearer unchanged to the self-bound RPC. Both new
+handlers retain gateway JWT verification; the mail worker additionally requires actual
+service-role authority and the disabled independent customer policy. New SDK imports pin the
+installed locked Supabase2.108.1; SMTP uses reviewed Nodemailer10.3.1. Frozen source file hashes
+and redacted isolated checks are recorded in
+[`customer-first-slice-source.json`](../release/evidence/2026-11-04/customer-first-slice-source.json).
+
+Review source/SQL first, then deliver the closed staging schema and handlers, verify exact
+runtime imports, and exercise a consenting new customer's normal JWT. A bounded Free-plan
+SMTP proof must match actual inbox headers and the exact receipt. Production requires the
+same safe migration/type/runtime sequence before the UI is promoted. Do not skip schema
+checks, hand-write generated production types or enable schedules to get a source PR green.
 
 ## Checks and remaining gates
 
@@ -74,6 +98,15 @@ real saved-place/booking suppression, separate budgets, role/application/recipie
 exact completion receipts and terminal uncertainty. It plants the duplicate-welcome defect,
 the NULL-membership authorization defect, checks outbox-failure rollback and repeats against
 production's unconstrained status column.
+
+The isolated static Vite/Chromium check runs the actual compiled customer page at320/390/1024
+light and390/1024dark. It verifies no overflow, actual private-theme backgrounds, Newsreader,
+44px tap labels, keyboard toggle/save, Back to You and inbox routes, with no external request
+or runtime error. The original desktop label was shorter than44px; that actual regression
+fails before the minimum target fix. SDK/Deno and web typechecks,34new API/SMTP cases,10new UI
+owner/acknowledgement cases and60existing Profile/AppShell/inbox cases pass. The first dev-server
+harness encountered cold optimizer/outside-entry resolution issues; the static build avoids
+that dependency on HMR rather than weakening the check deadline. Scoped lint passes.
 
 This is not real JWT/provider/inbox/device/concurrent-session acceptance. No hosted migration,
 actual generated production type, SMTP delivery, schedule or broad activation is claimed.

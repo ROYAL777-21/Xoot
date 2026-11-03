@@ -51,6 +51,10 @@ jobs:
         run: node scripts/ops/verify-mail-artwork-embedding.mjs
       - name: Verify handoff Xooter navigation, responsive account access and theme surfaces
         run: node scripts/ops/verify-xooter-navigation.mjs
+      - name: Verify closed customer journey, private choices and exact SMTP receipt boundaries
+        run: node scripts/ops/verify-customer-journey.mjs "$RUNNER_TEMP/xoot-worker-sql/node_modules/@electric-sql/pglite/dist/index.js"
+      - name: Verify handoff customer updates, account navigation and responsive themes
+        run: node scripts/ops/verify-customer-updates.mjs
       - name: Test Supabase migration access diagnostics against synthetic failures
         run: node --test scripts/ops/db-push-link-diagnostics.test.mjs
       - name: Test short-lived Xooter live-location privacy and participant boundaries

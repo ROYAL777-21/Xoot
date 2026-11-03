@@ -257,3 +257,11 @@ verify_jwt = true
 # not a customer's short-lived Supabase session. Management keeps normal JWT checks.
 [functions.calendar-feed]
 verify_jwt = false
+
+# Customer lifecycle management retains the actual user JWT; email worker additionally
+# verifies service-role authority and its independently disabled nonrenewing allowance.
+[functions.customer-communications]
+verify_jwt = true
+
+[functions.customer-email-dispatch]
+verify_jwt = true

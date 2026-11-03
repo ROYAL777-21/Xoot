@@ -1,0 +1,230 @@
+{
+  "date": "2026-11-04",
+  "environment": "isolated-source",
+  "coreRevision": "e2fcc5b0",
+  "coreSqlSha256": "4fe1c4c19cb91ca8c793bea35d8ad8418fb646669df606592729eeafe93e19eb",
+  "sourceManagedFunctions": [
+    {
+      "name": "customer-communications",
+      "verifyJwt": true,
+      "files": [
+        {
+          "path": "supabase/functions/customer-communications/index.ts",
+          "sha256": "04166d3b09407726af0c7c89709346a6e0fe280f39f1058a9239e90f173abab7"
+        },
+        {
+          "path": "supabase/functions/customer-communications/handler.ts",
+          "sha256": "a57057e55c1002e48f8603037e5ca4dd3d05f1f245ac4db9036985273057888c"
+        },
+        {
+          "path": "supabase/functions/customer-communications/origins.ts",
+          "sha256": "887934338262eb305a5c7dd285b20cb8ae8061f0bde66c9c2e6b7a89f949f4bb"
+        }
+      ]
+    },
+    {
+      "name": "customer-email-dispatch",
+      "verifyJwt": true,
+      "files": [
+        {
+          "path": "supabase/functions/customer-email-dispatch/index.ts",
+          "sha256": "595b746fb6fc339ed8c0cd2519d25c24a6e0a94a4596d35a52d69df9901f0959"
+        },
+        {
+          "path": "supabase/functions/customer-email-dispatch/handler.ts",
+          "sha256": "799c24dcd1b82588a6417ebf3372ab58f716fc0674d2b6eec31a9bd41d0f81fe"
+        },
+        {
+          "path": "supabase/functions/customer-email-dispatch/smtp.ts",
+          "sha256": "ef26cb69dc25fbdfbb46488fc143ee6a48f7095801ce97c9eff659013a61ea0a"
+        }
+      ]
+    }
+  ],
+  "reviewedTransportOrigin": "2c01bf2aba87c7e560bc3da5d11b3cf5384a9b46; customer namespace/kind/CORS adapted separately",
+  "runtimePins": {
+    "supabaseJs": "2.108.1",
+    "nodemailer": "10.3.1"
+  },
+  "checks": {
+    "postgresAssertions": 80,
+    "duplicateWelcomeMutation": true,
+    "nullMembershipMutation": true,
+    "outboxFailureRollback": true,
+    "actualUnconstrainedStatusColumn": true,
+    "newApiSmtpCases": 34,
+    "newUiOwnerAcknowledgementCases": 10,
+    "existingNeighborUiCases": 60,
+    "webTypecheck": true,
+    "scopedLint": true,
+    "denoCheck": {
+      "passed": true,
+      "executed": false,
+      "packageDiscoveryDisabledForIsolatedCheck": true
+    },
+    "browser": {
+      "kind": "isolated-customer-updates",
+      "syntheticIdentity": true,
+      "genuineSession": false,
+      "errors": [],
+      "externalRequests": [],
+      "results": [
+        {
+          "width": 320,
+          "height": 740,
+          "theme": "light",
+          "overflow": false,
+          "background": "rgb(245, 243, 242)",
+          "font": "Newsreader, \"Newsreader Fallback\", Georgia, \"Times New Roman\", ui-serif, serif",
+          "labels": [
+            {
+              "width": 278,
+              "height": 82.5
+            },
+            {
+              "width": 278,
+              "height": 82.5
+            },
+            {
+              "width": 278,
+              "height": 82.5
+            }
+          ],
+          "keyboardSave": true,
+          "providerCalls": 0,
+          "passed": true
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "theme": "light",
+          "overflow": false,
+          "background": "rgb(245, 243, 242)",
+          "font": "Newsreader, \"Newsreader Fallback\", Georgia, \"Times New Roman\", ui-serif, serif",
+          "labels": [
+            {
+              "width": 348,
+              "height": 63
+            },
+            {
+              "width": 348,
+              "height": 82.5
+            },
+            {
+              "width": 348,
+              "height": 82.5
+            }
+          ],
+          "keyboardSave": true,
+          "providerCalls": 0,
+          "passed": true
+        },
+        {
+          "width": 1024,
+          "height": 900,
+          "theme": "light",
+          "overflow": false,
+          "background": "rgb(245, 243, 242)",
+          "font": "Newsreader, \"Newsreader Fallback\", Georgia, \"Times New Roman\", ui-serif, serif",
+          "labels": [
+            {
+              "width": 702,
+              "height": 44
+            },
+            {
+              "width": 702,
+              "height": 44
+            },
+            {
+              "width": 702,
+              "height": 44
+            }
+          ],
+          "keyboardSave": true,
+          "providerCalls": 0,
+          "passed": true
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "theme": "dark",
+          "overflow": false,
+          "background": "rgb(18, 17, 16)",
+          "font": "Newsreader, \"Newsreader Fallback\", Georgia, \"Times New Roman\", ui-serif, serif",
+          "labels": [
+            {
+              "width": 348,
+              "height": 63
+            },
+            {
+              "width": 348,
+              "height": 82.5
+            },
+            {
+              "width": 348,
+              "height": 82.5
+            }
+          ],
+          "keyboardSave": true,
+          "providerCalls": 0,
+          "passed": true
+        },
+        {
+          "width": 1024,
+          "height": 900,
+          "theme": "dark",
+          "overflow": false,
+          "background": "rgb(18, 17, 16)",
+          "font": "Newsreader, \"Newsreader Fallback\", Georgia, \"Times New Roman\", ui-serif, serif",
+          "labels": [
+            {
+              "width": 702,
+              "height": 44
+            },
+            {
+              "width": 702,
+              "height": 44
+            },
+            {
+              "width": 702,
+              "height": 44
+            }
+          ],
+          "keyboardSave": true,
+          "providerCalls": 0,
+          "passed": true
+        }
+      ],
+      "passed": true
+    }
+  },
+  "controls": {
+    "customerPolicyEnabled": false,
+    "customerAllowanceUsed": 0,
+    "customerAllowanceMaximum": 20,
+    "customerAllowlist": 0,
+    "workerPolicyChanged": false,
+    "schedules": 0,
+    "optionalExternalEmailEligible": false,
+    "automaticRenewal": false,
+    "hostedChanges": 0,
+    "providerCalls": 0,
+    "generatedProductionTypesEdited": false,
+    "mapsGpsEtaEdited": false
+  },
+  "remaining": [
+    "independent source review",
+    "current release rebase and required CI",
+    "reviewed staging schema and exact runtime delivery",
+    "actual confirmed new customer JWT and owner isolation acceptance",
+    "bounded actual SMTP inbox/receipt acceptance",
+    "production schema/types/delivery before UI promotion",
+    "optional unsubscribe and schedule review",
+    "remaining booking/payment/service/routine/reward/gift/native lifecycle work"
+  ],
+  "screenshots": {
+    "committed": false,
+    "localDirectory": ".render-check/customer-updates",
+    "syntheticOnly": true
+  }
+}
