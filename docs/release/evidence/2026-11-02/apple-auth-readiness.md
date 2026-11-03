@@ -1,6 +1,6 @@
 # Apple sign-in readiness — 2 November 2026
 
-This evidence records an interim truthful UI guard, not enabled Apple authentication.
+This evidence records truthful account-entry choices, not enabled Apple authentication.
 Base: approved `fa0050862b018d0fa9ba6a08fcc3a4271746f4c6`. No provider settings,
 credentials, enrollment, build, payment or hosted data were changed for this work.
 
@@ -25,6 +25,11 @@ Web entry screens hide Apple and the auth handler checks the same condition. Nat
 availability and direct sign-in reject an unready surface before invoking its transport.
 Google/email entry, current copy, nonce/state verification, ID-token exchange and PKCE
 callbacks are preserved. No additional auth-page request, setting fetch or paid call is added.
+
+The root review also authorized removing Welcome's unsupported phone continuation and
+hardcoded “142 homes cleaned in Sandton this month” claim. Both had failing negative
+controls before removal. The available email entry becomes the primary button; no new
+activity count, provider or service-availability claim replaces the removed metric.
 
 Changing this record requires a reviewed code release supported by the applicable
 provider and surface evidence below. An OS check or provider toggle alone is insufficient.
@@ -67,7 +72,7 @@ preserve the existing transports without making a real provider request.
 
 Local verification on 2–3 November:
 
-- 83 focused auth/readiness/native/PKCE/generated-sync cases passed across nine files;
+- 88 focused auth/readiness/native/PKCE/generated-sync/marketing cases passed across ten files;
   web/mobile typechecks, scoped lint and the unsafe-DOM scan passed.
 - The full local run was **not green**: 2165 passed, 7 failed, 7 skipped across 209 files.
   Five failures hit existing 5-second deadlines (BookingFlow, GiftClean twice,
@@ -79,7 +84,8 @@ Local verification on 2–3 November:
   content and normalizing only the two local token files to LF made all ten kit cases
   pass. No token values, generator, guard or unrelated generated file is in this patch.
 - Isolated Chromium rendered the actual Auth and Welcome components at 320, 390 and
-  1024 pixels: zero Apple choices, one Google choice per surface, no horizontal overflow,
+  1024 pixels: zero Apple choices, one Google choice per surface, no unsupported phone
+  continuation or fabricated activity count on Welcome, no horizontal overflow,
   zero external requests and no page errors. Auth context/Supabase transports were local
   fixtures; this is UI evidence, not a provider or signed-device acceptance result.
 

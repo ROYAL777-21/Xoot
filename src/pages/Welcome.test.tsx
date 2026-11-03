@@ -28,3 +28,16 @@ it("retains the Apple entry route only for a future reviewed ready release", () 
   fireEvent.click(screen.getByRole("button", { name: "Continue with Apple" }));
   expect(screen.getByLabelText("Destination")).toHaveTextContent("/auth?provider=apple");
 });
+
+it("does not advertise an unsupported phone sign-in route", () => {
+  render(<MemoryRouter><Welcome /></MemoryRouter>);
+  expect(screen.queryByRole("button", { name: /continue with phone/i })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Continue with Email" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Continue with Google" })).toBeInTheDocument();
+});
+
+it("does not invent a local completed-home activity count", () => {
+  render(<MemoryRouter><Welcome /></MemoryRouter>);
+  expect(screen.queryByText(/\d+ homes cleaned/i)).not.toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: /handle your home/ })).toBeInTheDocument();
+});

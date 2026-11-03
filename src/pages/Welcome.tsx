@@ -5,14 +5,14 @@ import { Zoey } from "@/components/xoot/mascot/Zoey";
 import { AppleLogo, GoogleLogo } from "@/components/xoot/ProviderLogos";
 import { haptic } from "@/lib/haptics";
 import { TermsNotice } from "@/components/xoot/TermsNotice";
-import { Mail, Phone } from "lucide-react";
+import { Mail } from "lucide-react";
 import { isAppleSignInReady } from "@/lib/apple-auth-readiness";
 
 /**
  * First-run welcome — Direction A.
  *
  * Split layout: an illustrated half carrying Zoey and the flowers, and a card that
- * rises over it holding the copy and the four ways in. Nothing here authenticates;
+ * rises over it holding the copy and the available ways in. Nothing here authenticates;
  * every route leads into the existing hardened /auth flow, which already owns rate
  * limiting, lockout, OAuth and OTP.
  */
@@ -36,8 +36,7 @@ function Flower({ className, tone = "primary" }: { className?: string; tone?: "p
 }
 
 const WAYS_IN = [
-  { key: "phone", label: "Continue with phone", icon: Phone, to: "/auth?method=phone", primary: true },
-  { key: "email", label: "Continue with Email", icon: Mail, to: "/auth?method=email", primary: false },
+  { key: "email", label: "Continue with Email", icon: Mail, to: "/auth?method=email", primary: true },
 ] as const;
 
 export default function Welcome() {
@@ -68,8 +67,7 @@ export default function Welcome() {
         <Zoey pose="wave" size={168} className="relative -translate-y-2" />
       </div>
 
-      {/* Card. pb accounts for the home indicator and keeps the last row clear of the
-          floating concierge button, which sits bottom-right on every screen. */}
+      {/* Card. pb accounts for the home indicator. */}
       <div className="relative z-10 -mt-7 flex flex-col gap-2.5 rounded-t-[1.75rem] bg-card px-6 pt-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-14px_40px_-24px_hsl(var(--foreground)/0.35)]">
         {/* Progress — four steps, this is the first. */}
         <div className="flex gap-1" role="progressbar" aria-valuenow={1} aria-valuemin={1} aria-valuemax={4} aria-label="Step 1 of 4">
@@ -88,11 +86,6 @@ export default function Welcome() {
           single confirmation.
         </p>
 
-        <p className="rise-in flex items-center gap-1.5 text-[0.65rem] text-muted-foreground [animation-delay:110ms]">
-          <span className="size-1.5 shrink-0 rounded-full bg-success motion-safe:animate-pulse" aria-hidden="true" />
-          142 homes cleaned in Sandton this month
-        </p>
-
         <div className="rise-in mt-4 flex flex-col gap-2 [animation-delay:165ms]">
           {WAYS_IN.map((w) => (
             <Button
@@ -107,9 +100,8 @@ export default function Welcome() {
             </Button>
           ))}
 
-          {/* Right-padded so the last button never sits under the floating concierge
-              button. Icon-only, so each carries an explicit accessible name. */}
-          <div className="flex gap-2 pr-16">
+          {/* Available social providers; each icon carries an explicit accessible name. */}
+          <div className="flex gap-2">
             {isAppleSignInReady("web") && (
               <Button
                 variant="outline"

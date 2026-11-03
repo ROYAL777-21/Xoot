@@ -66,6 +66,10 @@ Write old-claim/phone negative controls before the removal. No provider, money, 
 verification or supply state changes. This extension remains on the isolated Apple branch
 and still requires independent review and required CI after the approved schema release.
 
+Extension result: both negative controls failed against the original visible phone/metric.
+Welcome now offers Google/email and omits the unsupported continuation/count; the same
+handoff layout remains. Combined auth/readiness/native/marketing checks pass88/10files.
+
 ## REVIEW — 3 November — Apple choices remain closed until actual readiness
 
 Web Auth/Welcome and native availability/start now share a dependency-free reviewed
