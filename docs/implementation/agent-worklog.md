@@ -18,7 +18,7 @@ business counters are unchanged. Checked-in notification-runtime.json contains r
 versions and counts only. No SMTP connection or geocoder request was performed. Source/type,
 JWT/device, full-journey and production delivery acceptance remain distinct evidence.
 
-## HOLDING — 3 November — paused worker email allowlist hardening
+## REVIEW — 4 November — paused worker email allowlist hardening
 
 Claim fix/xooter-email-null-allowlist-20261103 from approved60260f19 in the separate
 work/xoot-notification-policy-20261103 checkout. Independent catalog reads found the same
@@ -32,6 +32,22 @@ migrations/CI and Correctness regression ownership explicitly; parent cross-revi
 Prove the old-body leak and real SQL denial/rollback/preservation contracts locally, then open
 a draft PR. No hosted apply, sender/schedule activation, reset/refill or generated-type edit.
 The separate customer agent owns its unapplied policy fix; other working trees stay untouched.
+
+Claim167c7198 was pushed before implementation. New forward migration20261103223222 takes the
+policy ACCESS EXCLUSIVE lock before event EXCLUSIVE, refuses enabled/active/unknown-source
+states, validates NULL-free allowlists and changes only final authorization membership to
+IS NOT TRUE. Canonical-LF migrationSHAce67a0ce7faefddbf2d7efb1f58ed622c0d1411e922f2faae27cad50c47b7c9d;
+replacementprosrc8e84cbdad9c9f2340235091a37ec1eab588aca03a80e8c5c01bf304ebf0bf422.
+Eleven actual isolated SQL scenarios pass, including the immutable old-body leak, revocation,
+schema validation, valid-once dispatch, full row/authority preservation and failed-delivery
+rollback. The new denial regression failed before the fix. Original89SQL assertions/negative
+controls, web typecheck, scoped lint, script syntax and diff checks pass. Both existing SQL CI
+workflows run the new validator; no runtime/provider dependency was added.
+The attempted full local Vitest run was stopped at the parent's request after failures in
+unchanged NotificationsFeed, Profile, in-app-call, ops-readiness, Bookings, Today, BookingFlow,
+deploy-host-config and kit-tokens tests, with multiple default-deadline overruns. No UI or test
+deadline was changed. Required isolated GitHub CI supplies the full-suite verdict; no complete
+local-suite success is claimed. Independent parent review precedes any later hosted apply.
 
 ## HOLDING — 3 November — notification interface on the approved schema/navigation release
 
