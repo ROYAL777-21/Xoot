@@ -1,5 +1,6 @@
 import { cloneElement, createContext, isValidElement, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
+import { useStartXooterJourney } from '@/components/xooter/CommunicationPreferences';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -108,6 +109,7 @@ const validateUpload = (file: File) => {
 
 const XooterApplication = ({ user, token }: { user: User; token: string }) => {
   const navigate = useNavigate();
+  const updatesUnavailable = useStartXooterJourney(user.id, token);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -438,6 +440,7 @@ const XooterApplication = ({ user, token }: { user: User; token: string }) => {
 
           <div className="flex justify-between mt-8 pt-4 border-t border-border"><Button variant="ghost" onClick={() => { haptic("selection"); setStep(Math.max(step - 1, 0)); }} disabled={step === 0}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>{step < steps.length - 1 ? <Button onClick={next} className="bg-primary text-primary-foreground hover:bg-primary/90">{saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : <>Save & continue <ArrowRight className="h-4 w-4 ml-1" /></>}</Button> : <Button onClick={submit} disabled={submitting || !form.background_check_consent} className="bg-primary text-primary-foreground hover:bg-primary/90">{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Submit application <ArrowRight className="h-4 w-4 ml-1" /></>}</Button>}</div>
           <p role="status" className="xooter-onboarding-save-status">{saved ? "Your latest step is saved." : "Your progress is saved when you continue."}</p>
+          <p className="text-xs text-muted-foreground mt-4"><a className="underline underline-offset-4" href="/xooter/updates">Choose your Xoot updates</a>{updatesUnavailable && ' · Update preferences are temporarily unavailable.'}</p>
         </Card></fieldset>
         </RequiredFieldContext.Provider>
       </div>

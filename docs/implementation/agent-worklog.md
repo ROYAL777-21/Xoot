@@ -1,5 +1,16 @@
 # Agent worklog
 
+## HOLDING — 3 November — notification interface on the approved schema/navigation release
+
+Rebase PR108 onto approved ad6e4efb. Preserve the current handoff Xooter shell, all required
+CI steps and the exact applied SQL/types delivered by PR114. The old duplicate wrapper is
+removed only after proving it is byte-identical to the immutable actual20261103071458 source;
+all canonical applied SQL and generated types match the release. Wire the real Updates route
+through the shell's reviewed updatesAvailable flag and pin only the two new SDK entrypoints.
+No email sender, schedule, allowance, role, money or tracking activation is included. Verify
+owner isolation, existing normal-JWT staging evidence and frozen deployed source after the
+required source checks. Root also retains the separate Apple-removal and customer/Geo trials.
+
 ## HOLDING — 3 November — actual closed-schema receipt and production types
 
 Parent Release/Correctness cross-review verified all twelve immutable package blobs, the
@@ -144,6 +155,18 @@ the two public PNGs are embeddable. The existing SQL test's Windows-CRLF mismatc
 by normalizing input files before executing, matching reviewed LF deployment/hash semantics;
 all48assertions pass after a fresh checkout. Applied SQL body/history are unchanged.
 
+## HOLDING — 2 November — closed production Xooter notification schema
+
+Continue PR108 after preserving the approved address release during rebase. The three actual
+staging SQL sources retain82ea0fc7.../9592ccc5.../e6ad2613... hashes; genuine founder SMTP inbox
+acceptance and its outbox repair are recorded. Prepare one atomic production delivery of only
+those reviewed sources, with canonical history inserted after execution, rollback/drift checks,
+private RLS/grants and a disabled0of20/unallowlisted policy. No email send, schedule, Free-plan
+renewal or worker approval is included. Actual production type generation and required CI must
+precede source promotion; no handwritten types or schema bypass. SMTP production credentials
+and real production acceptance remain separate. This crosses Release/Correctness and requires
+independent immutable review. Existing homepage, money/tracking controls and other PRs remain.
+
 ## PRODUCTION SCHEMA — 2 November — address source delivered without enablement
 
 Independent review cleared7e57952f including lock timeout before advisory acquisition; all required
@@ -217,6 +240,79 @@ existing public production site, so email clients can load the artwork from xoot
 homepage/component/theme, route, credential, customer data, backend or commercial rule changes.
 Notification journey PR108 remains separate and draft; its receipt repair and full acceptance
 are not included in this asset-only release. Check all release gates and served asset hash.
+
+## STAGING DELIVERY — 2 November — genuine personalised SMTP welcome
+
+Private owner health succeeds200 with SMTP configured/trusted staging URL. Actual normal-user
+UI enrolment creates one welcome, status preferences save OFF/revision1 and back ON/revision2,
+tips/promotions OFF, no Xooter role/application granted. The mail at08:44UTC reaches the founder's
+authorised Gmail alias with exact event Message-ID, safe first-name greeting, Xoot/no-reply sender,
+support reply-to and SPF/DKIM/DMARC passes. The receipt initially fails because the fixture omitted
+the real outbox status CHECK: processed is invalid; completed is correct. Preserved old executed
+SQL, reproduced23514 using the real CHECK and applied independently reviewed forward repair as
+actual20261102165153, hash e6ad261323fc7d1d65efc34e8436c6818031e3c4a138438b6ede01ee0730574a.
+Manually reconciled the same delivered event, no resend. Explicit duplicate HTTP request returns
+200/no_eligible_email; quota remains1/20, sender DISABLED and unscheduled. Temporary private key
+fields cleared.89localSQL assertions/negative controls and33focused earlier handler/UI cases;
+no broad production/optional-email/native/schedule acceptance is claimed. PR108 remains draft.
+Public static handoff artwork PR109 is merged/releasedf4780fba, canonical6893bytePNGhashmatches.
+Sender's canonical public image URL correction is deploying to staging only (run41504247054).
+Advance-address work is isolated in PR110/worktree xoot-mail-assets-20261102; preserve its claim.
+
+## HOLDING — 2 November — destinations available for advance worker planning
+
+Founder requires Xooters to know the service address well in advance. Actual production
+get_xooter_job_cards_for_user already releases the destination after acceptance without a
+scheduled-time cutoff; household access details remain separately45minute-gated. Inspect
+current assignment/reassignment and terminal revocation before changing any address exposure.
+Prepare a prominent handoff-styled accepted-job destination/plan-ahead surface and meaningful
+future-date/current-owner/terminal tests. Do not put full addresses or household codes in email,
+push, logs or Live Activity previews. No clock-window bypass for gate/alarm/access instructions.
+This extends the current claim; no genuine worker verification or availability is fabricated.
+
+## HOLDING — 2 November — customer journey, native activity and profitability review
+
+Founder extends the notification work to customers and every actual booking/payment/gift/
+reward lifecycle, service-specific guidance, preference/history-based timing and handoff flowers
+in branded email. Continue the existing Xooter SMTP staging acceptance first; inspect existing
+customer writers, push/Live Activity bridges and the actual production gift contract. The
+founder requests profitability proposals BEFORE any commercial change: no price, commission,
+membership/reward entitlement, payout fee or employment model is changed under this claim.
+Prepare a sourced partnership/employment options note, not a labour-status assertion or contract.
+Cross-role scope and independent review remain required for any later event/worker/schema change.
+Actual production gift readback still restricts counts to1/3/4/6/12, zero orders, no52 entitlement
+or paid gift settlement. Native bridge source alone is not a signed ActivityKit implementation.
+The owner saved the lifecycle SMTP key; names-only CI confirms both credential names. New
+notification preview is scoped to public staging backend config with unrelated live flags OFF.
+
+## HOLDING — 2 November — Xooter account and onboarding notification journey
+
+Founder explicitly requests Xooter account welcome, unfinished-onboarding reminders, submission
+updates, retention tips and promotions. Claim feature/xooter-notification-journey-20261102 from
+reviewed release2a459bdd. Trace actual auth/application/notification/outbox and provider delivery
+contracts before changing them; current queued events are not proof of email delivery. Prepare
+durable, deduplicated server events, verified recipients, safe branded copy, consent/preferences
+and unsubscribe enforcement. Keep transactional status distinct from optional retention/marketing,
+stop stale reminders after completion and retain quiet-hour/frequency/provider-cost bounds.
+Cross-role scope: Release migrations/worker/config plus Correctness shared delivery/guards. No
+invented verification, unrestricted historical mail blast, paid provider plan or direct frontend
+sends. Use only founder-authorised test identities for staging delivery evidence, preserve the
+public light-mode homepage and closed financial/scanner-processing gates.
+
+Core0ec24536 passed44actual isolated SQL assertions, missing-trigger mutation and full outbox
+failure rollback. Independent review found duplicate legacy sends in real submit/reject handlers;
+02c651d3 removes them while retaining MIE/review/audit, with2actual-handler transport regressions.
+Added an unapplied migration-rollout bridge so old handler inserts cannot duplicate canonical
+received/attention events during deployment or rollback. Owner-bound preferences/UI endpoint
+forwards the actual user bearer without admin fallback; identity and stale-save guards pass.
+
+Founder explicitly rejects weakening Brevo API IP blocking and chooses SMTP. Discarded the unused
+restricted API-key draft without generating it; API blocking remainsON, existing SMTP blocking
+remainsOFF under prior authorisation. Actual Brevo UI Free/300remaining verified. Owner privately
+creates/saves separate strong3month Xoot Staging Lifecycle SMTP key. No value inspected. Prepare
+TLS2525 worker with bounded private receipts/current consent/eligibility/recipient checks,20test
+slots, recent Free-plan review and no automatic retry of ambiguous outcomes. No new hosted DDL,
+schedule, email acceptance or production notification deployment is claimed yet.
 
 ## HOLDING — 2 November — closed production scanner schema preparation
 

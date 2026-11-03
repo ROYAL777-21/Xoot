@@ -70,6 +70,12 @@ verify_jwt = true
 [functions.scan-xooter-document]
 verify_jwt = true
 
+[functions.xooter-communications]
+verify_jwt = true
+
+[functions.xooter-email-dispatch]
+verify_jwt = true
+
 [functions.create-masked-call]
 verify_jwt = true
 

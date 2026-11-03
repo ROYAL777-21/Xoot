@@ -1,0 +1,71 @@
+# Xooter notification journey — 2 November 2026
+
+The founder requests welcome, unfinished-onboarding reminders, completion updates, retention,
+tips and promotions. Existing notification rows work in-app, but an outbox row is not delivery:
+no general Brevo sender currently drains that queue. Build the following bounded journey before
+claiming external sends. Preserve transactional status, genuine verification and user choice.
+
+| Event | Source | Channels and limits |
+| --- | --- | --- |
+| Welcome | First confirmed account enrolment in the Xooter journey | One in-app record and transactional email |
+| Continue onboarding | Still incomplete after 24h and 72h | Two reminders maximum; removable in preferences; stop after submission |
+| Application received | Actual application submission | In-app and email; says under review, never approved |
+| Application needs attention | Actual review transition | Safe prompt only; private review notes stay inside Xoot |
+| Onboarding complete | Actual approved application, active Xooter and role | In-app and email; never inferred from uploads or a clean malware scan |
+| Profile and customer tips | Approved account, optional tips enabled | In-app first; no earnings guarantee, review manipulation or off-platform contact |
+| Return reminder | Optional tips enabled and 14 days inactive | Once per inactivity period, with a seven-day optional-message cap |
+| Promotions | Separate explicit consent and a real approved campaign | No invented offers; an unsubscribe path and provider evidence precede email activation |
+
+All recipients must be confirmed, current auth accounts, not an email field supplied in an
+application. Event identity and notification/outbox creation are atomic and unique. Anonymous
+callers cannot create an event or choose another recipient. Ordinary users may only change their
+own preferences. Optional tips/promotions default OFF. No historical bulk campaign is activated.
+
+Email uses Xoot branding, fixed first-party routes, escaped content and only a safe first name.
+Addresses, identity/bank documents, private screening notes and access instructions stay in Xoot.
+Provider acceptance and confirmed delivery are different states. An uncertain provider result
+must not be retried automatically. The new sender consumes only this journey's private records;
+it must never drain unrelated historical finance/support outbox rows.
+
+Brevo's [Free plan](https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan)
+has a shared 300-email daily allowance, including transactional sends. Keep authentication mail
+capacity, bounded batches and a separate closed staging test budget; do not buy credits or a plan.
+The founder explicitly chose SMTP and to KEEP API IP blocking on. The unused API-key draft was
+discarded; no API key or API-policy change occurred. Brevo's actual UI showed Free and300emails
+available on2November. The founder privately created/saved a separate standard64character SMTP
+key, expiring2February2027. Existing sign-in keys remain untouched. Actual name-only readback,
+sender/domain approval and founder-inbox acceptance precede broad external activation.
+
+The sender pins smtp-relay.brevo.com:2525, requires STARTTLS/certificate validation, disables
+file/URL access and debug logs, and sends to exactly one current confirmed auth email. It never
+uses the editable application email. A stable message ID is for correlation, not an SMTP promise
+of deduplication. Unknown outcomes remain uncertain with no automatic resend. A private policy
+requires a current Free-plan review, named test-account allowlist and nonrenewing20attempt cap.
+Optional external retention/promotion mail stays closed pending a reviewed unsubscribe/campaign
+path; opt-in in-app tips remain separate. [Official SMTP guidance](https://developers.brevo.com/docs/smtp-integration).
+
+Staging setup names: BREVO_SMTP_USER, BREVO_SMTP_PASSWORD and XOOT_LIFECYCLE_APP_URL (the exact
+reviewed preview URL). Never print these credential values or put them in source. Production
+SMTP settings, the existing Auth sender and API IP restrictions are not changed by this patch.
+
+Current release status lives only in [production-checklist.md](production-checklist.md). One
+genuine staging welcome reached the founder's Gmail with SPF/DKIM/DMARC pass. A reviewed forward
+repair reconciles its accepted receipt with the completed outbox; an explicit duplicate dispatch
+sent no second email. The original executed SQL remains unchanged. This single transport proof
+does not establish the complete lifecycle journey. The sender is held disabled at1of20attempts,
+with no schedule/refill. Production notification schema/sending and scanner processing stay closed.
+
+Independent review found a status-cycle defect before any hosted migration/send: submitted →
+rejected → submitted could revive an older received email. The regression fails against d80
+with JOURNEY_FAILED and now checks the current journey revision during both claim and dispatch.
+Both repeated submission and rejection are covered:47core plus41email assertions pass, with
+the existing missing-trigger negative control and outbox rollback. No old in-app history is erased.
+The owner-saved SMTP credential names are verified; the exact staging-only app URL is now saved.
+Preview dpl_GgBsjwGVaV4AdnHuZ76VQozBFRyV built d80 with public staging configuration and unrelated
+live controls OFF. This preview still precedes the revision correction and decorative email asset.
+Static email flowers use the uploaded handoff Bloom geometry and actual lilac/petal/honey/mist
+tokens, rendered to a small PNG for email-client compatibility; no tracking pixel or user identifier.
+The first test mail pointed its image at a protected preview, so rendered-image acceptance is not
+claimed. Public artwork is now served from xoot.co.za and staging SMTP handler3 carries that URL;
+all3actual source files and its empty generated import map match the reviewed source. No resend
+or extra test allowance was used for the artwork correction. See the redacted staging evidence.

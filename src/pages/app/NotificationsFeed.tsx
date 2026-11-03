@@ -1,6 +1,6 @@
 import { Bell, CalendarCheck, CircleAlert, CreditCard, LifeBuoy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ProfileDetail } from "./ProfileParts";
 import { useNotifications } from "@/components/notifications/useNotifications";
 import { NativePushPrompt } from "@/components/notifications/NativePushPrompt";
@@ -16,14 +16,15 @@ function presentation(kind: string) {
   if (kind.startsWith("support_") || kind.startsWith("concierge_")) return { Icon: LifeBuoy, tint: "mist" };
   return { Icon: Bell, tint: "honey" };
 }
-export default function NotificationsFeed() {
+export default function NotificationsFeed({beforeFeed,backTo='/app',backLabel='Back to Home'}:{beforeFeed?:ReactNode;backTo?:string;backLabel?:string}={}) {
   const resource = useNotifications();
   const navigate = useNavigate();
   const [now, setNow] = useState(Date.now);
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 60_000); return () => window.clearInterval(timer); }, []);
   const subtitle = resource.authLoading ? "Loading…" : !resource.owner ? "Sign in to view notifications" : resource.error ? "Notifications unavailable" : resource.count === null ? "Loading…" : resource.count ? `${resource.count} new` : "All caught up";
-  return <ProfileDetail title="Notifications" subtitle={subtitle} backTo="/app" backLabel="Back to Home" trailing={resource.owner && resource.count !== null && resource.count > 0 ? <button className="xoot-notifications-mark-all" type="button" disabled={resource.busy} onClick={() => { haptic(); void resource.markRead(); }}>Mark all read</button> : null}>
+  return <ProfileDetail title="Notifications" subtitle={subtitle} backTo={backTo} backLabel={backLabel} trailing={resource.owner && resource.count !== null && resource.count > 0 ? <button className="xoot-notifications-mark-all" type="button" disabled={resource.busy} onClick={() => { haptic(); void resource.markRead(); }}>Mark all read</button> : null}>
     <div className="xoot-notifications-scroll">
+      {resource.owner && beforeFeed}
       {resource.owner && <NativePushPrompt key={resource.owner} />}
       {resource.loading && resource.owner && <p role="status">Loading notifications…</p>}
       {resource.error && <div className="xoot-notifications-state" role="alert"><p>{resource.error}</p><button type="button" disabled={resource.busy} onClick={() => void resource.refresh()}>Try again</button></div>}

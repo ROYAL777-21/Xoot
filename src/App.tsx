@@ -83,6 +83,7 @@ const XooterTraining = lazy(() => import("./pages/xooter/Training"));
 const XooterEarnings = lazy(() => import("./pages/xooter/Earnings"));
 const XooterKyc = lazy(() => import("./pages/xooter/Kyc"));
 const XooterProfile = lazy(() => import("./pages/xooter/Profile"));
+const XooterUpdates = lazy(() => import("./pages/xooter/Updates"));
 const AdminKyc = lazy(() => import("./pages/admin/Kyc"));
 const AdminOps = lazy(() => import("./pages/admin/Ops"));
 
@@ -221,12 +222,13 @@ const App = () => (
 
                   {/* Xooter portal */}
                   <Route path="/xooter/apply" element={<RequireAuth><XooterApply /></RequireAuth>} />
-                  <Route path="/xooter" element={<RequireRole role="xooter"><XooterShell><XooterDashboard /></XooterShell></RequireRole>} />
-                  <Route path="/xooter/jobs" element={<RequireRole role="xooter"><XooterShell><XooterJobs /></XooterShell></RequireRole>} />
-                  <Route path="/xooter/training" element={<RequireAuth><XooterShell><XooterTraining /></XooterShell></RequireAuth>} />
-                  <Route path="/xooter/earnings" element={<RequireRole role="xooter"><XooterShell><XooterEarnings /></XooterShell></RequireRole>} />
-                  <Route path="/xooter/kyc" element={<RequireAuth><XooterShell><XooterKyc /></XooterShell></RequireAuth>} />
-                  <Route path="/xooter/profile" element={<RequireRole role="xooter"><XooterShell><XooterProfile /></XooterShell></RequireRole>} />
+                  <Route path="/xooter/updates" element={<RequireAuth><XooterShell updatesAvailable><XooterUpdates /></XooterShell></RequireAuth>} />
+                  <Route path="/xooter" element={<RequireRole role="xooter"><XooterShell updatesAvailable><XooterDashboard /></XooterShell></RequireRole>} />
+                  <Route path="/xooter/jobs" element={<RequireRole role="xooter"><XooterShell updatesAvailable><XooterJobs /></XooterShell></RequireRole>} />
+                  <Route path="/xooter/training" element={<RequireAuth><XooterShell updatesAvailable><XooterTraining /></XooterShell></RequireAuth>} />
+                  <Route path="/xooter/earnings" element={<RequireRole role="xooter"><XooterShell updatesAvailable><XooterEarnings /></XooterShell></RequireRole>} />
+                  <Route path="/xooter/kyc" element={<RequireAuth><XooterShell updatesAvailable><XooterKyc /></XooterShell></RequireAuth>} />
+                  <Route path="/xooter/profile" element={<RequireRole role="xooter"><XooterShell updatesAvailable><XooterProfile /></XooterShell></RequireRole>} />
 
                   {/* Admin */}
                   <Route path="/admin/kyc" element={<RequireRole role="admin"><AdminKyc /></RequireRole>} />

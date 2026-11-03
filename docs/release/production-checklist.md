@@ -1,5 +1,31 @@
 # Xoot production checklist
 
+## 3 November evening — Apple removal live; notification interface promotion in progress
+
+PR116 passed required41682265406, CodeQL, Semgrep and PostgreSQL privilege checks, then merged
+as74db3c267e5944c8f3908d431ca9cfb637db54d6. Productiondpl_2TZPVwK2h4AV7kGYZKVtzBX23ngK is READY;
+canonical build-info returns that exact revision, ZD-026 and R39. Apple is omitted from Auth and
+Welcome, and native source availability stays closed. Google/email entry and secure auth flow
+remain. Welcome no longer advertises unsupported phone continuation, an invented142-home
+activity count or one-tap confirmation. Real Apple enrolment/device acceptance is not claimed.
+
+PR114 is merged asad6e4efb after fresh actual-production type equality41634588033 and required
+41634588000. Its closed notification DDL/readback below remain authoritative. PR108 is rebased
+onto the Apple/navigation/schema releases without changing any applied SQL or generated type;
+the existing shell now exposes its actual Updates route through the reviewed optional flag.
+Two new notification SDK entrypoints are pinned to the reviewed lock version2.108.1. Forty-four
+focused preference/navigation/handler/type-contract checks and local typecheck pass. Final
+rebased CI, four-function deployment and frozen runtime readback remain required before this
+interface/handler delivery is called live; the sender is disabled with no schedule or refill.
+
+The founder confirms the Xoot logo has no registered trademark. Gmail's requested VMC tick is
+therefore pending trademark eligibility, certificate purchase approval and safe DMARC enforcement;
+ordinary sender authentication is separate. No fake badge or paid plan is added. The public
+Google support picker currently offers only the founder's Gmail and no managed group; a free
+Google identity for the existing support@xoot.co.za Zoho inbox is prepared for private owner
+completion. Do not claim that public personal contact has already been replaced. Geoapify Free
+account setup is reported ready; its staging key/project and bounded provider proof remain pending.
+
 ## 3 November — verified Google branding; closed notification schema and actual types
 
 Google Auth Platform's previous brand rejection was domain ownership. The founder's existing
@@ -23,7 +49,7 @@ and exact canonical execution/wrapper receipts read back. Sender remains disable
 empty allowlist/project/review and no schedule. Existing notifications3/outbox3 and all0production
 booking/job/roster/active-worker counts are unchanged. Pinned CLI2.113.0 generated the five actual
 public RPC shapes in run41632953920; its exact59line diff was applied, without handwritten types.
-Fresh equality/release checks and PR114 promotion remain pending this evidence revision.
+Fresh equality41634588033 and release41634588000 passed; PR114 merged asad6e4efb.
 See [actual production readback](evidence/2026-11-03/notification-production-schema.json).
 
 The founder privately saved the separate production lifecycle SMTP key; name-only workflow
@@ -87,6 +113,44 @@ SMTP handler3 carries the public image URL. This proves that one delivery, not t
 and Xooter lifecycle. Production notification schema/sending remain closed.52-week paid gifts,
 recurring/membership/reward/payout settlement and Apple/native gates remain unfinished. Existing
 production light-mode, reviews, legal invoice name and closed scanner schema remain in place.
+
+## 2 November evening — public email artwork; genuine staging lifecycle mail
+
+Production releasef4780fba (PR109) is READY at dpl_GS2a4eFMuGEpfGfSvASp7dPETNVP. The canonical
+public handoff flower PNG returns200/image/png,6893bytes, SHA256
+05c75365ad7c06b190aa7bf93a36265930050d354fcfcf146de9604b16502981, matching source. All required
+asset-release checks pass and independent Correctness review clears its source-only scope.
+Homepage/theme/application/backend and R39 pricing are unchanged; PR107/scanner release2a459bdd
+is already merged, superseding the earlier pre-promotion wording below.
+
+Notification PR108 is DRAFT, not a production journey release. Reviewed staging migrations
+20261102082500/082516 and forward repair20261102165153 are applied with matching source hashes.
+Four staging handlers are live with JWT verification;12actual source files/frozen imports match
+the original8fb9bfaa delivery. The normal confirmed founder alias signs in privately, loads its
+own settings, saves email-off/restores-on, and receives one atomic Xooter welcome notification.
+The actual branded welcome email reaches its Gmail inbox with the intended Message-ID,
+personal greeting, Xoot sender/support reply-to and SPF/DKIM/DMARC passes.
+
+The first receipt wrote invalid outbox status processed; the actual contract is completed.
+The original source remains immutable. A reviewed forward repair now matches that contract;
+89actual local SQL assertions and the old-constraint negative control pass. The delivered
+message is manually reconciled from Gmail evidence, not resent. An explicit duplicate HTTP
+request returns200/no_eligible_email and consumes no extra attempt. Sender is disabled again,
+1/20used, one authorised account, no schedule; temporary owner key fields were cleared.
+[Redacted evidence](evidence/2026-11-02/xooter-email-staging.json).
+
+Production notification DDL/sender, automatic customer/Xooter schedules, all event-specific
+emails and native push/Live Activities remain unfinished. CI correctly refuses four new
+worker RPCs absent from production-generated types; no hand types or schema gate bypass.
+The [full journey backlog](../product/full-notification-journey-20261102.md) includes service,
+onboarding, routine, loyalty, gifts, receipts, consent/unsubscribe and native/device acceptance.
+The52visit gift remains unsupported by the actual gift RPC; no paid gift fulfilment is enabled.
+Profitability/employment changes are proposals only, in the founder review note.
+
+Advance-address work is separately claimed: live backend already releases an accepted-job
+destination without a visit-day cutoff. The web Jobs response parser is wrong and its address
+display needs prominence/account isolation. Fix and test that without opening household access
+codes early or claiming genuine worker availability. Existing money/provider/native gates remain.
 
 ## 2 November — real scanner acceptance; closed production schema delivered
 

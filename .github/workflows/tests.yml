@@ -157,6 +157,9 @@ jobs:
           node scripts/ops/build-closed-scanner-schema.mjs --check
           node scripts/ops/verify-closed-scanner-schema.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
 
+      - name: Verify Xooter journey event deduplication and consent isolation
+        run: node scripts/ops/verify-xooter-journey.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
   test:
     name: Lint, build and unit tests
     runs-on: ubuntu-latest
@@ -234,6 +237,11 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+
+      - name: Typecheck the Xooter communication and SMTP entrypoints
+        env:
+          DENO_NO_PACKAGE_JSON: '1'
+        run: deno check --no-config --node-modules-dir=none --no-lock supabase/functions/xooter-communications/index.ts supabase/functions/xooter-email-dispatch/index.ts
 
       - name: Deno tests (advisory on its first outings)
         continue-on-error: true
