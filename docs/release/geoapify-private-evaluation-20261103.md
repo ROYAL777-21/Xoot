@@ -112,8 +112,29 @@ project name, one-key count and secret name only. Provider key values and keyed 
 The earlier real CLI 2.113.0 [staging generation](https://github.com/ROYAL777-21/Xoot/actions/runs/41690666228)
 completed but comparison differed from production by 1,752 diff lines. Its 1,200-line log cap was
 incomplete. The draft workflow now uploads the complete generated file and diff after a complete
-successful export, even on mismatch; comparison still exits nonzero. Actual complete artifact
-capture is recorded separately after the one authorized staging dispatch.
+successful export, even on mismatch; comparison still exits nonzero.
+
+The one authorized follow-up [staging run 41733900205](https://github.com/ROYAL777-21/Xoot/actions/runs/41733900205)
+used draft head `e4f66486c52fea1a451be1fa5e5a7fadd03b0d1b` and the unchanged CLI 2.113.0 pin.
+Generation completed and the upload step succeeded. The workflow conclusion remains failure
+because the real staging schema differs from committed production types; this is not a waived
+comparison or a production readiness claim. The complete files are retained in the exact
+[downloaded ZIP](evidence/2026-11-04/geoapify-staging-types-41733900205.zip), with
+[provenance, hashes and actual RPC declarations](evidence/2026-11-04/geoapify-staging-types-41733900205.json).
+
+| Actual captured file | Size | Complete line count |
+| --- | ---: | ---: |
+| `generated.ts` | 187,873 bytes | 6,183 |
+| `types.diff` | 55,410 bytes | 1,752 |
+
+The 22,702-byte ZIP matches both the upload log and GitHub's artifact digest:
+`26f70ba0d35f143850dcdc053f05b55dd3504baa09e7ed0eb143718cd0fe2e2c`.
+Its exact file set is `generated.ts` and `types.diff`; no logs, credentials or rows are included.
+TypeScript parsing finds all four actual Geo RPC declarations, including the one-line empty-Args
+worker probe. They remain absent from production types. The broader 1,752-line project drift is
+not represented as only these four functions and is not reconciled by overwriting production.
+The remote artifact has three-day retention; the committed identical ZIP preserves the full
+evidence after expiry. No additional workflow dispatch, provider call or allowance change occurred.
 
 After independent review and root coordination, inspect the disabled/zero budget and real RPC
 ACLs. The owner may authorize **three** attempts, once, while `used=0`, `enabled=false` and the

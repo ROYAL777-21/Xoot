@@ -1,5 +1,23 @@
 # Agent worklog
 
+## REVIEW — 4 November — actual Geo staging source and complete CLI evidence
+
+Rebased PR115 onto approved 75674d60 and renamed the original migration to actual history
+20261103180614 with a 100% unchanged SQL body (normalized SHA256 057ebf07). Exact runner/docs
+paths now follow that version. Root-supplied redacted receipts record two private RLS tables,
+all five actual prosrc hashes, invoker/empty paths/service-only RPC grants, disabled revision 1,
+zero allowance/usage/attempts, deployed v1/JWT on, five frozen runtime matches/empty import map
+and anonymous 401. Local hashing validates all five SQL bodies and five runtime files against
+those receipts. Actual provider metadata is Xoot Staging Address Trial, Free, one key; only the
+owner-saved staging secret name is recorded. There were zero provider calls or policy changes.
+The narrow verify-types artifact change retains CLI 2.113.0 and existing action v4, uploads only
+complete generated.ts/types.diff with three-day retention, and preserves comparison failure.
+One staging dispatch, 41733900205 at e4f66486, completed generation/upload and failed the honest
+production comparison. Its exact 22,702-byte archive matches GitHub's digest and is committed
+with a provenance manifest: 6,183 generated lines, 1,752 full diff lines and all four actual Geo
+RPC declarations. Production types are untouched; the production RPC contract remains red.
+Source bookkeeping and actual SQL tests pass; root owns trial acceptance and final review.
+
 ## HOLDING — 4 November — actual Geo staging receipts and complete type artifacts
 
 Root authorizes bookkeeping on PR115 after its actual staging-only migration/deployment. Rebase
