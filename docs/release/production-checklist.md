@@ -1,5 +1,55 @@
 # Xoot production checklist
 
+## 3 November — verified Google branding; closed notification schema and actual types
+
+Google Auth Platform's previous brand rejection was domain ownership. The founder's existing
+Search Console account is now a verified owner of xoot.co.za (property added24October). Requested
+reverification, received a verified result and published it. Google's actual fresh account chooser
+now shows the Xoot name and logo, with canonical Xoot privacy/terms links. The underlying Auth
+callback still uses the Supabase hostname; no paid custom-domain add-on or credential change was
+made. The reusable local xoot-brand-experience skill records these provider-screen checks.
+
+Canonical production build7a480fe6 serves the merged Care+ tip (PR112) and handoff Xooter navigation
+(PR113), with ZD-026/R39 unchanged. Actual served entry contains the new worker account/dock UI;
+the Book chunk contains the quote-bound Care+ fee tip. Booking confirmation still explicitly
+refuses to create/charge an online booking: these UI releases do not constitute full marketplace
+checkout acceptance. The GPS/road-route handler remains ACTIVE/JWT-verified version4, with all
+four actual runtime source/frozen-import files matching reviewed source; no provider call was
+needed for this continuity check. Real worker/customer/device acceptance remains separate.
+
+The independently reviewed closed notification wrapper5c968a71 is applied as actual20261103071458.
+Twelve function bodies/ACLs/search paths, four deny-by-default private RLS tables, three triggers,
+and exact canonical execution/wrapper receipts read back. Sender remains disabled0/20 with an
+empty allowlist/project/review and no schedule. Existing notifications3/outbox3 and all0production
+booking/job/roster/active-worker counts are unchanged. Pinned CLI2.113.0 generated the five actual
+public RPC shapes in run41632953920; its exact59line diff was applied, without handwritten types.
+Fresh equality/release checks and PR114 promotion remain pending this evidence revision.
+See [actual production readback](evidence/2026-11-03/notification-production-schema.json).
+
+The founder privately saved the separate production lifecycle SMTP key; name-only workflow
+41632959129 confirms BREVO_SMTP_USER, BREVO_SMTP_PASSWORD and XOOT_LIFECYCLE_APP_URL present.
+This is configuration proof, not a production SMTP/inbox proof. Staging's one genuine founder
+welcome already passed SPF/DKIM/DMARC; complete customer/worker journeys, schedules, optional
+campaign unsubscribe and native delivery remain unfinished. A Gmail brand badge is a separate
+BIMI/certificate requirement; current DMARCpnone is not eligible and no certificate was purchased.
+The authenticated-only, confirmed auth.uid-bound preferences RPC has an intentional advisor
+warning, retained with its isolation tests. Leaked-password protection remains a paid-plan
+dependency; no security warning is hidden by broadening access or upgrading the plan.
+
+Permanent Mapbox confirmation is paused globally in both environments at consumed allowance
+(production3/3, staging7/7). Temporary suggestions and saved licensed addresses remain available;
+Mapbox maps/Directions/private GPS are retained. Earlier request-proportional cost ceilings in
+historical entries below proved incorrect against actual provider billing and are withdrawn.
+Do not refill or re-enable Permanent requests under that estimate. The approved Geoapify Free
+trial is separate, private, staging-only, bounded and limited to public civic fixtures; it has
+not replaced production addresses or established coverage/privacy acceptance.
+
+Substantive provider, genuine verified supply, payment/settlement, scanner production eligibility,
+notification, Apple enrolment and signed-device/safety gates remain. In particular,52-week paid
+gifts, recurring membership, rewards and weekly/instant payout settlement are not certified
+complete. Do not describe the website as fully production-ready from this closed schema or UI
+delivery. Dated entries below are historical evidence.
+
 ## 2 November evening — advance destination deployed; email embedding correction in review
 
 PR110 fixes the web Jobs response boundary and shows a handoff-styled destination immediately

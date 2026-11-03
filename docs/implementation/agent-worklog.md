@@ -1,5 +1,36 @@
 # Agent worklog
 
+## HOLDING — 3 November — actual closed-schema receipt and production types
+
+Parent Release/Correctness cross-review verified all twelve immutable package blobs, the
+required green fa1bf21f CI and 123 actual isolated SQL assertions. Applied unchanged wrapper
+5c968a71 to production as actual20261103071458. Twelve function bodies/authority, four private
+RLS tables, three trigger bindings and four exact executed-history hashes read back. Sending
+is disabled0/20, with no allowlist/project/review/schedule; existing business counts are unchanged.
+Parent takes over this clean branch to rename only the delivered wrapper filename, preserve its
+body, record readback and regenerate types using pinned CLI2.113.0 against the actual project.
+Fresh required checks precede source promotion. No handwritten types, backfill, send activation,
+budget renewal, genuine worker verification or tracking/payment switch change is included.
+The authenticated-only self-bound preferences RPC remains explicitly reviewed; advisor warnings
+are recorded, never silenced by broader grants. Production lifecycle credentials were saved
+privately by the founder; presence is not a successful production SMTP delivery.
+
+## REVIEW — 3 November — isolated closed notification schema package
+
+The schema-only branch is rebased onto approved navigation release 7a480fe6, preserving its
+worklog and required browser check. Twelve copied files are byte-identical to reviewed 2c01bf2a:
+three canonical staging migrations, closed wrapper 5c968a71, builder/manifest/validators,
+synthetic fixtures/contracts and the authenticated-only preferences grants guard. No Edge/UI
+caller, production-generated type or production type-contract assertion is changed.
+Local verification passes 123 closed-schema SQL assertions, the separate 89 core/email assertions
+and planted trigger/outbox/old-receipt controls, 10 production-schema/grants tests, web typecheck,
+scoped lint and JavaScript syntax checks. The old grants guard failed after adding the SQL;
+the reviewed role-specific port passes and still detects a planted anonymous grant. Both SQL
+validators reuse the existing pinned PGlite runtime in required redesign CI; all prior steps stay.
+The pushed claim preceded code. Parent cross-review and green required CI precede any guarded
+closed-schema apply; actual production type generation and PR108 rebase follow legitimate DDL.
+No hosted schema/data, provider credential, allowance, sender or schedule was changed here.
+
 ## REVIEW — 2 November — worker navigation handoff and reachable mobile account
 
 The worker shell now uses source-style glass tabs and a warm desktop sidebar, original logo,
@@ -12,6 +43,19 @@ The fixture contains only a clearly labelled synthetic identity, uses isolated c
 not assert genuine worker/device acceptance. Rebased onto approvedfa005086, preserving Care+
 tip files and both worklog claims. The required redesign workflow gains the isolated browser
 check; this Release-owned edit needs parent review before merge. No production setting changed.
+
+## HOLDING — 2 November — schema-only closed Xooter notification release
+
+Claim release/closed-xooter-notification-schema-20261102 from approved fa0050862. Package only
+the independently reviewed three canonical staging SQL sources and closed delivery wrapper
+5c968a71, its deterministic builder/manifest/isolated validator, necessary synthetic contracts,
+and the narrow authenticated-only preferences grants guard. This crosses Release-owned schema/CI
+and Correctness-owned guard paths explicitly; the parent will independently cross-review packaging.
+Keep production-generated types accurate and the type contract enforced. No new Edge/UI worker
+RPC callers, sender enablement, schedule, backfill, hosted changes or migration repair stamps.
+Run the 123-assertion SQL contract in required redesign CI before any guarded production delivery;
+the parent owns actual schema application and subsequent legitimate production type generation.
+Notification PR108 remains separate and draft until that schema/type dependency is delivered.
 
 ## REVIEW — 2 November — quote-bound Care+ booking tip
 

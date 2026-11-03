@@ -5827,6 +5827,10 @@ export type Database = {
         Args: { p_attempt_id: string }
         Returns: Json
       }
+      authorize_xooter_journey_email: {
+        Args: { p_id: string; p_nonce: string; p_project_ref: string }
+        Returns: Json
+      }
       booking_payment_settlement_ready: { Args: never; Returns: number }
       can_access_sensitive_data: {
         Args: { p_booking_id: string; p_xooter_id: string }
@@ -5881,6 +5885,10 @@ export type Database = {
           provider_event_id: string
         }[]
       }
+      claim_xooter_journey_email: {
+        Args: { p_project_ref: string }
+        Returns: Json
+      }
       consume_rate_limit: {
         Args: {
           p_action: string
@@ -5911,6 +5919,15 @@ export type Database = {
           p_verdict: string
         }
         Returns: Json
+      }
+      finish_xooter_journey_email: {
+        Args: {
+          p_id: string
+          p_message_id?: string
+          p_nonce: string
+          p_state: string
+        }
+        Returns: boolean
       }
       gen_referral_code: { Args: never; Returns: string }
       get_accepted_xooter_job_destinations: {
@@ -5999,6 +6016,10 @@ export type Database = {
         Returns: boolean
       }
       kyc_scan_worker_authorized: { Args: never; Returns: boolean }
+      manage_xooter_communications: {
+        Args: { p_action: string; p_preferences?: Json; p_revision?: number }
+        Returns: Json
+      }
       mark_provider_event_processed: {
         Args: {
           p_error_message: string
@@ -6095,6 +6116,7 @@ export type Database = {
           seconds: number
         }[]
       }
+      xooter_email_worker_authorized: { Args: never; Returns: boolean }
       xooter_job_transition_allowed: {
         Args: { current_state: string; next_state: string }
         Returns: boolean

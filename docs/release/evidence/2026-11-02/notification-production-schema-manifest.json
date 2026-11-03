@@ -1,0 +1,144 @@
+{
+  "kind": "closed-xooter-notification-schema",
+  "migration": "supabase/migrations/20261103071458_closed_xooter_notification_schema.sql",
+  "wrapperSha256": "5c968a717633afb7d0fa023e6d560ce860e5662535f169227daaaa26ac2f2748",
+  "versions": [
+    {
+      "version": "20261102082500",
+      "name": "xooter_notification_journey",
+      "sourceSha256": "82ea0fc77d11c67e2061b2702c0091d84e6d31fe88340a3345a4c1e5ee3419ed",
+      "executedSha256": "d263ff435597a5034474e5dbb82517bde328eb92f795d74b77960cd8bcf91968",
+      "adaptations": []
+    },
+    {
+      "version": "20261102082516",
+      "name": "xooter_email_delivery_receipts",
+      "sourceSha256": "9592ccc511eff6c40195440de6829e46e9f4999464a53362de90ff409ed0c1da",
+      "executedSha256": "7e33ebb27e6a621cbacd1df5c5e4c05104314460d5c3dffe778b3014641cbb52",
+      "adaptations": []
+    },
+    {
+      "version": "20261102165153",
+      "name": "xooter_email_outbox_completion",
+      "sourceSha256": "e6ad261323fc7d1d65efc34e8436c6818031e3c4a138438b6ede01ee0730574a",
+      "executedSha256": "09ab57c1ec6a4a7e8102077fd35e5858f74075a76286558e565c15f84abcf647",
+      "adaptations": [
+        "Replace staging-only constraint-name assertion with explicit text-column/exact-existing-status-CHECK validation; no constraint, receipt-function body or grant is changed. Actual production has no status CHECK."
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "signature": "private.collect_xooter_journeys(timestamp with time zone)",
+      "sha": "837aab3dbf9e6b03fb89398e355c26da8fd22527c919835874d994edb349f2e1",
+      "prosecdef": true,
+      "result": "integer",
+      "anon": false,
+      "authenticated": false,
+      "service": false
+    },
+    {
+      "signature": "private.emit_xooter_journey(uuid, text, text)",
+      "sha": "d0967443717b4d7acf1e421a8bd69b6702a701a425d6775f22ba3bce6b5c5f3c",
+      "prosecdef": false,
+      "result": "boolean",
+      "anon": false,
+      "authenticated": false,
+      "service": false
+    },
+    {
+      "signature": "private.ignore_legacy_xooter_journey_duplicate()",
+      "sha": "bb9623c2566ef02dec266535ae0c1c9d50154f59342e136605163af6750e5ea3",
+      "prosecdef": true,
+      "result": "trigger",
+      "anon": false,
+      "authenticated": false,
+      "service": false
+    },
+    {
+      "signature": "private.start_xooter_journey(uuid)",
+      "sha": "2bf9c262c85c48536d13975ae1f0bc69e734928f11a5577b49fe55910d790bcd",
+      "prosecdef": false,
+      "result": "void",
+      "anon": false,
+      "authenticated": false,
+      "service": false
+    },
+    {
+      "signature": "private.xooter_application_journey()",
+      "sha": "8c1c7e40a80bd6de8f4aab59f3636a3d20ddd2367c4bb05a146ae9bebd882b7c",
+      "prosecdef": true,
+      "result": "trigger",
+      "anon": false,
+      "authenticated": false,
+      "service": false
+    },
+    {
+      "signature": "private.xooter_journey_email_eligible(private.xooter_journey_events)",
+      "sha": "9fddd35484b5d6779ba78c6314284bea1e941f01bd1a9c4906f90f2f74e71a5a",
+      "prosecdef": false,
+      "result": "boolean",
+      "anon": false,
+      "authenticated": false,
+      "service": false
+    },
+    {
+      "signature": "private.xooter_journey_ready(uuid)",
+      "sha": "e7a1bf107266bb6560f7f8a60f774f0ee65fa5ad5388d05ae659034ce2730220",
+      "prosecdef": false,
+      "result": "boolean",
+      "anon": false,
+      "authenticated": false,
+      "service": false
+    },
+    {
+      "signature": "public.authorize_xooter_journey_email(uuid, uuid, text)",
+      "sha": "4a94e45ce0dd6ff3892b6788356e0dc0bd48124133af86872b28d425ec55b9e3",
+      "prosecdef": true,
+      "result": "jsonb",
+      "anon": false,
+      "authenticated": false,
+      "service": true
+    },
+    {
+      "signature": "public.claim_xooter_journey_email(text)",
+      "sha": "1df0f2c0b93ed790a479fe9214845ca2c5e3985664f69c1b1e4520aa70ad60c3",
+      "prosecdef": true,
+      "result": "jsonb",
+      "anon": false,
+      "authenticated": false,
+      "service": true
+    },
+    {
+      "signature": "public.finish_xooter_journey_email(uuid, uuid, text, text)",
+      "sha": "cd76b9a166b7934bb0be4455e371bc0a0634d1d34721ecd94f1f1e676f2d3a14",
+      "prosecdef": true,
+      "result": "boolean",
+      "anon": false,
+      "authenticated": false,
+      "service": true
+    },
+    {
+      "signature": "public.manage_xooter_communications(text, jsonb, integer)",
+      "sha": "2da38b3b542d1a27d4c5e61d2e1aa94a5d326a0bd3636a31706d6793c50de1ff",
+      "prosecdef": true,
+      "result": "jsonb",
+      "anon": false,
+      "authenticated": true,
+      "service": false
+    },
+    {
+      "signature": "public.xooter_email_worker_authorized()",
+      "sha": "795564c930ddc386c4388c8c87e1d4781907160c0c9e6ab997a80f96ce72f167",
+      "prosecdef": false,
+      "result": "boolean",
+      "anon": false,
+      "authenticated": false,
+      "service": true
+    }
+  ],
+  "createsNoSchedule": true,
+  "senderEnabled": false,
+  "initialAllowanceUsed": 0,
+  "initialAllowlist": 0
+}

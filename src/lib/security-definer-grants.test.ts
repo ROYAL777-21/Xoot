@@ -55,9 +55,10 @@ const CLIENT_ROLES = ["anon", "authenticated"] as const;
  * Functions deliberately callable by a client role, each with the migration that intends it.
  * Adding a name here is a security decision and must cite its migration.
  */
-const INTENTIONALLY_CLIENT_CALLABLE = new Map<string, string>([
-  ["lookup_referral_code", "20260601000000:139 — public referral-code lookup, granted to anon, authenticated"],
-  ["has_role", "20260621000000:53 — role check used by RLS policies, which evaluate as the calling role"],
+const INTENTIONALLY_CLIENT_CALLABLE = new Map<string, {roles: ReadonlySet<string>; reason: string}>([
+  ["lookup_referral_code", {roles: new Set(CLIENT_ROLES), reason: "20260601000000:139 — public referral-code lookup, granted to anon, authenticated"}],
+  ["has_role", {roles: new Set(CLIENT_ROLES), reason: "20260621000000:53 — role check used by RLS policies, which evaluate as the calling role"}],
+  ["manage_xooter_communications", {roles: new Set(["authenticated"]), reason: "20261102082500 — independently reviewed auth.uid-bound confirmed-account preferences, no recipient argument; actual SQL isolation contract"}],
 ]);
 
 /** Strip `--` line comments so prose about `security definer` is not read as code. */
@@ -71,20 +72,21 @@ type State = { secdef: boolean; trigger: boolean; holders: Set<string> };
  * Later migrations supersede earlier ones — the same reasoning `constraint-writer-parity.test.ts`
  * uses, and the reason six constraint defects were invisible to a per-file reading.
  */
-function finalState(): Map<string, State> {
+function finalState(additionalSql: readonly string[] = []): Map<string, State> {
   const state = new Map<string, State>();
   const files = readdirSync(MIGRATIONS).filter((f) => f.endsWith(".sql")).sort();
 
-  for (const file of files) {
-    const sql = stripComments(readFileSync(join(MIGRATIONS, file), "utf8"));
+  for (const source of [...files.map(file => readFileSync(join(MIGRATIONS, file), "utf8")), ...additionalSql]) {
+    const sql = stripComments(source);
 
     // Every `create function` in `public`, and whether its header says `security definer`.
     // The region runs to the next `create ... function`, which is where the header must appear.
-    const creates = [...sql.matchAll(/create\s+(or\s+replace\s+)?function\s+(?:public\.)?([a-z0-9_]+)\s*\(/gi)];
+    const creates = [...sql.matchAll(/create\s+(or\s+replace\s+)?function\s+(?:([a-z0-9_]+)\.)?([a-z0-9_]+)\s*\(/gi)];
     for (let i = 0; i < creates.length; i += 1) {
-      const [, orReplace, name] = creates[i];
+      const [, orReplace, schema, name] = creates[i];
       // Skip anything explicitly in another schema; `public.` or bare both land in public here.
-      if (/\b(private|extensions|auth|storage)\.$/i.test(sql.slice(Math.max(0, creates[i].index! - 12), creates[i].index! + 20))) continue;
+      // Match ALL namespaces first so a later private trigger cannot contaminate this header.
+      if (schema && schema.toLowerCase() !== "public") continue;
       const region = sql.slice(creates[i].index!, creates[i + 1]?.index ?? sql.length);
       const secdef = /security\s+definer/i.test(region);
       // PostgREST does not expose functions returning `trigger` as RPC, so those are hygiene
@@ -124,6 +126,21 @@ function finalState(): Map<string, State> {
   return state;
 }
 
+function clientExposures(state: Map<string, State>): string[] {
+  const exposed: string[] = [];
+  for (const [name, {secdef, trigger, holders}] of state) {
+    if (!secdef) continue;
+    const allowed = INTENTIONALLY_CLIENT_CALLABLE.get(name)?.roles;
+    const held = CLIENT_ROLES.filter(role => holders.has(role) && !allowed?.has(role));
+    if (!held.length) continue;
+    const reach = trigger
+      ? "holds EXECUTE (returns trigger, so not RPC-reachable — hygiene)"
+      : "is callable at /rest/v1/rpc/" + name;
+    exposed.push(`${name} — ${reach}, held by ${held.join(", ")}`);
+  }
+  return exposed.sort();
+}
+
 describe("no SECURITY DEFINER function in public is callable by a client role", () => {
   const state = finalState();
 
@@ -155,25 +172,18 @@ describe("no SECURITY DEFINER function in public is callable by a client role", 
   });
 
   it("finds no SECURITY DEFINER function left callable by anon or authenticated", () => {
-    const exposed: string[] = [];
-    for (const [name, { secdef, trigger, holders }] of state) {
-      if (!secdef) continue;
-      if (INTENTIONALLY_CLIENT_CALLABLE.has(name)) continue;
-      const held = CLIENT_ROLES.filter((role) => holders.has(role));
-      if (!held.length) continue;
-      // A trigger function is not reachable through PostgREST; say so rather than calling it
-      // reachable, or the next person spends a day chasing an exposure that does not exist.
-      const reach = trigger
-        ? "holds EXECUTE (returns trigger, so not RPC-reachable — hygiene)"
-        : "is callable at /rest/v1/rpc/" + name;
-      exposed.push(`${name} — ${reach}, held by ${held.join(", ")}`);
-    }
-
     expect(
-      exposed.sort(),
+      clientExposures(state),
       "A SECURITY DEFINER function in `public` is callable from a browser holding only the " +
         "publishable key. `revoke ... from public` does NOT remove anon/authenticated — name the " +
         "roles: `revoke all on function ... from public, anon, authenticated;`",
     ).toEqual([]);
+  });
+
+  it("detects a future anonymous grant even on the reviewed authenticated-only preferences RPC", () => {
+    const mutated = finalState(["grant execute on function public.manage_xooter_communications(text,jsonb,integer) to anon;"]);
+    expect(clientExposures(mutated)).toContain("manage_xooter_communications — is callable at /rest/v1/rpc/manage_xooter_communications, held by anon");
+    expect(state.get("manage_xooter_communications")?.holders.has("anon")).toBe(false);
+    expect(state.get("manage_xooter_communications")?.holders.has("authenticated")).toBe(true);
   });
 });
