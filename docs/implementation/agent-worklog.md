@@ -59,6 +59,25 @@ validators reuse the existing pinned PGlite runtime in required redesign CI; all
 The pushed claim preceded code. Parent cross-review and green required CI precede any guarded
 closed-schema apply; actual production type generation and PR108 rebase follow legitimate DDL.
 No hosted schema/data, provider credential, allowance, sender or schedule was changed here.
+## REVIEW — 3 November — closed Geoapify public-fixture trial
+
+Separate evaluate-geoapify source now accepts only three officially sourced public civic fixture
+IDs on the exact staging project, with JWT retained and the presented service credential proven
+through its own PostgREST RPC. Two private RLS tables/four invoker RPCs and one private monotonic
+trigger bind claim/authorize/finish to fixture, nonce, lease and budget revision. Owner-disabled,
+zero allowance, hard lifetime ceiling20, once-only fixture receipts, no renewal or ambiguous retry.
+Provider quality checks use actual country/house/street/province/confidence and reviewed source
+attribution; output asserts no verified address/coverage/supply. No Mapbox allowance/maps/Directions/
+GPS change, public query, customer address or fallback. The new SDK is pinned to locked2.108.1.
+40 focused checks and42 actual SQL assertion sites pass locally; country/nonce defects were
+planted, failed and restored. Targeted Edge TS/lint/table schema guard pass. Existing RPC gate
+correctly fails four unapplied Geo functions; no production types or gate exemptions were edited.
+The Release-owned redesign workflow reuses its existing PGlite/PostgreSQL17.6 runtime for the
+closed SQL and20-connection proof; this edit and schema need root cross-review. Local Docker is
+unavailable, so actual multi-connection CI proof remains pending. Root owns Free account/private
+GEOAPIFY_API_KEY setup and any subsequent staging-only migration/deploy/calls; none occurred here.
+The default provider endpoint is not asserted EU-only or approved for PII; region/DPA/processor
+review remains separate. Runbook/evidence: docs/release/geoapify-private-evaluation-20261103.md.
 
 ## REVIEW — 2 November — worker navigation handoff and reachable mobile account
 

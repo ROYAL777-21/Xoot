@@ -1,0 +1,114 @@
+# Geoapify Free private evaluation review — 3 November 2026
+
+This is an implementation/evidence receipt, not the live launch register. Current production
+status remains in `production-checklist.md`. No hosted SQL, function deployment or Geoapify API
+request was performed by this branch. Root owns credential setup and subsequent acceptance.
+The public website, Mapbox maps/Directions/private GPS and both paused Mapbox allowances are
+unchanged. This handler never writes saved places, service coverage or worker availability.
+
+## Reviewed provider and fixture sources
+
+The [official Free plan](https://www.geoapify.com/pricing/) lists 3,000 credits/day, up to five
+requests/second, commercial use with attribution, and no credit card. Its daily quota is soft;
+the application therefore imposes its own hard, nonrenewing ceiling. This trial starts disabled
+with zero authorized attempts, permits at most 20 lifetime attempts, and currently has only three
+once-only fixture IDs. A timeout or ambiguous outcome consumes that fixture permanently; no
+automatic retries, allowance renewal or fallback provider exists.
+
+The [Geocoding API](https://www.geoapify.com/geocoding-api/) permits storing returned data while
+retaining required data-source attribution. [Response documentation](https://apidocs.geoapify.com/docs/geocoding/forward-geocoding/)
+defines separate overall/city/street/building confidence, country and house-number fields;
+`full_match` alone is insufficient. This conservative evaluation requires all quality checks,
+and missing building confidence stays missing. The named no-number fixture must also match its
+public place name. It reports candidates, never verified addresses,
+actual service coverage or available Xooters. Only the documented OpenStreetMap attribution has
+been reviewed here; a different/malformed data source remains `unreviewed`, with no invented
+licence or arbitrary upstream HTML/link emitted. Both Geoapify and reviewed OSM follow-links are
+included in private results; any future public surface must retain them near the information.
+
+Public civic fixture manifest, checked against official sources on 3 November:
+
+| Fixture ID | Fixed public query | Official source |
+| --- | --- | --- |
+| `gcis_head_office` | 1035 Frances Baard Street, Hatfield, Pretoria, South Africa | [GCIS contact directory](https://www.gcis.gov.za/content/contact-us), including its old Schoeman Street name in the [official relocation notice](https://www.gov.za/news/media-statements/all-media-relocation-gcis-head-office-new-premises-16-may-2013) |
+| `state_theatre` | 320 Pretorius Street, Pretoria, South Africa | [State Theatre contact page](https://www.statetheatre.co.za/ticket-loyalties/contact-us/) and [government directory](https://www.gov.za/ss/about-government/contact-directory/soe/south-african-state-theatre-pretoria) |
+| `union_buildings` | Union Buildings, Government Avenue, Pretoria, South Africa | [Presidency government contact directory](https://www.gov.za/about-government/contact-directory/presidency/presidency); no house number is asserted |
+
+The trial uses the documented default `api.geoapify.com` endpoint. It makes no EU-only processing
+claim. Geoapify distinguishes an [EU-focused endpoint/configuration](https://www.geoapify.com/maps-geocoding-routing-apis-gdpr-compliant-application/)
+from its default, and its [privacy policy](https://www.geoapify.com/privacy-policy/) describes
+request metadata retention and the DPA process. Provider terms, processor/transfer/retention
+arrangements and datasource licences need review before any customer address or GPS is sent.
+No private founder address, user ID, cookie, client IP or device coordinate is part of this trial.
+Account registration remains the owner's private action; no paid plan, card or custom paid DPA
+is authorized by this implementation.
+
+## Boundary, schema and ordering
+
+`20261103065737_geoapify_private_staging_evaluation.sql` creates two private RLS tables, four
+public service-only **invoker** RPCs with empty search paths, and one private budget trigger.
+The service role can consume but cannot enable/refill/delete receipts; the owner controls
+allowance. Used attempts cannot decrease. A claim binds its fixture/nonce to the current budget
+revision and 30-second lease. Dispatch rechecks that binding atomically, admits once, and imposes
+3.5-second spacing plus a two-second handler dispatch window. Finish binds the same nonce/current
+lease/revision and stores constrained enum/boolean/numeric evidence only. Expired/ambiguous
+fixtures are never reclaimed. Disabling or changing allowance invalidates pending revisions.
+
+The gateway retains `verify_jwt=true`. The handler rejects browser Origins and production, then
+uses the **same presented credential** for a real PostgREST service-role/EXECUTE probe and every
+RPC. No decoded claim, notification/scanner probe or runtime privileged fallback is used.
+Database transport targets only the exact staging host, rejects redirects and has a deadline.
+The one-shot provider transport has an eight-second timeout, a 64KiB response limit, ZA filter,
+explicitly disabled IP-country bias, and no redirect, ambient credential, retry or provider fallback.
+Keyed URLs, upstream errors and response bodies are never logged or stored. The SDK import is
+pinned to repository-lockfile Supabase JS `2.108.1`; old deployed/shared imports are untouched.
+
+Review migration/ACLs and cross-role source before any hosted action. Apply only this reviewed
+migration to **Zoot Staging (`fxmxyabdjqviqbcxmvlp`)**, then deploy only `evaluate-geoapify` with JWT
+verification on. Do not run an indiscriminate migration push or deploy other functions. Generated
+production types have not been edited: the existing RPC contract currently fails for these four
+new functions. Keep the PR draft and that gate intact until a real reviewed schema/type path is
+resolved; no exemption, dynamic RPC-name hiding or fictional migration receipt is appropriate.
+
+## Owner secret and coordinated acceptance (not performed)
+
+Use a separate Geoapify Free project named **Xoot Staging Public Fixture Evaluation**. The owner
+creates/verifies the Free account privately and pastes its key only into **`GEOAPIFY_API_KEY`** in
+[Zoot Staging Edge secrets](https://supabase.com/dashboard/project/fxmxyabdjqviqbcxmvlp/functions/secrets).
+There is no Vercel/VITE/public key and no production Geoapify secret in this trial. Never copy a
+key, Authorization header, keyed provider URL or dashboard screenshot into chat/source/logs.
+
+After independent review and root coordination, inspect the disabled/zero budget and real RPC
+ACLs. The owner may authorize **three** attempts, once, while `used=0`, `enabled=false` and the
+allowance is still zero; retain the hard ceiling of 20. Do not refill or touch Mapbox allowances.
+Use the private staging Test panel with the existing staging legacy service-role credential
+entered privately as `apikey` and `Authorization: Bearer …`, without Origin. Submit each fixed
+body once: `{"fixture":"gcis_head_office"}`, then `state_theatre`, then `union_buildings`.
+Wait for each receipt before the next; allow at least 3.5 seconds after a dispatch. Record only
+normalized receipt IDs, country/number/quality/confidence and attribution. A repeated fixture
+must return its cached terminal/held receipt with no extra provider request. Ordinary user and
+anonymous credentials must be refused. This remains pending actual authorized credential tests.
+
+Rollback/stop: owner sets `enabled=false` on `private.geoapify_evaluation_budget`, confirms the
+revision advanced, and disables/removes only this evaluation endpoint if necessary. Preserve
+receipts and counters; never reset `used`, delete ambiguous attempts or restore an allowance.
+No Mapbox or production tracking toggle is part of rollback. Removing the separate Geoapify key
+can stop future evaluation calls after confirming it belongs only to this staging trial.
+
+## Evidence and limits
+
+40 focused adapter/handler/transport checks pass with synthetic responses and zero HTTP calls.
+Targeted Edge TypeScript and scoped ESLint pass. The actual migration and 42 assertion sites
+pass in isolated PGlite, including disabled defaults, role/ACL denial, nonce/lease/revision and
+replay guards, monotonic consumption, bounded receipts and an unchanged paused Mapbox sentinel.
+Removing the country check fails three targeted cases; removing dispatch nonce binding fails
+the SQL contract. Both defects were restored before validation. The table/column schema guard
+passes; the RPC-name guard has exactly four expected unapplied-schema failures.
+
+The existing PostgreSQL 17.6 CI job now reuses its pinned driver/service for an actual 20-connection
+claim/authorize/finish/quota test; no extra job or provider request is introduced. Local Docker's
+daemon was unavailable, so local PGlite is **not** claimed as multi-connection proof. Required CI,
+independent source review, staging DDL readback, actual service/user credential checks and the
+three provider receipts remain required. This narrow public-fixture trial does not establish
+autocomplete coverage, every real address, production readiness, native/device acceptance or
+Mapbox replacement suitability.
