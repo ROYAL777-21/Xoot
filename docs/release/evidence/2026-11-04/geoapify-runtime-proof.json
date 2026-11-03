@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-03T22:32:45.870Z",
+  "source": "10c5ed1eb94683642bdc4418832290420bdbbf0e",
+  "deploymentRun": "41690659740",
+  "version": 1,
+  "active": true,
+  "verifyJwt": true,
+  "files": [
+    {
+      "name": "functions/evaluate-geoapify/index.ts",
+      "matchesSource": true,
+      "sha256": "fb939bd9503daae0c3e227bb093a4e1f506595feb123cc010c795c30d2e4a52b"
+    },
+    {
+      "name": "functions/evaluate-geoapify/handler.ts",
+      "matchesSource": true,
+      "sha256": "2fc9e64fd9861ff36431eb1d42986ef65153b6060a9ebb1636578a45faa362c5"
+    },
+    {
+      "name": "functions/evaluate-geoapify/adapter.ts",
+      "matchesSource": true,
+      "sha256": "b9f8d96986396b7fe24693cddb00806ca01b92511a054c6f673858ee5acaf2cf"
+    },
+    {
+      "name": "functions/evaluate-geoapify/provider.ts",
+      "matchesSource": true,
+      "sha256": "a02ac807b0c119e93796c106115902f53ea1715721296436369fab05293c7a81"
+    },
+    {
+      "name": "functions/evaluate-geoapify/store-transport.ts",
+      "matchesSource": true,
+      "sha256": "ddf1f40b6fbba46c93ef9fc2b81034f99895dbb481622690170c423962bbaae4"
+    },
+    {
+      "name": "functions/import_map.json",
+      "emptyImports": true
+    }
+  ],
+  "anonymousStatus": 401,
+  "providerRequests": 0
+}

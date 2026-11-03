@@ -1,0 +1,21 @@
+{
+  "recordedOn": "2026-11-04",
+  "reportedBy": "root visual readback",
+  "provider": "Geoapify",
+  "projectName": "Xoot Staging Address Trial",
+  "plan": "Free",
+  "keyCount": 1,
+  "stagingProject": "fxmxyabdjqviqbcxmvlp",
+  "secret": {
+    "name": "GEOAPIFY_API_KEY",
+    "presence": "owner saved; root verified name only",
+    "valueRead": false
+  },
+  "providerRequests": 0,
+  "allowanceEnabled": false,
+  "authorizedAttempts": 0,
+  "used": 0,
+  "actualAttempts": 0,
+  "productionGeoapifyConfiguration": "none",
+  "mapsDirectionsPrivateGpsChanged": false
+}

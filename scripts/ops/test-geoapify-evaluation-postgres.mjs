@@ -28,7 +28,7 @@ try {
   const fixture=sql('scripts/testing/geoapify-evaluation-fixture.sql');
   assert.equal([...fixture.matchAll(/^create role (?:anon|authenticated|service_role)(?: bypassrls)?;$/gm)].length,3);
   await db.query(fixture.replace(/^create role (?:anon|authenticated|service_role)(?: bypassrls)?;$/gm,''));
-  await db.query(sql('supabase/migrations/20261103065737_geoapify_private_staging_evaluation.sql'));
+  await db.query(sql('supabase/migrations/20261103180614_geoapify_private_staging_evaluation.sql'));
   await db.query(sql('scripts/testing/geoapify-evaluation-contract.sql'));
   await db.query('update private.geoapify_evaluation_budget set enabled=true,authorized_attempts=2');
   for(let i=0;i<20;i++) {

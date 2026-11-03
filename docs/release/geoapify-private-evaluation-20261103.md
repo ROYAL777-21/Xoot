@@ -1,8 +1,10 @@
 # Geoapify Free private evaluation review — 3 November 2026
 
 This is an implementation/evidence receipt, not the live launch register. Current production
-status remains in `production-checklist.md`. No hosted SQL, function deployment or Geoapify API
-request was performed by this branch. Root owns credential setup and subsequent acceptance.
+status remains in `production-checklist.md`. Root applied the exact reviewed SQL to staging as
+`20261103180614` and deployed the private endpoint from frozen head `10c5ed1e`; actual readback
+is recorded below. The trial remains disabled with zero allowance/usage/attempts and zero Geoapify
+API requests. Root owns subsequent acceptance; this follow-up changes source bookkeeping only.
 The public website, Mapbox maps/Directions/private GPS and both paused Mapbox allowances are
 unchanged. This handler never writes saved places, service coverage or worker availability.
 
@@ -45,7 +47,7 @@ is authorized by this implementation.
 
 ## Boundary, schema and ordering
 
-`20261103065737_geoapify_private_staging_evaluation.sql` creates two private RLS tables, four
+`20261103180614_geoapify_private_staging_evaluation.sql` creates two private RLS tables, four
 public service-only **invoker** RPCs with empty search paths, and one private budget trigger.
 The service role can consume but cannot enable/refill/delete receipts; the owner controls
 allowance. Used attempts cannot decrease. A claim binds its fixture/nonce to the current budget
@@ -63,17 +65,17 @@ explicitly disabled IP-country bias, and no redirect, ambient credential, retry 
 Keyed URLs, upstream errors and response bodies are never logged or stored. The SDK import is
 pinned to repository-lockfile Supabase JS `2.108.1`; old deployed/shared imports are untouched.
 
-Review migration/ACLs and cross-role source before any hosted action. Apply only this reviewed
-migration to **Zoot Staging (`fxmxyabdjqviqbcxmvlp`)**, then deploy only `evaluate-geoapify` with JWT
-verification on. Do not run an indiscriminate migration push or deploy other functions. Generated
-production types have not been edited: the existing RPC contract currently fails for these four
-new functions. Keep the PR draft and that gate intact until a real reviewed schema/type path is
+Root's actual staging delivery is complete; do not reapply the renamed migration or deploy other
+functions. Its body is 100% unchanged from the reviewed original filename; normalized SHA256 is
+`057ebf0785b57743d4e351e72c8261e54417cdb8902777fc8925a2b6485ceb54`.
+Production types have not been edited: the existing RPC contract currently fails for these four
+staging-only functions. Keep the PR draft and that gate intact until a real reviewed schema/type path is
 resolved; no exemption, dynamic RPC-name hiding or fictional migration receipt is appropriate.
 
-The trial can be evaluated from an independently reviewed **unmerged draft**: root applies the
-closed migration only to staging, exports genuine staging-generated types/evidence, verifies all
-four actual function signatures/ACLs, then deploys this exact source only to staging for the
-private acceptance. Keep the production type file and failing production RPC gate intact; this
+The trial can be evaluated from an independently reviewed **unmerged draft**. Root has applied
+the closed migration and deployed the exact source only to staging, and verified all four actual
+function signatures/ACLs plus the private trigger. Capture complete genuine staging-generated
+types/evidence before the private acceptance. Keep the production type file and failing production RPC gate intact; this
 is not permission to merge or deploy a failing production release. No trial schema is needed in
 production merely to compare three public fixture responses. A later releasable integration needs
 either a separately reviewed per-project source/type/deploy contract backed by actual staging
@@ -81,15 +83,37 @@ types, or actual approved dormant production DDL followed by real production typ
 Neither route is implemented or authorized by this trial, and no classification/guard exemption
 is introduced here.
 
-## Owner secret and coordinated acceptance (not performed)
+## Owner secret and pending private acceptance
 
-Use a separate Geoapify Free project named **Xoot Staging Public Fixture Evaluation**. The owner
-creates/verifies the Free account privately and pastes its key only into **`GEOAPIFY_API_KEY`** in
+The actual Free project, visually confirmed by root, is **Xoot Staging Address Trial**, with one
+key. The owner created/verified the account privately and saved its key only into **`GEOAPIFY_API_KEY`** in
 [Zoot Staging Edge secrets](https://supabase.com/dashboard/project/fxmxyabdjqviqbcxmvlp/functions/secrets).
 There is no Vercel/VITE/public key and no production Geoapify secret in this trial. Never copy a
 key, Authorization header, keyed provider URL or dashboard screenshot into chat/source/logs.
 Root reports the staging key was owner-saved and verified by name only. Its value was not read;
 presence alone is not successful provider authentication or an authorized allowance.
+
+## Actual staging receipts — root readback, recorded 4 November
+
+[Schema readback](evidence/2026-11-04/actual-staging-geoapify-schema.json) records actual history
+version `20261103180614`, all five function-body hashes, empty search paths/invoker mode,
+service-only RPC execute privileges, two private RLS tables, no client read privileges, no service
+delete grant, disabled policy revision 1, zero allowance/usage and zero attempts. The source file
+was renamed to that real history version without editing its body or inserting a history stamp.
+
+[Runtime proof](evidence/2026-11-04/geoapify-runtime-proof.json) records staging function v1,
+JWT verification on, five TypeScript file matches plus the empty import map, and anonymous 401
+after [targeted deployment 41690659740](https://github.com/ROYAL777-21/Xoot/actions/runs/41690659740).
+Root supplied these redacted receipts after independently reading the deployed source; this
+bookkeeping did not redeploy, enable an allowance or call Geoapify.
+
+[Provider metadata](evidence/2026-11-04/geoapify-free-project.json) records the root-observed Free
+project name, one-key count and secret name only. Provider key values and keyed URLs are absent.
+The earlier real CLI 2.113.0 [staging generation](https://github.com/ROYAL777-21/Xoot/actions/runs/41690666228)
+completed but comparison differed from production by 1,752 diff lines. Its 1,200-line log cap was
+incomplete. The draft workflow now uploads the complete generated file and diff after a complete
+successful export, even on mismatch; comparison still exits nonzero. Actual complete artifact
+capture is recorded separately after the one authorized staging dispatch.
 
 After independent review and root coordination, inspect the disabled/zero budget and real RPC
 ACLs. The owner may authorize **three** attempts, once, while `used=0`, `enabled=false` and the
@@ -127,7 +151,7 @@ The design suite had four expected Geo RPC-name failures plus a missing `.env.ex
 entry; that real setup omission is corrected in this follow-up, without changing the RPC guard.
 Local Docker's daemon was unavailable, so local PGlite is **not** claimed as concurrency proof.
 Fresh required CI for the current head,
-independent source review, staging DDL readback, actual service/user credential checks and the
+independent source review, actual service/user credential checks and the
 three provider receipts remain required. This narrow public-fixture trial does not establish
 autocomplete coverage, every real address, production readiness, native/device acceptance or
 Mapbox replacement suitability.

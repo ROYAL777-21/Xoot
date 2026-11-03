@@ -1,0 +1,99 @@
+{
+  "policy": {
+    "id": true,
+    "used": 0,
+    "enabled": false,
+    "revision": 1,
+    "project_ref": "fxmxyabdjqviqbcxmvlp",
+    "policy_version": "xoot-geoapify-public-fixtures-v1",
+    "next_request_at": null,
+    "lease_expires_at": null,
+    "active_attempt_id": null,
+    "authorized_attempts": 0
+  },
+  "tables": [
+    {
+      "rls": true,
+      "name": "geoapify_evaluation_attempts",
+      "anonSelect": false,
+      "serviceDelete": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "geoapify_evaluation_budget",
+      "anonSelect": false,
+      "serviceDelete": false,
+      "authenticatedSelect": false
+    }
+  ],
+  "history": [
+    {
+      "name": "geoapify_private_staging_evaluation",
+      "version": "20261103180614"
+    }
+  ],
+  "attempts": 0,
+  "functions": [
+    {
+      "anon": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "trigger",
+      "sha256": "9ffdd44cc5b888ab24dc20f0d597cbbcda3d5fd259c3f2619e7fd096dc59a7db",
+      "service": false,
+      "signature": "private.preserve_geoapify_evaluation_budget()",
+      "authenticated": false,
+      "securityDefiner": false
+    },
+    {
+      "anon": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "boolean",
+      "sha256": "4f934bb28e1a03b6b62750c0be65293889d0516f0a8a2037c3ce4dddf75bd33e",
+      "service": true,
+      "signature": "geoapify_evaluation_worker_authorized()",
+      "authenticated": false,
+      "securityDefiner": false
+    },
+    {
+      "anon": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "jsonb",
+      "sha256": "5513132f20821ffde35b03bd22a1b0cb84d46f1e79d0273f1ce407b31e725c7c",
+      "service": true,
+      "signature": "claim_geoapify_evaluation(text,uuid)",
+      "authenticated": false,
+      "securityDefiner": false
+    },
+    {
+      "anon": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "jsonb",
+      "sha256": "22139c1dc86e134900a0e50b8a89fc8919bab28c413f76c43b7440c9a302bd5e",
+      "service": true,
+      "signature": "authorize_geoapify_evaluation(uuid,uuid)",
+      "authenticated": false,
+      "securityDefiner": false
+    },
+    {
+      "anon": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "result": "jsonb",
+      "sha256": "601ba8d283e33e42ed5ecdcc715a5ad0ba52998970cf1f0a118e16dc7e1a7249",
+      "service": true,
+      "signature": "finish_geoapify_evaluation(uuid,uuid,text,text,jsonb)",
+      "authenticated": false,
+      "securityDefiner": false
+    }
+  ]
+}

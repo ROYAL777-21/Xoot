@@ -9,7 +9,7 @@ const db = new PGlite();
 const sql = async path => (await readFile(path,'utf8')).replace(/\r\n/g,'\n');
 try {
   await db.exec(await sql('scripts/testing/geoapify-evaluation-fixture.sql'));
-  const migration = await sql('supabase/migrations/20261103065737_geoapify_private_staging_evaluation.sql');
+  const migration = await sql('supabase/migrations/20261103180614_geoapify_private_staging_evaluation.sql');
   assert.doesNotMatch(migration,/\b(?:xoot_mapbox_geocoding_budget|xoot_address_lookup_allowances|xoot_consume_coverage_query|xooter_availability)\b/);
   await db.exec(migration);
   await db.exec(await sql('scripts/testing/geoapify-evaluation-contract.sql'));

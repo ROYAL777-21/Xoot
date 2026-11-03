@@ -228,7 +228,7 @@ secret go in?" above — this is the section most often filed in the wrong place
 
 | Item | Variable or field | Storage location | Status | Notes |
 | --- | --- | --- | --- | --- |
-| Separate Free evaluation key | `GEOAPIFY_API_KEY` | Zoot Staging (`fxmxyabdjqviqbcxmvlp`) Supabase Edge Function secret only | Referenced / Manual | Read only by `evaluate-geoapify`; fixed public civic fixtures, owner-disabled/zero allowance initially, max 20 lifetime attempts and no automatic renewal or provider fallback. No VITE/EAS/browser/production value. Owner enters the key privately; this inventory contains no key and does not assert successful hosted evaluation. See `docs/release/geoapify-private-evaluation-20261103.md`. |
+| Separate Free evaluation key | `GEOAPIFY_API_KEY` | Zoot Staging (`fxmxyabdjqviqbcxmvlp`) Supabase Edge Function secret only | Referenced / Dashboard (name only) | Root visually confirmed Xoot Staging Address Trial on Free with one key; owner-saved staging secret verified by name only, never value. Fixed public civic fixtures, disabled/zero allowance in actual readback, max 20 lifetime attempts, no automatic renewal/fallback or VITE/EAS/browser/production value. Provider authentication/evaluation is pending. See `docs/release/geoapify-private-evaluation-20261103.md`. |
 
 ## Cloudflare
 
