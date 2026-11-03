@@ -18,6 +18,11 @@ const cases = [
     await db.exec(definition.replace('select count(*) into legacy_count', 'select 0::integer into legacy_count'));
     await assert.rejects(db.exec(contract), error => error.message.includes('CUSTOMER_FAILED: owner sees only one adopted welcome'));
   }],
+  ['null-allowlist-authorization-mutation-is-detected', async db => {
+    const definition = (await db.query("select pg_get_functiondef('public.authorize_customer_journey_email(uuid,uuid,text)'::regprocedure) as source")).rows[0].source;
+    await db.exec(definition.replace('(event.user_id=any(policy.allowed_user_ids)) is not true', 'not(event.user_id=any(policy.allowed_user_ids))'));
+    await assert.rejects(db.exec(contract), error => error.message.includes('CUSTOMER_FAILED: NULL-containing replacement allowlist cannot authorize a removed recipient'));
+  }],
   ['outbox-failure-rolls-back-customer-event-and-legacy-adoption', async db => {
     await db.exec("insert into auth.users(id,email,email_confirmed_at) values('00000000-0000-4000-8000-000000000099','rollback@example.test',clock_timestamp())");
     await db.exec('alter table public.integration_outbox add constraint synthetic_customer_delivery_failure check(false)');

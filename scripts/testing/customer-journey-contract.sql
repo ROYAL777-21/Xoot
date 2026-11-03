@@ -159,6 +159,28 @@ select public.assert_customer(not public.finish_customer_journey_email((current_
 reset role;
 select public.assert_customer((select email_state='uncertain' from private.customer_journey_events where user_id='00000000-0000-4000-8000-000000000010'),'unknown expired lease becomes terminal uncertainty');
 select public.assert_customer((select used=5 from private.customer_email_policy),'uncertain and suppressed attempts remain consumed');
+-- NULL array membership must never bypass a removed identity at final authorization.
+select public.expect_customer_error('update private.customer_email_policy set allowed_user_ids=array[null]::uuid[]','23514');
+insert into auth.users(id,email,email_confirmed_at) values('00000000-0000-4000-8000-000000000011','revoked-allowlist@example.test',clock_timestamp());
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000011',false);
+select public.manage_customer_communications('enter');
+reset role;
+update private.customer_email_policy set allowed_user_ids=array_append(allowed_user_ids,'00000000-0000-4000-8000-000000000011'::uuid);
+set role service_role;
+select set_config('customer.claim',public.claim_customer_journey_email('fxmxyabdjqviqbcxmvlp')::text,false);
+reset role;
+select public.assert_customer((select email_state='claimed' from private.customer_journey_events where user_id='00000000-0000-4000-8000-000000000011'),'allowlisted synthetic account has a valid existing claim');
+-- Isolated corruption simulation, not a hosted change: prove predicate safety independently of CHECK.
+alter table private.customer_email_policy drop constraint customer_email_allowlist_has_no_nulls;
+update private.customer_email_policy set allowed_user_ids=array[null]::uuid[];
+set role service_role;
+select public.assert_customer(public.authorize_customer_journey_email((current_setting('customer.claim')::jsonb->>'id')::uuid,(current_setting('customer.claim')::jsonb->>'nonce')::uuid,'fxmxyabdjqviqbcxmvlp') is null,'NULL-containing replacement allowlist cannot authorize a removed recipient');
+reset role;
+select public.assert_customer((select email_state='suppressed' and email_dispatched_at is null from private.customer_journey_events where user_id='00000000-0000-4000-8000-000000000011'),'removed recipient has no dispatch authorization or SMTP receipt');
+select public.assert_customer((select used=6 from private.customer_email_policy),'revoked final authorization consumes no extra allowance');
+update private.customer_email_policy set allowed_user_ids='{}';
+alter table private.customer_email_policy add constraint customer_email_allowlist_has_no_nulls check(array_position(allowed_user_ids,null::uuid) is null);
 update private.customer_email_policy set used=maximum;
 set role service_role;
 select public.assert_customer(public.claim_customer_journey_email('fxmxyabdjqviqbcxmvlp') is null,'nonrenewing maximum cannot be bypassed');

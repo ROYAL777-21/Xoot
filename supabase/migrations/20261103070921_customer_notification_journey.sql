@@ -9,7 +9,7 @@ create table private.customer_email_policy (
   installed_at timestamptz not null default clock_timestamp(),
   enabled boolean not null default false,
   project_ref text check(project_ref in ('fxmxyabdjqviqbcxmvlp','mvlrkelahhsyjrwgsxaf')),
-  allowed_user_ids uuid[] not null default '{}',
+  allowed_user_ids uuid[] not null default '{}' constraint customer_email_allowlist_has_no_nulls check(array_position(allowed_user_ids,null::uuid) is null),
   free_plan_reviewed_at timestamptz,
   free_plan_review_reference text,
   maximum integer not null default 20 check(maximum between 1 and 20),
@@ -267,7 +267,7 @@ begin
     elsif event.email_state='claimed' then return null;end if;
   end loop;
   for candidate in select id,user_id from private.customer_journey_events where email_state='queued'
-    and user_id=any(policy.allowed_user_ids) order by created_at,id limit 100 loop
+    and (user_id=any(policy.allowed_user_ids)) is true order by created_at,id limit 100 loop
     perform 1 from private.customer_journeys where user_id=candidate.user_id for update;
     select * into event from private.customer_journey_events where id=candidate.id for update;
     if event.email_state<>'queued' then continue;end if;
@@ -295,7 +295,7 @@ begin
   perform 1 from private.customer_journeys where user_id=actor for update;
   select * into event from private.customer_journey_events where id=p_id for update;
   if not found or event.email_state<>'claimed' or event.email_nonce is distinct from p_nonce or event.email_dispatched_at is not null then return null;end if;
-  if not policy.enabled or p_project_ref is distinct from policy.project_ref or not(event.user_id=any(policy.allowed_user_ids))
+  if not policy.enabled or p_project_ref is distinct from policy.project_ref or (event.user_id=any(policy.allowed_user_ids)) is not true
     or policy.free_plan_reviewed_at is null or policy.free_plan_reviewed_at>clock_timestamp()
     or policy.free_plan_reviewed_at<clock_timestamp()-interval '7 days' or nullif(btrim(policy.free_plan_review_reference),'') is null
     or event.email_claimed_at<clock_timestamp()-interval '20 seconds' or not private.customer_journey_email_eligible(event)

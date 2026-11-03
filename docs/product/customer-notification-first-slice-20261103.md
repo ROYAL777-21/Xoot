@@ -54,7 +54,8 @@ does not open the sender, renew attempts or constitute release acceptance.
 Only `customer_welcome` can reach the proposed customer SMTP dispatcher. Claim, final authorize
 and receipt have their own role-only public RPCs. They bind the event, nonce,20second lease,
 current confirmed recipient hash, preferences, live role/application eligibility and exact
-outbox identity. Late/unknown SMTP outcomes become terminal uncertainty; they are never
+outbox identity. The allowlist rejects NULL elements and membership must be explicitly TRUE;
+even a corrupt NULL-containing replacement cannot revive a removed recipient. Late/unknown SMTP outcomes become terminal uncertainty; they are never
 automatically resent. Success requires the deterministic customer Message-ID and the actual
 outbox status `completed`. No customer recipient, full name or household detail is copied into
 outbox payloads, logs or lock-screen previews.
@@ -71,7 +72,8 @@ pinned PGlite0.5.8 module path. It tests real RLS/grants, account ownership/conf
 legacy adoption, deduplication, strict consent/revision, quiet hours, stale slots, cadence caps,
 real saved-place/booking suppression, separate budgets, role/application/recipient changes,
 exact completion receipts and terminal uncertainty. It plants the duplicate-welcome defect,
-checks outbox-failure rollback and repeats against production's unconstrained status column.
+the NULL-membership authorization defect, checks outbox-failure rollback and repeats against
+production's unconstrained status column.
 
 This is not real JWT/provider/inbox/device/concurrent-session acceptance. No hosted migration,
 actual generated production type, SMTP delivery, schedule or broad activation is claimed.

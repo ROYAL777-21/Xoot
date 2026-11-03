@@ -1,5 +1,16 @@
 # Agent worklog
 
+## REVIEW — 3 November — customer allowlist NULL membership refusal
+
+Independent root review of the unapplied92326f2a source found PostgreSQL three-valued logic
+could let a NULL-containing replacement allowlist pass the final negative membership check.
+Before any hosted action, reject NULL allowlist elements and require membership explicitly
+TRUE at claim/final authorization.80actual isolated SQL assertions pass, including a valid
+claim followed by NULL-only corruption and denied final authorization without recipient or
+extra attempt. Planted legacy-adoption and old NULL-membership defects both fail; outbox
+rollback and unconstrained production-status cases pass. No hosted DDL, customer/provider send,
+role, quota, schedule or generated type changed. Parent owns independent re-review. Customer
+UI/transport work remains local and separate while its bounded checks finish.
 ## HOLDING — 3 November — private customer lifecycle first slice
 
 Claim feature/customer-notification-journey-20261103 from approved release7a480fe6. The founder
