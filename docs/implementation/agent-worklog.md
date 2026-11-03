@@ -1,6 +1,6 @@
 # Agent worklog
 
-## HOLDING — 3 November — actual approved release and notification runtime readback
+## REVIEW — 3 November — actual approved release and notification runtime readback
 
 Root records approved release60260f19, the successful targeted production/staging function
 deployments41687003069/41687009396, exact frozen-source equality and anonymous-denial checks.
@@ -10,6 +10,13 @@ key by name only, pending its bounded public-fixture review; do not label it wor
 Correct the current checklist's stale in-progress delivery wording while retaining all genuine
 marketplace, financial, notification and device gates. Independent customer/Geo implementation
 and review agents keep their own worktrees; no edits to their files are claimed here.
+
+Actual checks now passed: canonical60260f19/ZD-026/R39, served Updates route/account navigation,
+12normalized frozen-source matches plus4empty import maps, identical stage/prod bundles and
+8anonymous401responses. Production0/20 and staging1/20 policies stay disabled with no schedule;
+business counters are unchanged. Checked-in notification-runtime.json contains redacted hashes,
+versions and counts only. No SMTP connection or geocoder request was performed. Source/type,
+JWT/device, full-journey and production delivery acceptance remain distinct evidence.
 
 ## HOLDING — 3 November — notification interface on the approved schema/navigation release
 
