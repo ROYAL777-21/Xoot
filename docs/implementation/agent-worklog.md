@@ -1,5 +1,16 @@
 # Agent worklog
 
+## HOLDING — 3 November — actual approved release and notification runtime readback
+
+Root records approved release60260f19, the successful targeted production/staging function
+deployments41687003069/41687009396, exact frozen-source equality and anonymous-denial checks.
+This is Release evidence/documentation only: no new schema, sender/schedule, budget, worker,
+payment, provider call or homepage change. Record the separate owner-saved staging Geoapify
+key by name only, pending its bounded public-fixture review; do not label it working coverage.
+Correct the current checklist's stale in-progress delivery wording while retaining all genuine
+marketplace, financial, notification and device gates. Independent customer/Geo implementation
+and review agents keep their own worktrees; no edits to their files are claimed here.
+
 ## HOLDING — 3 November — notification interface on the approved schema/navigation release
 
 Rebase PR108 onto approved ad6e4efb. Preserve the current handoff Xooter shell, all required
