@@ -126,6 +126,20 @@ Mobile AGENTS and exact Expo 56 AppleAuthentication docs have been read. Release
 Correctness paths are intentionally crossed to make one truthful readiness boundary; root
 will cross-review and owns deployment. No Apple enrollment, key creation, provider enablement,
 build, hosted change or signed-device claim is authorised by this claim. PR112 remains immutable.
+## HOLDING — 3 November — private Geoapify Free staging evaluation
+
+Claim feature/geoapify-private-evaluation-20261102 from approved fa005086. Root approved a
+separate two-table/four-RPC trial boundary: owner-disabled and zero allowance initially, a
+nonrenewing lifetime ceiling of 20 attempts, fixed public civic fixture IDs only, lease/nonce
+bound authorization before fetch, and receipts without provider keys or keyed URLs. The new
+JWT-protected/service-only handler must fail closed outside the exact staging project and
+must never accept customer addresses, alter coverage/verified supply, call a fallback provider,
+or touch existing Mapbox allowances, maps, Directions or private GPS/ETA. Correctness owns the
+adapter/auth/budget contracts; Release owns staging-only migration/deployment ordering and
+schema review. No hosted write or provider request will occur until root coordinates private
+credentials and explicit trial activation. New production RPC type gates will remain honestly
+blocked rather than be hand-filled. This branch will deliver focused unit/SQL proof and a draft
+PR for independent review; root retains deployment. Nav PR113 remains immutable.
 
 ## REVIEW — 2 November — quote-bound Care+ booking tip
 
