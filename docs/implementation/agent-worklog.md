@@ -57,6 +57,15 @@ Run the 123-assertion SQL contract in required redesign CI before any guarded pr
 the parent owns actual schema application and subsequent legitimate production type generation.
 Notification PR108 remains separate and draft until that schema/type dependency is delivered.
 
+## HOLDING — 3 November — truthful Welcome entry extension
+
+Root authorises extending the same Apple/Auth-readiness task to remove Welcome's hardcoded
+142-homes/Sandton claim (actual production has no completed bookings) and its unsupported
+phone continuation. Keep the functional Google/email routes and existing handoff treatment.
+Write old-claim/phone negative controls before the removal. No provider, money, credential,
+verification or supply state changes. This extension remains on the isolated Apple branch
+and still requires independent review and required CI after the approved schema release.
+
 ## REVIEW — 3 November — Apple choices remain closed until actual readiness
 
 Web Auth/Welcome and native availability/start now share a dependency-free reviewed
