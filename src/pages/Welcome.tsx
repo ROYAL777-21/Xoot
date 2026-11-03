@@ -51,7 +51,7 @@ export default function Welcome() {
     <div className="flex min-h-dvh flex-col overflow-hidden bg-secondary">
       <SEO
         title="Welcome to Xoot"
-        description="Set up your home once and booking a trusted Xooter takes a single tap after that."
+        description="Create your Xoot account and keep your home details and preferences together."
         canonical="/welcome"
         noIndex
       />
@@ -82,8 +82,8 @@ export default function Welcome() {
         </h1>
 
         <p className="rise-in text-[0.8rem] leading-relaxed text-muted-foreground [animation-delay:55ms]">
-          Set it up once. Your hours, your add-ons, your Xooter &mdash; remembered. Booking after this is a
-          single confirmation.
+          Set it up once. Keep the home details and cleaning preferences you choose to save ready
+          for your next visit.
         </p>
 
         <div className="rise-in mt-4 flex flex-col gap-2 [animation-delay:165ms]">

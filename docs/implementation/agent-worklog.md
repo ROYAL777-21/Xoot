@@ -69,6 +69,8 @@ and still requires independent review and required CI after the approved schema 
 Extension result: both negative controls failed against the original visible phone/metric.
 Welcome now offers Google/email and omits the unsupported continuation/count; the same
 handoff layout remains. Combined auth/readiness/native/marketing checks pass88/10files.
+Final branch rebased onto approved actual-schema/types release ad6e4efb, retaining each
+schema/navigation/Apple claim and review entry. No unrelated generated file changes remain.
 
 ## REVIEW — 3 November — Apple choices remain closed until actual readiness
 

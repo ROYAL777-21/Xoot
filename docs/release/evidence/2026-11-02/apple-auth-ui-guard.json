@@ -1,5 +1,6 @@
 {
   "scope": "Truthful Apple/phone account-entry readiness and Welcome activity copy; no provider or native-build activation",
+  "reviewedBase": "ad6e4efb47289cd742d88b10791b5803780e7262",
   "productionPublicAuthSettingsObservedAt": "2026-11-02T20:27:26Z",
   "productionPublicAuthSettings": { "apple": false, "google": true, "email": true, "disableSignup": false },
   "readinessDefaults": { "providerConfigured": false, "webAccepted": false, "iosSignedBuildAccepted": false, "androidBrowserAccepted": false },
@@ -12,6 +13,7 @@
   "scopedLint": "passed",
   "unsafeDOMScan": "passed",
   "browserFixture": { "actualComponents": ["Auth", "Welcome"], "widths": [320, 390, 1024], "appleChoices": 0, "googleChoicesPerSurface": 1, "unsupportedWelcomePhoneChoices": 0, "fabricatedWelcomeActivityCounts": 0, "horizontalOverflow": false, "externalRequests": 0, "pageErrors": 0 },
+  "coldDevelopmentFixtureNavigation": "one 30-second load timeout; diagnostic retry passed with unchanged deadline",
   "realAppleOAuthOrSignedDeviceAcceptance": "not performed; provider disabled and no enrolled team authorised",
   "requiredCI": "must pass before merge"
 }

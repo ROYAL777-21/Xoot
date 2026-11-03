@@ -1,7 +1,9 @@
 # Apple sign-in readiness — 2 November 2026
 
 This evidence records truthful account-entry choices, not enabled Apple authentication.
-Base: approved `fa0050862b018d0fa9ba6a08fcc3a4271746f4c6`. No provider settings,
+Inspection base: approved `fa0050862b018d0fa9ba6a08fcc3a4271746f4c6`; the final patch is
+rebased onto approved schema release `ad6e4efb47289cd742d88b10791b5803780e7262`.
+All independent worklog entries and actual generated schema types are preserved. No provider settings,
 credentials, enrollment, build, payment or hosted data were changed for this work.
 
 ## Observed production state
@@ -23,7 +25,7 @@ configuration and separate web, signed iOS, and Android-browser acceptance all r
 false. The existing native sync copies exactly this record into the mobile package.
 Web entry screens hide Apple and the auth handler checks the same condition. Native
 availability and direct sign-in reject an unready surface before invoking its transport.
-Google/email entry, current copy, nonce/state verification, ID-token exchange and PKCE
+Google/email entry, existing signup text, nonce/state verification, ID-token exchange and PKCE
 callbacks are preserved. No additional auth-page request, setting fetch or paid call is added.
 
 The root review also authorized removing Welcome's unsupported phone continuation and
@@ -88,6 +90,9 @@ Local verification on 2–3 November:
   continuation or fabricated activity count on Welcome, no horizontal overflow,
   zero external requests and no page errors. Auth context/Supabase transports were local
   fixtures; this is UI evidence, not a provider or signed-device acceptance result.
+  One cold development-fixture navigation hit the existing 30-second load deadline;
+  its diagnostic retry passed all six views with that deadline unchanged. This does
+  not establish production latency or native performance.
 
 Screenshots are local ignored artifacts `.render-check/apple-{auth,welcome}-{width}.png`.
 Required isolated release CI must pass before merge; the local broad failures were not waived.
