@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-03",
+  "baseCommit": "ad6e4efb47289cd742d88b10791b5803780e7262",
+  "implementationCommit": "0332b933f65306330da152cc9ba164970f144c71",
+  "policy": "xoot-geoapify-public-fixtures-v1",
+  "migration": "supabase/migrations/20261103065737_geoapify_private_staging_evaluation.sql",
+  "migrationNormalizedSha256": "057ebf0785b57743d4e351e72c8261e54417cdb8902777fc8925a2b6485ceb54",
+  "providerRequests": 0,
+  "hostedWrites": 0,
+  "trialDefault": {
+    "enabled": false,
+    "authorizedAttempts": 0,
+    "hardLifetimeCeiling": 20,
+    "onceOnlyFixtureCount": 3
+  },
+  "checks": {
+    "focusedUnitTests": {
+      "passed": 40
+    },
+    "actualSqlAssertionSites": {
+      "passed": 42,
+      "runtime": "PGlite0.5.8",
+      "multiConnectionProof": false
+    },
+    "edgeTypecheck": "passed",
+    "webTypecheck": "passed",
+    "scopedEslint": "passed",
+    "tableColumnSchemaGuard": "6 passed",
+    "productionRpcNameGuard": "25 passed;4 expected failures for new unapplied Geo functions; no types edited",
+    "negativeControls": [
+      "country guard omitted:3 required failures,restored",
+      "dispatch nonce binding omitted:SQL assertion failure,restored"
+    ],
+    "realPostgresConcurrency": "pending required existing PG17.6 CI job; local Docker daemon unavailable",
+    "stagingCredentialAcceptance": "not performed",
+    "providerFixtureAcceptance": "not performed"
+  },
+  "preserved": [
+    "Mapbox maps",
+    "Directions",
+    "private GPS/ETA",
+    "paused Mapbox allowances",
+    "approved homepage",
+    "notification CI steps"
+  ]
+}

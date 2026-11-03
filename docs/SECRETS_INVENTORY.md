@@ -224,6 +224,12 @@ secret go in?" above — this is the section most often filed in the wrong place
 | Native downloads token | `RNMAPBOX_MAPS_DOWNLOAD_TOKEN`, `MAPBOX_DOWNLOADS_TOKEN` | EAS/CI secret only | Template | Private build-time token; never commit or expose in app bundles. |
 | Server token | `MAPBOX_SECRET_TOKEN` | Supabase Edge Function secret if needed | Rotate | A Mapbox `sk.` token was pasted into chat. Treat it as compromised for production; rotate it, then store only in Edge/server/CI secret storage for server-side geocoding/routing if needed. |
 
+## Geoapify — private staging evaluation only
+
+| Item | Variable or field | Storage location | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Separate Free evaluation key | `GEOAPIFY_API_KEY` | Zoot Staging (`fxmxyabdjqviqbcxmvlp`) Supabase Edge Function secret only | Referenced / Manual | Read only by `evaluate-geoapify`; fixed public civic fixtures, owner-disabled/zero allowance initially, max 20 lifetime attempts and no automatic renewal or provider fallback. No VITE/EAS/browser/production value. Owner enters the key privately; this inventory contains no key and does not assert successful hosted evaluation. See `docs/release/geoapify-private-evaluation-20261103.md`. |
+
 ## Cloudflare
 
 | Item | Variable or field | Storage location | Status | Notes |
