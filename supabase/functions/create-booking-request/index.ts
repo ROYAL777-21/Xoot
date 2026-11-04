@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildEmailPayload } from "../_shared/email-playbook.ts";
 import { readJson, isApprovedLaunchRegion, resolveLaunchRegion } from "../_shared/action-utils.ts";
 import { assessVerifiedCoverage } from "../_shared/verified-coverage.ts";
+import { hasUnsupportedLegacyBookingBenefits } from "../_shared/legacy-booking-benefits.ts";
 import {
   ADD_ON_CENTS,
   BOOKING_COVER_CENTS,
@@ -97,6 +98,9 @@ Deno.serve(async (req) => {
     if (authError || !authData.user) return json({ error: "authentication required" }, 401, origin);
 
     const body = await readJson(req);
+    if (hasUnsupportedLegacyBookingBenefits(body)) {
+      return json({ error: "This booking route cannot safely apply benefits yet; an atomic booking is required." }, 409, origin);
+    }
     const serviceType = cleanText(body.serviceType, 40);
     const frequency = body.frequency === "repeat" ? "repeat" : "one_time";
     const homeSizeId = cleanText(body.homeSize, 20) || "small";

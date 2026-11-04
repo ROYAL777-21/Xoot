@@ -15,6 +15,7 @@ import {
   writeAuditLog,
 } from "../_shared/action-utils.ts";
 import { assessVerifiedCoverage } from "../_shared/verified-coverage.ts";
+import { hasUnsupportedLegacyBookingBenefits } from "../_shared/legacy-booking-benefits.ts";
 import {
   REFERRAL_FUNDING,
   checkReferral,
@@ -193,6 +194,9 @@ Deno.serve(async (req) => {
 
   try {
     const body = await readJson(req);
+    if (hasUnsupportedLegacyBookingBenefits(body)) {
+      return fail("This booking route cannot safely apply benefits yet; an atomic booking is required.", origin, 409);
+    }
     const serviceType = cleanText(body.serviceType ?? body.service_type, 40);
     const frequency = cleanText(body.frequency, 20) === "repeat" ? "repeat" : "one_time";
     const homeSizeId = cleanText(body.homeSize ?? body.home_size, 20) || "small";

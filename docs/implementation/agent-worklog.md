@@ -2,6 +2,21 @@
 
 ## HOLDING — 4 November — atomic booking-benefit security boundary
 
+Source repair prepared in the claimed isolated tree. Both legacy booking writers refuse
+every benefit alias before any mutation; full creation/referral transaction is deliberately
+deferred. New CLI-created 20261104045943 service-only atomic redemption binds owner/payment/
+accepted cents/replay key and commits debit, amount, audit and immutable receipt together.
+Account-first lock order matches settlement/cancellation. Checkout uses an exact signed
+snapshot CAS, closing its race with redemption. No prices/entitlements or paid history
+were rewritten; no hosted SQL, provider call, live gate, sender or generated type was changed.
+Cross-role Correctness handlers and Release migration/CI are explicitly flagged for root
+review. Actual isolated SQL44assertions and109focused handler/commercial cases pass; old
+separate-write defect and six-case checkout mutation were genuinely reproduced. Deno all four,
+app typecheck, scoped lint and syntax pass. Native independent-session PG17 race suite is
+added to the existing two-version CI job; local Docker is unavailable, so that evidence
+remains pending CI. Precise contract/deploy/rollback limits are in
+docs/release/atomic-benefits-20261104.md. No full-production clearance is claimed.
+
 Claim fix/atomic-booking-benefits-20261104 from approved75674d60 in the separate
 work/xoot-atomic-benefits-20261104 checkout. Root independently confirmed C1/C2: legacy booking
 and redemption HTTP writes can commit discounted money rows before a rejected/ignored benefit

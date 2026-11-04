@@ -1,107 +1,64 @@
-import {
-  assertBookingParticipant,
-  cleanId,
-  fail,
-  handlePreflight,
-  ok,
-  readJson,
-  requireAuth,
-  toNumber,
-  writeAuditLog,
-} from "../_shared/action-utils.ts";
-import { normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
+import { fail, handlePreflight, ok, readJson, requireAuth } from "../_shared/action-utils.ts";
 
-const getAvailableBalance = async (supa: any, userId: string) => {
-  const { data } = await supa
-    .from("xootcred_ledger")
-    .select("amount,direction,status,expires_at,meta,reason")
-    .eq("user_id", userId);
-
-  return (data ?? []).reduce((balance: number, row: any) => {
-    if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) return balance;
-    const amount = Number(row.amount ?? 0);
-    if (row.direction === "credit" && row.status === "available") return balance + amount;
-    if (row.direction === "debit" && ["available", "redeemed"].includes(row.status)) return balance - amount;
-    return balance;
-  }, 0);
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const id = (value: unknown) => typeof value === "string" && uuid.test(value) ? value.toLowerCase() : "";
+const cents = (value: unknown) => typeof value === "number" && Number.isSafeInteger(value)
+  && value > 0 && value <= 9_999_999_999;
+const amountCents = (value: unknown) => {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  const rounded = Math.round(value * 100);
+  return cents(rounded) && rounded / 100 === value ? rounded : null;
 };
-
 Deno.serve(async (req) => {
   const origin = req.headers.get("Origin");
   const preflight = handlePreflight(req, origin);
   if (preflight) return preflight;
-
+  if (req.method !== "POST") return fail("method not allowed", origin, 405);
   const auth = await requireAuth(req, origin);
   if (auth.response) return auth.response;
-  const { user, supa } = auth as { user: any; supa: any };
-
+  const { user, supa } = auth;
   try {
     const body = await readJson(req);
-    const bookingId = cleanId(body.bookingId ?? body.booking_id);
-    const requestedAmount = Math.max(0, toNumber(body.amount, 0));
-    if (!bookingId) return fail("booking_id required", origin, 400);
-    if (requestedAmount <= 0) return fail("redemption amount required", origin, 400);
-
-    const { data: booking } = await supa
-      .from("bookings")
-      .select("id,user_id,xooter_id,status")
-      .eq("id", bookingId)
-      .maybeSingle();
-    if (!booking?.id) return fail("booking not found", origin, 404);
-
-    const participant = await assertBookingParticipant(supa, booking, user.id);
-    if (participant.role !== "client" && participant.role !== "admin") return fail("booking access denied", origin, 403);
-    const currentStatus = normaliseBookingStatus(booking.status);
-    if (!currentStatus || !["draft", "pending_payment"].includes(currentStatus)) {
-      return fail("XootCred can only be redeemed before payment confirmation", origin, 409);
+    const bookingId = id(body?.booking_id ?? body?.bookingId);
+    const paymentId = id(body?.payment_record_id);
+    const requestKey = id(body?.request_key);
+    const expected = body?.expected_amount_cents;
+    const redemption = amountCents(body?.amount);
+    if (!bookingId || !paymentId || !requestKey || !cents(expected) || expected < 5000 || redemption === null) {
+      return fail("booking, payment, request key, accepted amount and exact redemption are required", origin, 400);
     }
-
-    const { data: payment } = await supa
-      .from("payment_records")
-      .select("id,amount,status,meta")
-      .eq("booking_id", booking.id)
-      .eq("user_id", booking.user_id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (!payment?.id) return fail("payment record not found", origin, 404);
-    if (payment.status !== "pending") return fail("payment already processed", origin, 409);
-
-    const currentAmountDue = Number(payment.amount ?? 0);
-    const balance = await getAvailableBalance(supa, booking.user_id);
-    const redeemable = Math.min(requestedAmount, balance, Math.max(0, currentAmountDue - 50));
-    if (redeemable <= 0) return fail("XootCred cannot reduce booking below R50", origin, 409);
-
-    await supa.from("xootcred_ledger").insert({
-      user_id: booking.user_id,
-      booking_id: booking.id,
-      amount: redeemable,
-      direction: "debit",
-      reason: "redemption",
-      status: "redeemed",
-      meta: { reason: "booking_redemption", payment_record_id: payment.id },
-    });
-
-    const newAmountDue = Math.max(50, Math.round((currentAmountDue - redeemable) * 100) / 100);
-    await supa.from("payment_records").update({
-      amount: newAmountDue,
-      meta: { ...(payment.meta ?? {}), xootcred_redemption: redeemable },
-      updated_at: new Date().toISOString(),
-    }).eq("id", payment.id);
-
-    await writeAuditLog(supa, {
-      actorId: user.id,
-      action: "redeem_xootcred",
-      targetTable: "xootcred_ledger",
-      targetId: booking.id,
-      changes: { redeemed: redeemable, previous_amount_due: currentAmountDue, amount_due: newAmountDue },
-      reason: "Client redeemed available XootCred against pending booking payment",
-      ipAddress: req.headers.get("x-forwarded-for"),
-    });
-
-    return ok({ booking_id: booking.id, redeemed: redeemable, updated_balance: balance - redeemable, amount_due: newAmountDue }, origin);
-  } catch (error) {
-    console.error("redeem-xootcred failed", error);
-    return fail("XootCred redemption failed", origin, 500);
+    const input = { p_actor_id: user.id, p_booking_id: bookingId, p_payment_record_id: paymentId,
+      p_request_key: requestKey, p_expected_amount_cents: expected, p_redemption_cents: redemption };
+    let result;
+    // Retry only the whole transaction, retaining the key for an uncertain commit.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      result = await supa.rpc("redeem_booking_xootcred", input);
+      if (!["40P01", "40001"].includes(result.error?.code ?? "")) break;
+    }
+    if (!result) throw new Error("missing transaction result");
+    if (result.error) {
+      if (["40P01", "40001"].includes(result.error.code)) return fail("booking changed; please retry", origin, 503);
+      if (result.error.code === "42501") return fail("booking access denied", origin, 403);
+      if (["22023", "23514", "23505", "P0002"].includes(result.error.code)) {
+        return fail("XootCred could not be applied to that unchanged pending payment; refresh your booking", origin, 409);
+      }
+      return fail("XootCred redemption could not be confirmed; retry with the same request", origin, 500);
+    }
+    const r = result.data;
+    const receivedRedemption = amountCents(r?.redeemed);
+    const previous = amountCents(r?.previous_amount_due);
+    const due = amountCents(r?.amount_due);
+    const balance = typeof r?.updated_balance === "number" && Number.isFinite(r.updated_balance)
+      ? Math.round(r.updated_balance * 100) : -1;
+    if (r?.booking_id !== bookingId || r?.payment_record_id !== paymentId || r?.request_key !== requestKey
+      || !id(r?.ledger_entry_id) || typeof r?.idempotent !== "boolean" || receivedRedemption !== redemption
+      || previous !== expected || due !== expected - redemption || due < 5000 || balance < 0
+      || !Number.isSafeInteger(balance) || balance / 100 !== r.updated_balance) {
+      return fail("XootCred redemption receipt could not be confirmed; retry with the same request", origin, 500);
+    }
+    return ok(r, origin);
+  } catch {
+    console.error("redeem-xootcred transaction failed");
+    return fail("XootCred redemption failed; retry with the same request", origin, 500);
   }
 });
