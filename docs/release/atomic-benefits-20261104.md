@@ -101,24 +101,24 @@ Local, synthetic checks:
   signature cases fail against that defect; the exact source was restored.
 - Deno typechecks all four changed handlers; application typecheck and scoped lint pass.
 
-Native PostgreSQL17 CI executes eight independent-session scenarios and requires seven
+Native PostgreSQL 17 CI executes eight independent-session scenarios and requires seven
 observed pg_stat_activity/pg_blocking_pids lock barriers, including two bookings
 sharing one owner's credit account, concurrent request replay, stale due, both checkout orders,
 paid/cancelled state races and stale REPEATABLE READ. The terminal-transition scenarios
 execute the actual common lock helper/source lock order; they are not full provider or
-cancellation acceptance. Manual Tests run41778196140 at immutable48337a15 passed both
+cancellation acceptance. Manual Tests run 41778196140 at immutable 48337a15 passed both
 native jobs, with eight scenarios and seven observed blocking barriers on each actual
-server version170006 and170011. Its separate SQL-contract job also passed. Local
+server versions 170006 and 170011. Its separate SQL-contract job also passed. Local
 Docker's engine is unavailable; the native results above come from CI, not PGlite.
 
-The full unit/rendered job passed2256tests in219files (including43rendered checks),
+The full unit/rendered job passed 2,256 tests in 219 files (including 43 rendered checks),
 with seven existing skips, and failed one deliberate live-schema guard:
 rpc-names-exist.test.ts reports the new redeem_booking_xootcred RPC absent from the
 actual generated types. Its source migration has not been delivered. The guard is
 preserved; no type entry or exception is invented. Lint and web/native typechecks in
 that job passed before the suite. CodeQL, Semgrep/security review, actual-schema type
 comparison and existing referral privilege checks passed. Separate design/security
-run41778177698 failed in the unchanged closed-notification fixture; root reproduced
-that timestamp-ordering defect and owns its independent correction inPR118. PR119
+run 41778177698 failed in the unchanged closed-notification fixture; root reproduced
+that timestamp-ordering defect and owns its independent correction in PR118. PR119
 remains draft pending root review, real schema/type convergence, rebase and all gates.
 No genuine JWT, hosted write, provider payment or device acceptance occurred here.

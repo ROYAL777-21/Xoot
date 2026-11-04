@@ -2,14 +2,14 @@
 
 ## HOLDING — 4 November — atomic booking-benefit security boundary
 
-CI evidence for source48337a15: manual Tests41778196140 passed the new eight-race/
-seven-blocking-barrier native checks on PostgreSQL17.6 and17.11, plus all SQL contracts.
-Full unit/rendered suite passed2256tests/219files including43rendered checks and failed
+CI evidence for source 48337a15: manual Tests 41778196140 passed the new eight-race/
+seven-blocking-barrier native checks on PostgreSQL 17.6 and 17.11, plus all SQL contracts.
+Full unit/rendered suite passed 2,256 tests in 219 files including 43 rendered checks and failed
 only the preserved live-RPC guard: new redeem_booking_xootcred is not yet in actual
 generated types because SQL is unapplied. No handwritten type or guard exception was
 added. CodeQL/security/type/referral checks pass. Separate unchanged notification
-fixture gate is root-owned inPR118. DraftPR119 remains unmerged and requires independent
-review, safe actual schema/type convergence, final118 rebase and all required gates.
+fixture gate is root-owned in PR118. Draft PR119 remains unmerged and requires independent
+review, safe actual schema/type convergence, final PR118 rebase and all required gates.
 See docs/release/evidence/2026-11-04/atomic-benefits-ci.json for exact IDs and source hash.
 
 Source repair prepared in the claimed isolated tree. Both legacy booking writers refuse
@@ -20,7 +20,7 @@ Account-first lock order matches settlement/cancellation. Checkout uses an exact
 snapshot CAS, closing its race with redemption. No prices/entitlements or paid history
 were rewritten; no hosted SQL, provider call, live gate, sender or generated type was changed.
 Cross-role Correctness handlers and Release migration/CI are explicitly flagged for root
-review. Actual isolated SQL44assertions and109focused handler/commercial cases pass; old
+review. Actual isolated SQL: 44 assertions and 109 focused handler/commercial cases pass; old
 separate-write defect and six-case checkout mutation were genuinely reproduced. Deno all four,
 app typecheck, scoped lint and syntax pass. Native independent-session PG17 race suite is
 added to the existing two-version CI job; local Docker is unavailable, so that evidence
