@@ -2,6 +2,16 @@
 
 ## HOLDING — 4 November — atomic booking-benefit security boundary
 
+CI evidence for source48337a15: manual Tests41778196140 passed the new eight-race/
+seven-blocking-barrier native checks on PostgreSQL17.6 and17.11, plus all SQL contracts.
+Full unit/rendered suite passed2256tests/219files including43rendered checks and failed
+only the preserved live-RPC guard: new redeem_booking_xootcred is not yet in actual
+generated types because SQL is unapplied. No handwritten type or guard exception was
+added. CodeQL/security/type/referral checks pass. Separate unchanged notification
+fixture gate is root-owned inPR118. DraftPR119 remains unmerged and requires independent
+review, safe actual schema/type convergence, final118 rebase and all required gates.
+See docs/release/evidence/2026-11-04/atomic-benefits-ci.json for exact IDs and source hash.
+
 Source repair prepared in the claimed isolated tree. Both legacy booking writers refuse
 every benefit alias before any mutation; full creation/referral transaction is deliberately
 deferred. New CLI-created 20261104045943 service-only atomic redemption binds owner/payment/
