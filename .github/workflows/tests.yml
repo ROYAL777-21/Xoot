@@ -101,6 +101,16 @@ jobs:
           PGPASSWORD: xoot-disposable-test
         run: node scripts/ops/test-booking-benefit-locks.mjs
 
+      - name: Prove atomic redemption, replay and checkout races
+        env:
+          XOOT_PG_TEST_INTENT: atomic-redemption
+          XOOT_PG_MODULE: ${{ runner.temp }}/xoot-pg-test/node_modules/pg/lib/index.js
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: postgres
+          PGPASSWORD: xoot-disposable-test
+        run: node scripts/ops/test-atomic-redemption-concurrency.mjs
+
       - name: Prove notification privileges and publication membership
         env:
           XOOT_PG_TEST_INTENT: notifications-realtime-permissions
@@ -159,6 +169,9 @@ jobs:
 
       - name: Verify Xooter journey event deduplication and consent isolation
         run: node scripts/ops/verify-xooter-journey.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
+      - name: Verify atomic redemption rollback, identity and service-only authority
+        run: node scripts/ops/verify-atomic-redemption.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
 
   test:
     name: Lint, build and unit tests

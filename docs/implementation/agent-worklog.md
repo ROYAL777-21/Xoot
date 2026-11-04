@@ -1,5 +1,45 @@
 # Agent worklog
 
+## HOLDING — 4 November — atomic booking-benefit security boundary
+
+CI evidence for source 48337a15: manual Tests 41778196140 passed the new eight-race/
+seven-blocking-barrier native checks on PostgreSQL 17.6 and 17.11, plus all SQL contracts.
+Full unit/rendered suite passed 2,256 tests in 219 files including 43 rendered checks and failed
+only the preserved live-RPC guard: new redeem_booking_xootcred is not yet in actual
+generated types because SQL is unapplied. No handwritten type or guard exception was
+added. CodeQL/security/type/referral checks pass. Separate unchanged notification
+fixture gate is root-owned in PR118. Draft PR119 remains unmerged and requires independent
+review, safe actual schema/type convergence, final PR118 rebase and all required gates.
+See docs/release/evidence/2026-11-04/atomic-benefits-ci.json for exact IDs and source hash.
+
+Source repair prepared in the claimed isolated tree. Both legacy booking writers refuse
+every benefit alias before any mutation; full creation/referral transaction is deliberately
+deferred. New CLI-created 20261104045943 service-only atomic redemption binds owner/payment/
+accepted cents/replay key and commits debit, amount, audit and immutable receipt together.
+Account-first lock order matches settlement/cancellation. Checkout uses an exact signed
+snapshot CAS, closing its race with redemption. No prices/entitlements or paid history
+were rewritten; no hosted SQL, provider call, live gate, sender or generated type was changed.
+Cross-role Correctness handlers and Release migration/CI are explicitly flagged for root
+review. Actual isolated SQL: 44 assertions and 109 focused handler/commercial cases pass; old
+separate-write defect and six-case checkout mutation were genuinely reproduced. Deno all four,
+app typecheck, scoped lint and syntax pass. Native independent-session PG17 race suite is
+added to the existing two-version CI job; local Docker is unavailable, so that evidence
+remains pending CI. Precise contract/deploy/rollback limits are in
+docs/release/atomic-benefits-20261104.md. No full-production clearance is claimed.
+
+Claim fix/atomic-booking-benefits-20261104 from approved75674d60 in the separate
+work/xoot-atomic-benefits-20261104 checkout. Root independently confirmed C1/C2: legacy booking
+and redemption HTTP writes can commit discounted money rows before a rejected/ignored benefit
+debit or referral burn. Prepare a service-only transactional redemption boundary with complete
+account locking, owner/quote/pending-payment checks, idempotency and atomic debit/audit updates.
+If full legacy creation cannot be safely made transactional within this slice, refuse its
+unsupported credit/referral requests before any mutation and explicitly document that limit;
+never silently remove benefits, reprice a quote or compensate by deleting paid history.
+Cross-role Release migrations/CI and Correctness money handlers/guards require independent
+root review. Preserve locked commercial facts, applied SQL and generated types. Add actual SQL
+rollback/concurrency/replay/owner/amount/paid-state and real-handler regressions. No hosted apply,
+provider payment, live gate or sender change; frozen scan and other worktrees stay untouched.
+
 ## REVIEW — 3 November — actual approved release and notification runtime readback
 
 Root records approved release60260f19, the successful targeted production/staging function

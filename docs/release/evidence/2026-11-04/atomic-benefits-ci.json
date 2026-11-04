@@ -1,0 +1,44 @@
+{
+  "sourceCommit": "48337a157abbb6dcaba997eee202ac85fdf79e54",
+  "pullRequest": 119,
+  "baseCommit": "75674d605d11eb0ca898bb34afa94529a09c38b1",
+  "migration": "20261104045943_atomic_booking_xootcred_redemption.sql",
+  "migrationSha256": "1177d84c102b8ecb6ab4ba4a86ba0a07e37b622ddaf7825855e45102d8398de4",
+  "manualTestsRun": 41778196140,
+  "providerProbeInput": false,
+  "nativePostgres": [
+    { "jobId": 126403364756, "serverVersion": 170006, "conclusion": "success", "scenarios": 8, "observedBlockingBarriers": 7 },
+    { "jobId": 126403364760, "serverVersion": 170011, "conclusion": "success", "scenarios": 8, "observedBlockingBarriers": 7 }
+  ],
+  "sqlContractsJob": { "jobId": 126403364661, "conclusion": "success", "localNewAssertions": 44 },
+  "fullUnitRenderedJob": {
+    "jobId": 126403364326,
+    "conclusion": "failure",
+    "filesPassed": 219,
+    "filesFailed": 1,
+    "testsPassed": 2256,
+    "testsFailed": 1,
+    "testsSkipped": 7,
+    "renderedChecksPassed": 43,
+    "failure": "rpc-names-exist: unapplied redeem_booking_xootcred absent from actual generated types",
+    "guardWeakened": false,
+    "generatedTypesEdited": false
+  },
+  "separateRequiredDesignGate": {
+    "runId": 41778177698,
+    "conclusion": "failure",
+    "reason": "unchanged closed-notification fixture: intermediate submission queue is suppressed",
+    "rootOwnsIndependentCorrection": true
+  },
+  "codeql": { "runId": 41778177666, "conclusion": "success" },
+  "localNegativeControls": {
+    "actualRejectedDebitSeparatePriceCommitReproduced": true,
+    "legacyHandlerCasesFailedBeforeFix": 20,
+    "checkoutSnapshotCasesFailedWithCasRemoved": 6,
+    "originalSourceRestored": true
+  },
+  "hostedWrites": 0,
+  "providerCalls": 0,
+  "operationalControlsChanged": 0,
+  "productionReady": false
+}

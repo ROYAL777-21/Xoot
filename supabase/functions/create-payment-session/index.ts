@@ -256,6 +256,14 @@ Deno.serve(async (req) => {
       .eq("id", payment.id)
       .eq("status", "pending")
       .eq("user_id", user.id)
+      // Reserve only the signed snapshot. If redemption wins first this CAS
+      // fails; if routing wins first provider=payfast prevents repricing.
+      .eq("amount", payment.amount)
+      .eq("currency", payment.currency)
+      .eq("provider", payment.provider)
+      .eq("provider_reference", payment.provider_reference)
+      .eq("payment_kind", payment.payment_kind)
+      .eq("booking_id", payment.booking_id)
       .select("id")
       .maybeSingle();
     if (routingError || !routed?.id) {
