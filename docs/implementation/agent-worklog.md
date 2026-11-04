@@ -1,5 +1,21 @@
 # Agent worklog
 
+## HOLDING — 4 November — atomic one-cycle Care+ request and settlement
+
+Claim feature/careplus-cycle-settlement-20261104 from approved75674d60. Own the new Care+
+SQL/contract/tests, membership request/activation, the narrow membership branches in verified
+PayFast/admin confirmation and checkout, and receipt-backed Plans UI. This spans Release schema
+and Correctness financial/auth paths intentionally; parent cross-review and required CI precede
+any source promotion. Preserve booking receipts, genuine JWT/AAL2, signed merchant/postback/
+amount checks, existing commercial rules and all unrelated worker/customer/Geo/scanner work.
+Use explicit owner/plan/payment/subscription linkage, activate the existing pending row, and
+prove replay/concurrency/rollback/cancellation and once-only eligible welcome credit with real
+isolated SQL. Inspect authoritative trial/period eligibility; unknown evidence must stay closed,
+never be manufactured from a paid flag or user metadata. No applied SQL, handwritten types,
+hosted/provider transactions, credentials, role changes, recurring mandate, gift/payout/live
+capability activation or new price/benefit decision. Parent owns actual schema/types/staging/
+genuine-JWT/provider acceptance and final deployment.
+
 ## REVIEW — 3 November — actual approved release and notification runtime readback
 
 Root records approved release60260f19, the successful targeted production/staging function
