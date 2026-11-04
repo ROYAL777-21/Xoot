@@ -70,6 +70,13 @@ select set_config('xoot.local_claim',public.claim_xooter_journey_email('fxmxyabd
 select public.assert_journey(public.authorize_xooter_journey_email((current_setting('xoot.local_claim')::jsonb->>'id')::uuid,(current_setting('xoot.local_claim')::jsonb->>'nonce')::uuid,'fxmxyabdjqviqbcxmvlp')->>'kind'='xooter_application_received','latest resubmission alone can dispatch');
 select public.assert_journey(public.finish_xooter_journey_email((current_setting('xoot.local_claim')::jsonb->>'id')::uuid,(current_setting('xoot.local_claim')::jsonb->>'nonce')::uuid,'accepted','synthetic-current-submitted'),'latest submitted receipt records acceptance');
 reset role;
+-- A claim returns as soon as it finds one eligible row. Transaction timestamps can tie,
+-- so older status rows may sort after it; a stale-only scan must drain without spending.
+select set_config('xoot.stale_scan_used',(select used::text from private.xooter_email_policy where id),false);
+set role service_role;
+select public.assert_journey(public.claim_xooter_journey_email('fxmxyabdjqviqbcxmvlp') is null,'stale attention queue cannot produce another claim');
+reset role;
+select public.assert_journey((select used=current_setting('xoot.stale_scan_used')::integer from private.xooter_email_policy where id),'stale attention scan consumes no quota');
 select public.assert_journey((select email_state='suppressed' from private.xooter_journey_events where event_key='status:3'),'old submitted claim is terminal');
 select public.assert_journey((select email_state='suppressed' from private.xooter_journey_events where event_key='status:4'),'intermediate attention queue is suppressed');
 update public.xooter_applications set status='rejected';
@@ -84,6 +91,11 @@ select set_config('xoot.local_claim',public.claim_xooter_journey_email('fxmxyabd
 select public.assert_journey(public.authorize_xooter_journey_email((current_setting('xoot.local_claim')::jsonb->>'id')::uuid,(current_setting('xoot.local_claim')::jsonb->>'nonce')::uuid,'fxmxyabdjqviqbcxmvlp')->>'kind'='xooter_application_attention','latest rejection alone can dispatch');
 select public.assert_journey(public.finish_xooter_journey_email((current_setting('xoot.local_claim')::jsonb->>'id')::uuid,(current_setting('xoot.local_claim')::jsonb->>'nonce')::uuid,'accepted','synthetic-current-rejected'),'latest rejected receipt records acceptance');
 reset role;
+select set_config('xoot.stale_scan_used',(select used::text from private.xooter_email_policy where id),false);
+set role service_role;
+select public.assert_journey(public.claim_xooter_journey_email('fxmxyabdjqviqbcxmvlp') is null,'stale submission queue cannot produce another claim');
+reset role;
+select public.assert_journey((select used=current_setting('xoot.stale_scan_used')::integer from private.xooter_email_policy where id),'stale submission scan consumes no quota');
 select public.assert_journey((select email_state='suppressed' from private.xooter_journey_events where event_key='status:6'),'old rejected claim is terminal');
 select public.assert_journey((select email_state='suppressed' from private.xooter_journey_events where event_key='status:7'),'intermediate submission queue is suppressed');
 update private.xooter_email_policy set maximum=used;

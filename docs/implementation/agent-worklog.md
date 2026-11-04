@@ -1,6 +1,6 @@
 # Agent worklog
 
-## HOLDING — 4 November — parent review and deterministic email-queue contract
+## REVIEW — 4 November — parent review and deterministic email-queue contract
 
 Parent independently reviewed PR118's unchanged migration/source/authority/lock guards and ran
 all11actual SQL hardening cases successfully. Required41734200027 failed before the new check:
@@ -10,6 +10,13 @@ queued until the next scan. Root will retain every suppression/receipt assertion
 stale-only scan with no quota use, and prove both natural and latest-first queue order. Applied
 SQL, migration bytes, current policy and message delivery remain untouched. This changes the
 Correctness-owned contract/runner to repair a demonstrated release flake, not an acceptance gate.
+
+The unmodified contract failed deterministically with the valid row before stale status:4.
+The correction retains all original suppression/receipt checks, explicitly drains stale rows
+without a claim or quota use, and verifies both natural and forced valid-first ordering.
+Parent checks pass93core/email assertions plus mutation/rollback/old-receipt controls, eleven
+allowlist cases and127closed-wrapper assertions. All applied SQL and the new migration's
+ce67a0ce hash remain unchanged. Required CI is rerun on the final source before any hosted apply.
 
 ## REVIEW — 3 November — actual approved release and notification runtime readback
 

@@ -43,6 +43,17 @@ exceeded the default deadline. No test deadline or unrelated implementation was 
 The required isolated GitHub suite remains the release gate. This is a draft for independent
 review, not a full local-suite or hosted/concurrent/SMTP acceptance claim.
 
+Parent review reproduced required41734200027's pre-existing queue-order failure without
+changing any applied SQL: one SQL batch gives events the same now() timestamp, and random UUID
+order can put a valid newer status before stale queue rows. A claim returns at the first valid
+row; the original fixture incorrectly expected every later stale row to have been scanned.
+The contract retains all status/receipt assertions and now explicitly scans a stale-only queue,
+requiring no claim and no additional allowance use. A second run forces the valid row first.
+That ordering fails the predecessor fixture deterministically and passes the corrected one.
+All93core/email assertions, both queue orders, original mutation/rollback controls, eleven
+allowlist cases and127closed-schema assertions pass. The migration body/hash is unchanged;
+no deadline, privilege, sender setting or substantive acceptance gate was relaxed.
+
 Root owns independent review and any later hosted delivery. Before applying, read actual
 source/ACL, paused policy and outstanding mail state. After applying, verify the validated
 CHECK, replacement body, unchanged ABI/owner/ACL, exact policy/quota rows and existing receipt
