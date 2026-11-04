@@ -1,5 +1,17 @@
 # Agent worklog
 
+## HOLDING — 4 November — booking participant privacy in SOS and job responses
+
+Claim fix/participant-security-20261104 from approved75674d60. Fix the supplied arbitrary-booking
+SOS address linkage and unchecked legacy worker response mutation. Trace actual web/native
+callers, current participant/roster/time authority and history/chat contracts before selecting
+the boundary. Preserve generic SOS, PIN protections and truthful operational status. New
+coordinate checks and meaningful handler/actual SQL regressions must prove hostile denial and
+legitimate behavior. Any needed forward RLS migration crosses Release/Correctness and needs
+independent review; never alter applied SQL or hand-write production types. No hosted writes,
+112 dial, provider calls, role grants, money or worker activation. Customer notification source
+d3ad859f and the separate frozen security scan target are untouched. Root owns final validation
+and deployment after the actual release gates.
 ## REVIEW — 3 November — actual approved release and notification runtime readback
 
 Root records approved release60260f19, the successful targeted production/staging function
