@@ -1,5 +1,16 @@
 # Agent worklog
 
+## HOLDING — 4 November — parent review and deterministic email-queue contract
+
+Parent independently reviewed PR118's unchanged migration/source/authority/lock guards and ran
+all11actual SQL hardening cases successfully. Required41734200027 failed before the new check:
+the existing email contract assumes stale rows are suppressed before a newer eligible claim
+returns. Events created in one transaction share now(), so UUID order can leave stale rows
+queued until the next scan. Root will retain every suppression/receipt assertion, add an explicit
+stale-only scan with no quota use, and prove both natural and latest-first queue order. Applied
+SQL, migration bytes, current policy and message delivery remain untouched. This changes the
+Correctness-owned contract/runner to repair a demonstrated release flake, not an acceptance gate.
+
 ## REVIEW — 3 November — actual approved release and notification runtime readback
 
 Root records approved release60260f19, the successful targeted production/staging function
