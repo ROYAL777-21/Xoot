@@ -49,6 +49,8 @@ jobs:
         run: node scripts/ops/verify-worker-destinations.mjs "$RUNNER_TEMP/xoot-worker-sql/node_modules/@electric-sql/pglite/dist/index.js"
       - name: Verify atomic Xooter lifecycle, consent, status revisions and SMTP receipts
         run: node scripts/ops/verify-xooter-journey.mjs "$RUNNER_TEMP/xoot-worker-sql/node_modules/@electric-sql/pglite/dist/index.js"
+      - name: Verify paused worker email allowlist repair and receipt preservation
+        run: node scripts/ops/verify-xooter-email-allowlist.mjs "$RUNNER_TEMP/xoot-worker-sql/node_modules/@electric-sql/pglite/dist/index.js"
       - name: Verify closed notification schema compatibility, rollback and history provenance
         run: node scripts/ops/verify-closed-xooter-notifications.mjs "$RUNNER_TEMP/xoot-worker-sql/node_modules/@electric-sql/pglite/dist/index.js"
       - name: Verify public email PNG embedding and other-resource isolation in Chromium

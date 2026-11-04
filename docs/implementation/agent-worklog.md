@@ -1,5 +1,23 @@
 # Agent worklog
 
+## REVIEW — 4 November — parent review and deterministic email-queue contract
+
+Parent independently reviewed PR118's unchanged migration/source/authority/lock guards and ran
+all11actual SQL hardening cases successfully. Required41734200027 failed before the new check:
+the existing email contract assumes stale rows are suppressed before a newer eligible claim
+returns. Events created in one transaction share now(), so UUID order can leave stale rows
+queued until the next scan. Root will retain every suppression/receipt assertion, add an explicit
+stale-only scan with no quota use, and prove both natural and latest-first queue order. Applied
+SQL, migration bytes, current policy and message delivery remain untouched. This changes the
+Correctness-owned contract/runner to repair a demonstrated release flake, not an acceptance gate.
+
+The unmodified contract failed deterministically with the valid row before stale status:4.
+The correction retains all original suppression/receipt checks, explicitly drains stale rows
+without a claim or quota use, and verifies both natural and forced valid-first ordering.
+Parent checks pass93core/email assertions plus mutation/rollback/old-receipt controls, eleven
+allowlist cases and127closed-wrapper assertions. All applied SQL and the new migration's
+ce67a0ce hash remain unchanged. Required CI is rerun on the final source before any hosted apply.
+
 ## REVIEW — 3 November — actual approved release and notification runtime readback
 
 Root records approved release60260f19, the successful targeted production/staging function
@@ -17,6 +35,37 @@ Actual checks now passed: canonical60260f19/ZD-026/R39, served Updates route/acc
 business counters are unchanged. Checked-in notification-runtime.json contains redacted hashes,
 versions and counts only. No SMTP connection or geocoder request was performed. Source/type,
 JWT/device, full-journey and production delivery acceptance remain distinct evidence.
+
+## REVIEW — 4 November — paused worker email allowlist hardening
+
+Claim fix/xooter-email-null-allowlist-20261103 from approved60260f19 in the separate
+work/xoot-notification-policy-20261103 checkout. Independent catalog reads found the same
+NULL-array revocation defect in both deployed worker authorize functions: old prosrcSHA
+4a94e45ce0dd6ff3892b6788356e0dc0bd48124133af86872b28d425ec55b9e3. Both policies are paused,
+production0/20 and staging1/20, and neither current allowlist contains NULL. Prepare only a
+forward migration with paused/no-active-mail prerequisites, policy-before-events locking,
+NULL-free allowlist validation and a null-safe final membership check. Preserve applied SQL,
+function ABI/owner/ACL, every budget/receipt and all closed controls. This crosses Release
+migrations/CI and Correctness regression ownership explicitly; parent cross-review is required.
+Prove the old-body leak and real SQL denial/rollback/preservation contracts locally, then open
+a draft PR. No hosted apply, sender/schedule activation, reset/refill or generated-type edit.
+The separate customer agent owns its unapplied policy fix; other working trees stay untouched.
+
+Claim167c7198 was pushed before implementation. New forward migration20261103223222 takes the
+policy ACCESS EXCLUSIVE lock before event EXCLUSIVE, refuses enabled/active/unknown-source
+states, validates NULL-free allowlists and changes only final authorization membership to
+IS NOT TRUE. Canonical-LF migrationSHAce67a0ce7faefddbf2d7efb1f58ed622c0d1411e922f2faae27cad50c47b7c9d;
+replacementprosrc8e84cbdad9c9f2340235091a37ec1eab588aca03a80e8c5c01bf304ebf0bf422.
+Eleven actual isolated SQL scenarios pass, including the immutable old-body leak, revocation,
+schema validation, valid-once dispatch, full row/authority preservation and failed-delivery
+rollback. The new denial regression failed before the fix. Original89SQL assertions/negative
+controls, web typecheck, scoped lint, script syntax and diff checks pass. Both existing SQL CI
+workflows run the new validator; no runtime/provider dependency was added.
+The attempted full local Vitest run was stopped at the parent's request after failures in
+unchanged NotificationsFeed, Profile, in-app-call, ops-readiness, Bookings, Today, BookingFlow,
+deploy-host-config and kit-tokens tests, with multiple default-deadline overruns. No UI or test
+deadline was changed. Required isolated GitHub CI supplies the full-suite verdict; no complete
+local-suite success is claimed. Independent parent review precedes any later hosted apply.
 
 ## HOLDING — 3 November — notification interface on the approved schema/navigation release
 

@@ -160,6 +160,9 @@ jobs:
       - name: Verify Xooter journey event deduplication and consent isolation
         run: node scripts/ops/verify-xooter-journey.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
 
+      - name: Verify paused worker email allowlist repair and receipt preservation
+        run: node scripts/ops/verify-xooter-email-allowlist.mjs "$RUNNER_TEMP/xoot-sql-validation/node_modules/@electric-sql/pglite/dist/index.js"
+
   test:
     name: Lint, build and unit tests
     runs-on: ubuntu-latest

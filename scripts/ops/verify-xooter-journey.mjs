@@ -38,6 +38,21 @@ try {
   await mail.exec(emailContract);
   console.log(JSON.stringify({check:'email-worker-state-consent-and-authority',assertions:(emailContract.match(/select public\.(?:assert_journey|expect_journey_error)\(/g)||[]).length,passed:true}));
 } finally {await mail.close();}
+// Default now() timestamps tie inside one SQL batch. Force a newer eligible status
+// before stale queued rows, independently of random UUID order, without changing SQL.
+const queuedLast=new PGlite();
+try {
+  await queuedLast.exec(fixture);await queuedLast.exec(migration);
+  await queuedLast.exec(receiptMigration);await queuedLast.exec(receiptFix);
+  let reordered=emailContract.replaceAll('\r\n','\n');
+  for(const [before,after,key] of [['rejected','submitted','status:4'],['submitted','rejected','status:7']]) {
+    const marker=`update public.xooter_applications set status='${before}';\nupdate public.xooter_applications set status='${after}';\nset role service_role;`;
+    assert.equal(reordered.split(marker).length,2,'one status re-entry fixture marker');
+    reordered=reordered.replace(marker,`update public.xooter_applications set status='${before}';\nupdate public.xooter_applications set status='${after}';\nupdate private.xooter_journey_events set created_at=clock_timestamp() where event_key='${key}';\nset role service_role;`);
+  }
+  await queuedLast.exec(reordered);
+  console.log(JSON.stringify({check:'latest-eligible-before-stale-queue-keeps-receipts-and-quota',passed:true}));
+} finally {await queuedLast.close();}
 const oldReceipt=new PGlite();
 try {
   await oldReceipt.exec(fixture);await oldReceipt.exec(migration);await oldReceipt.exec(receiptMigration);
