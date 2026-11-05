@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { getNativePushCapability } from "@/lib/native-notifications";
 import { initialisePushNotifications } from "@/lib/push-notifications";
+import { resolveNativeRouteForRoles } from "@/lib/notification-routing";
+import { loadCurrentUserRoles } from "@/lib/user-roles";
 
 type PromptState = "checking" | "unsupported" | "idle" | "saving" | "enabled" | "denied" | "error";
 
@@ -24,7 +26,16 @@ export const NativePushPrompt = () => {
     if (!user) return;
 
     setState("saving");
-    const registration = await initialisePushNotifications(user.id, navigate);
+    /*
+     * Push taps would otherwise navigate straight to the resolved route. Wrapping `navigate`
+     * applies the role rule (Xooter taps never enter the client surface) — see
+     * `notification-routing.ts`.
+     */
+    const roleAwareNavigate = async (route: string) => {
+      const roles = await loadCurrentUserRoles(user.id);
+      navigate(resolveNativeRouteForRoles(route, roles));
+    };
+    const registration = await initialisePushNotifications(user.id, roleAwareNavigate);
 
     if (registration.status === "registered") {
         setState("enabled");

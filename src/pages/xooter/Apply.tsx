@@ -14,6 +14,14 @@ import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { captureOrSelectImage } from "@/lib/mobile-upload";
+import { describeInvokeError } from "@/lib/edge-function-error";
+import { approvedLaunchRegionLabels, isApprovedLaunchRegion } from "@/lib/launch-regions";
+import {
+  latestAcceptableDob,
+  earliestAcceptableDob,
+  validateXooterIdentity,
+  validateXooterReferences,
+} from "@/lib/xooter-identity";
 import { XooterApplicationInput } from "@/lib/validators";
 
 type DocType = "id" | "proof_of_residence" | "bank_statement" | "selfie";
@@ -44,7 +52,6 @@ const emptyForm = {
   luxury_home_answer: "",
   fragile_items_answer: "",
   punctuality_answer: "",
-  off_platform_answer: "",
   address: "",
   city: "",
   postal_code: "",
@@ -59,6 +66,8 @@ const emptyForm = {
   reference_1_phone: "",
   reference_2_name: "",
   reference_2_phone: "",
+  reference_1_relationship: "",
+  reference_2_relationship: "",
   background_check_consent: false,
 };
 
@@ -134,7 +143,6 @@ const Apply = () => {
           luxury_home_answer: appRow.behavioural_screening?.luxury_home ?? "",
           fragile_items_answer: appRow.behavioural_screening?.fragile_items ?? "",
           punctuality_answer: appRow.behavioural_screening?.punctuality ?? "",
-          off_platform_answer: appRow.behavioural_screening?.off_platform ?? "",
           background_check_consent: appRow.background_check_consent ?? false,
         });
         if (appRow.status === "submitted" || appRow.status === "approved") { navigate("/xooter"); return; }
@@ -165,7 +173,6 @@ const Apply = () => {
       luxury_home: sourceForm.luxury_home_answer,
       fragile_items: sourceForm.fragile_items_answer,
       punctuality: sourceForm.punctuality_answer,
-      off_platform: sourceForm.off_platform_answer,
     },
     address: sourceForm.address,
     city: sourceForm.city,
@@ -179,8 +186,10 @@ const Apply = () => {
     emergency_contact_phone: sourceForm.emergency_contact_phone,
     reference_1_name: sourceForm.reference_1_name,
     reference_1_phone: sourceForm.reference_1_phone,
+    reference_1_relationship: sourceForm.reference_1_relationship || null,
     reference_2_name: sourceForm.reference_2_name,
     reference_2_phone: sourceForm.reference_2_phone,
+    reference_2_relationship: sourceForm.reference_2_relationship || null,
     background_check_consent: sourceForm.background_check_consent,
     selfie_storage_path: docs.selfie ?? null,
     docs,
@@ -193,10 +202,21 @@ const Apply = () => {
     const { data, error } = await supabase.functions.invoke("submit-xooter-application", {
       body: { mode, application: payload, applicationId: appId },
     });
-    if (error) { toast.error(error.message); return null; }
-    const result = data as { success?: boolean; error?: string; data?: { application_id?: string } } | null;
+    if (error) {
+      /*
+       * A 4xx from this function used to surface as the generic "Edge function returned a
+       * non-2xx code" toast — the real reason (which field was missing, which suburb is not
+       * launch-approved) is in the response body, which nothing read. Pull it out and show it.
+       */
+      const detail = await describeInvokeError(error);
+      haptic("warning");
+      toast.error(detail);
+      return null;
+    }
+    const result = data as { success?: boolean; error?: string; data?: { application_id?: string }; missing?: string[] } | null;
     if (result?.success === false || !result?.data?.application_id) {
-      const missing = Array.isArray((result as any)?.missing) ? ` Missing: ${(result as any).missing.join(", ")}` : "";
+      const missing = Array.isArray(result?.missing) ? ` Missing: ${(result?.missing ?? []).join(", ")}` : "";
+      haptic("warning");
       toast.error(`${result?.error ?? "Application save failed"}${missing}`);
       return null;
     }
@@ -237,7 +257,7 @@ const Apply = () => {
       if (docError || docResult?.success === false) {
         if (uploadedPath) await supabase.storage.from("kyc-docs").remove([uploadedPath]);
         haptic("warning");
-        toast.error(docError?.message ?? docResult?.error ?? "Document metadata could not be saved");
+        toast.error(docResult?.error ?? (await describeInvokeError(docError)) ?? "Document metadata could not be saved");
         return;
       }
       setDocs((d) => ({ ...d, [key]: path }));
@@ -257,9 +277,9 @@ const Apply = () => {
   const requiredForStep = () => {
     if (step === 0) return ["full_name", "phone", "email", "date_of_birth", "id_number", "bio", "years_experience"];
     if (step === 1) return ["address", "city", "suburb", "postal_code"];
-    if (step === 2) return ["transport", "supplies_owned", "pet_comfort", "availability_notes", "luxury_home_answer", "fragile_items_answer", "punctuality_answer", "off_platform_answer"];
+    if (step === 2) return ["transport", "supplies_owned", "pet_comfort", "availability_notes", "luxury_home_answer", "fragile_items_answer", "punctuality_answer"];
     if (step === 3) return ["bank_name", "bank_account_number", "bank_branch_code"];
-    if (step === 4) return ["emergency_contact_name", "emergency_contact_phone", "reference_1_name", "reference_1_phone", "reference_2_name", "reference_2_phone"];
+    if (step === 4) return ["emergency_contact_name", "emergency_contact_phone", "reference_1_name", "reference_1_phone", "reference_1_relationship", "reference_2_name", "reference_2_phone", "reference_2_relationship"];
     return [];
   };
 
@@ -269,8 +289,51 @@ const Apply = () => {
     if (step === 0 && !looksLikeEmail(form.email)) { haptic("warning"); toast.error("Enter a valid email address"); return false; }
     if (step === 0 && !looksLikePhone(form.phone)) { haptic("warning"); toast.error("Enter a valid phone number"); return false; }
     if (step === 0 && Number(form.years_experience) < 0) { haptic("warning"); toast.error("Years of experience cannot be negative"); return false; }
+    if (step === 0) {
+      /*
+       * Age gate, ID format, and ID↔DOB correlation. These run client-side for immediate
+       * feedback and again server-side in `submit-xooter-application`, because a browser check
+       * is UX, not a control. An SA ID number encodes the DOB in its first six digits, so a
+       * mismatch here is either a typo or a borrowed ID — either way it stops now, not in
+       * manual review a week later.
+       */
+      const identityIssues = validateXooterIdentity({
+        dateOfBirth: form.date_of_birth,
+        idNumber: form.id_number,
+      });
+      if (identityIssues.length) {
+        haptic("warning");
+        toast.error(identityIssues[0]);
+        return false;
+      }
+    }
+    if (step === 1 && !isApprovedLaunchRegion(form.suburb)) {
+      haptic("warning");
+      toast.error(`Xoot is launching in selected areas only: ${approvedLaunchRegionLabels().join(", ")}.`);
+      return false;
+    }
     if (step === 3 && !looksLikeBankAccount(form.bank_account_number)) { haptic("warning"); toast.error("Enter a valid bank account number"); return false; }
     if (step === 3 && !/^[0-9]{4,8}$/.test(form.bank_branch_code.trim())) { haptic("warning"); toast.error("Enter a valid branch code"); return false; }
+    if (step === 4) {
+      /*
+       * No self-references, no duplicate reference. The platform-user check (a reference who
+       * is an unverified Xoot applicant) needs the database and is enforced server-side at
+       * submit, together with these same two rules.
+       */
+      const referenceIssues = validateXooterReferences({
+        applicantName: form.full_name,
+        applicantPhone: form.phone,
+        references: [
+          { label: "Reference 1", name: form.reference_1_name, phone: form.reference_1_phone },
+          { label: "Reference 2", name: form.reference_2_name, phone: form.reference_2_phone },
+        ],
+      });
+      if (referenceIssues.length) {
+        haptic("warning");
+        toast.error(referenceIssues[0]);
+        return false;
+      }
+    }
     if (step === 5) {
       const missingDocs = docMeta.filter((d) => !docs[d.key]);
       if (missingDocs.length) { haptic("warning"); toast.error(`Upload required: ${missingDocs.map((d) => d.label).join(", ")}`); return false; }
@@ -299,6 +362,27 @@ const Apply = () => {
       toast.error(applicationInput.error.issues[0]?.message ?? "Please check your application details.");
       return;
     }
+    /*
+     * Final gate before the network call: the same identity and reference rules the server
+     * enforces. Running them here means a rejection is a toast in context, not a round trip
+     * that comes back as an error the user has to decode.
+     */
+    const identityIssues = validateXooterIdentity({ dateOfBirth: form.date_of_birth, idNumber: form.id_number });
+    if (identityIssues.length) { haptic("warning"); toast.error(identityIssues[0]); return; }
+    const referenceIssues = validateXooterReferences({
+      applicantName: form.full_name,
+      applicantPhone: form.phone,
+      references: [
+        { label: "Reference 1", name: form.reference_1_name, phone: form.reference_1_phone },
+        { label: "Reference 2", name: form.reference_2_name, phone: form.reference_2_phone },
+      ],
+    });
+    if (referenceIssues.length) { haptic("warning"); toast.error(referenceIssues[0]); return; }
+    if (!isApprovedLaunchRegion(form.suburb)) {
+      haptic("warning");
+      toast.error(`Xoot is launching in selected areas only: ${approvedLaunchRegionLabels().join(", ")}.`);
+      return;
+    }
     if (!checkRateLimit("application", 3, 3_600_000)) {
       haptic("warning");
       toast.error("Too many application submissions. Please wait before trying again.");
@@ -310,6 +394,7 @@ const Apply = () => {
       phone: applicationInput.data.phone,
       suburb: applicationInput.data.suburb,
       years_experience: String(applicationInput.data.years_experience),
+      id_number: form.id_number.replace(/\s+/g, "").toUpperCase(),
     };
     setSubmitting(true);
     const id = await saveDraft("submitted", safeForm);
@@ -336,15 +421,48 @@ const Apply = () => {
 
         <RequiredFieldContext.Provider value={{ form, requiredKeys }}>
         <Card className="p-6 rounded-3xl shadow-soft">
-          {step === 0 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold">About you</h2><div className="grid sm:grid-cols-2 gap-3"><F label="Full name" name="full_name"><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></F><F label="Phone" name="phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+27..." /></F><F label="Email" name="email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></F><F label="Date of birth" name="date_of_birth"><Input type="date" value={form.date_of_birth ?? ""} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} /></F><F label="ID / Passport number" name="id_number"><Input value={form.id_number ?? ""} onChange={(e) => setForm({ ...form, id_number: e.target.value })} /></F><F label="Years of experience" name="years_experience"><Input type="number" min="0" value={form.years_experience ?? ""} onChange={(e) => setForm({ ...form, years_experience: e.target.value })} /></F><F label="Primary service"><Input value="House cleaning" disabled /></F></div><F label="Short bio" name="bio"><Textarea rows={3} value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Airbnb turnover specialist, gentle with pets, eco-friendly products..." /></F></div>}
+          {step === 0 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold">About you</h2><p className="text-sm text-muted-foreground">You must be 18 or older to apply. Your ID or passport number is checked against your date of birth during trust review.</p><div className="grid sm:grid-cols-2 gap-3"><F label="Full name" name="full_name"><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></F><F label="Phone" name="phone"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+27..." /></F><F label="Email" name="email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></F><F label="Date of birth (18+ only)" name="date_of_birth"><Input type="date" max={latestAcceptableDob().toISOString().slice(0, 10)} min={earliestAcceptableDob().toISOString().slice(0, 10)} value={form.date_of_birth ?? ""} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} /></F><F label="ID / Passport number" name="id_number"><Input value={form.id_number ?? ""} onChange={(e) => setForm({ ...form, id_number: e.target.value.toUpperCase() })} placeholder="13-digit SA ID or passport number" className="uppercase" /></F><F label="Years of experience" name="years_experience"><Input type="number" min="0" value={form.years_experience ?? ""} onChange={(e) => setForm({ ...form, years_experience: e.target.value })} /></F><F label="Primary service"><Input value="House cleaning" disabled /></F></div><F label="Short bio" name="bio"><Textarea rows={3} value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Airbnb turnover specialist, gentle with pets, eco-friendly products..." /></F></div>}
 
-          {step === 1 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold">Where you live</h2><F label="Street address" name="address"><Input value={form.address ?? ""} onChange={(e) => setForm({ ...form, address: e.target.value })} /></F><div className="grid sm:grid-cols-3 gap-3"><F label="City" name="city"><Input value={form.city ?? ""} onChange={(e) => setForm({ ...form, city: e.target.value })} /></F><F label="Suburb" name="suburb"><Input value={form.suburb ?? ""} onChange={(e) => setForm({ ...form, suburb: e.target.value })} placeholder="Sandton, Midrand..." /></F><F label="Postal code" name="postal_code"><Input value={form.postal_code ?? ""} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} /></F></div></div>}
+          {step === 1 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold">Where you live</h2><F label="Street address" name="address"><Input value={form.address ?? ""} onChange={(e) => setForm({ ...form, address: e.target.value })} /></F><div className="grid sm:grid-cols-3 gap-3"><F label="City" name="city"><Input value={form.city ?? ""} onChange={(e) => setForm({ ...form, city: e.target.value })} /></F><F label="Suburb (launch areas)" name="suburb"><Input list="xoot-launch-suburbs" value={form.suburb ?? ""} onChange={(e) => setForm({ ...form, suburb: e.target.value })} placeholder="Sandton, Midrand..." /><datalist id="xoot-launch-suburbs">{approvedLaunchRegionLabels().map((region) => <option key={region} value={region} />)}</datalist></F><F label="Postal code" name="postal_code"><Input value={form.postal_code ?? ""} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} /></F></div><p className="text-xs text-muted-foreground">Xoot is live in: {approvedLaunchRegionLabels().join(" · ")}</p></div>}
 
-          {step === 2 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold">Experience & work style</h2><div className="grid sm:grid-cols-2 gap-3"><F label="Transport" name="transport"><Input value={form.transport ?? ""} onChange={(e) => setForm({ ...form, transport: e.target.value })} placeholder="Own car, taxi, lift club" /></F><F label="Supplies owned" name="supplies_owned"><Input value={form.supplies_owned ?? ""} onChange={(e) => setForm({ ...form, supplies_owned: e.target.value })} placeholder="Vacuum, mop, products" /></F><F label="Pet comfort" name="pet_comfort"><Input value={form.pet_comfort ?? ""} onChange={(e) => setForm({ ...form, pet_comfort: e.target.value })} placeholder="Comfortable with dogs and cats" /></F><F label="Availability" name="availability_notes"><Input value={form.availability_notes ?? ""} onChange={(e) => setForm({ ...form, availability_notes: e.target.value })} placeholder="Weekdays, Saturdays, mornings..." /></F></div><F label="Luxury-home expectations" name="luxury_home_answer"><Textarea rows={2} value={form.luxury_home_answer ?? ""} onChange={(e) => setForm({ ...form, luxury_home_answer: e.target.value })} placeholder="How do you handle premium surfaces, linen, and quiet service?" /></F><F label="Fragile items" name="fragile_items_answer"><Textarea rows={2} value={form.fragile_items_answer ?? ""} onChange={(e) => setForm({ ...form, fragile_items_answer: e.target.value })} placeholder="What do you do around glassware, art, and sentimental items?" /></F><F label="Punctuality" name="punctuality_answer"><Textarea rows={2} value={form.punctuality_answer ?? ""} onChange={(e) => setForm({ ...form, punctuality_answer: e.target.value })} placeholder="What happens if traffic or a delay affects arrival?" /></F><F label="Off-platform request" name="off_platform_answer"><Textarea rows={2} value={form.off_platform_answer ?? ""} onChange={(e) => setForm({ ...form, off_platform_answer: e.target.value })} placeholder="What do you do if a client asks to book privately?" /></F></div>}
+          {step === 2 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold">Experience & work style</h2><div className="grid sm:grid-cols-2 gap-3"><F label="Transport" name="transport"><Input value={form.transport ?? ""} onChange={(e) => setForm({ ...form, transport: e.target.value })} placeholder="Own car, taxi, lift club" /></F><F label="Supplies owned" name="supplies_owned"><Input value={form.supplies_owned ?? ""} onChange={(e) => setForm({ ...form, supplies_owned: e.target.value })} placeholder="Vacuum, mop, products" /></F><F label="Pet comfort" name="pet_comfort"><Input value={form.pet_comfort ?? ""} onChange={(e) => setForm({ ...form, pet_comfort: e.target.value })} placeholder="Comfortable with dogs and cats" /></F><F label="Availability" name="availability_notes"><Input value={form.availability_notes ?? ""} onChange={(e) => setForm({ ...form, availability_notes: e.target.value })} placeholder="Weekdays, Saturdays, mornings..." /></F></div><F label="Luxury-home expectations" name="luxury_home_answer"><Textarea rows={2} value={form.luxury_home_answer ?? ""} onChange={(e) => setForm({ ...form, luxury_home_answer: e.target.value })} placeholder="How do you handle premium surfaces, linen, and quiet service?" /></F><F label="Fragile items" name="fragile_items_answer"><Textarea rows={2} value={form.fragile_items_answer ?? ""} onChange={(e) => setForm({ ...form, fragile_items_answer: e.target.value })} placeholder="What do you do around glassware, art, and sentimental items?" /></F><F label="Punctuality" name="punctuality_answer"><Textarea rows={2} value={form.punctuality_answer ?? ""} onChange={(e) => setForm({ ...form, punctuality_answer: e.target.value })} placeholder="What happens if traffic or a delay affects arrival?" /></F></div>}
 
           {step === 3 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold">Banking for payouts</h2><p className="text-sm text-muted-foreground">Banking is manually reviewed before first payout.</p><F label="Bank name" name="bank_name"><Input value={form.bank_name ?? ""} onChange={(e) => setForm({ ...form, bank_name: e.target.value })} /></F><div className="grid sm:grid-cols-2 gap-3"><F label="Account number" name="bank_account_number"><Input value={form.bank_account_number ?? ""} onChange={(e) => setForm({ ...form, bank_account_number: e.target.value })} /></F><F label="Branch code" name="bank_branch_code"><Input value={form.bank_branch_code ?? ""} onChange={(e) => setForm({ ...form, bank_branch_code: e.target.value })} /></F></div></div>}
 
-          {step === 4 && <div className="space-y-4"><h2 className="font-display text-2xl font-bold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> References & emergency contact</h2><p className="text-sm text-muted-foreground">References help us keep marketplace quality high before a Xooter goes live.</p><div className="grid sm:grid-cols-2 gap-3"><F label="Emergency contact name" name="emergency_contact_name"><Input value={form.emergency_contact_name ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_name: e.target.value })} /></F><F label="Emergency contact phone" name="emergency_contact_phone"><Input value={form.emergency_contact_phone ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} /></F><F label="Reference 1 name" name="reference_1_name"><Input value={form.reference_1_name ?? ""} onChange={(e) => setForm({ ...form, reference_1_name: e.target.value })} /></F><F label="Reference 1 phone" name="reference_1_phone"><Input value={form.reference_1_phone ?? ""} onChange={(e) => setForm({ ...form, reference_1_phone: e.target.value })} /></F><F label="Reference 2 name" name="reference_2_name"><Input value={form.reference_2_name ?? ""} onChange={(e) => setForm({ ...form, reference_2_name: e.target.value })} /></F><F label="Reference 2 phone" name="reference_2_phone"><Input value={form.reference_2_phone ?? ""} onChange={(e) => setForm({ ...form, reference_2_phone: e.target.value })} /></F></div></div>}
+          {step === 4 && (
+            <div className="space-y-4">
+              <h2 className="font-display text-2xl font-bold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> References & emergency contact</h2>
+              <p className="text-sm text-muted-foreground">References must be people who know your work — a former employer, an institution, or a friend. You cannot list yourself, and your references cannot be Xoot applicants who are still in verification.</p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <F label="Emergency contact name" name="emergency_contact_name"><Input value={form.emergency_contact_name ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_name: e.target.value })} /></F>
+                <F label="Emergency contact phone" name="emergency_contact_phone"><Input value={form.emergency_contact_phone ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} /></F>
+              </div>
+              <div className="grid sm:grid-cols-3 gap-3">
+                <F label="Reference 1 name" name="reference_1_name"><Input value={form.reference_1_name ?? ""} onChange={(e) => setForm({ ...form, reference_1_name: e.target.value })} /></F>
+                <F label="Reference 1 phone" name="reference_1_phone"><Input value={form.reference_1_phone ?? ""} onChange={(e) => setForm({ ...form, reference_1_phone: e.target.value })} placeholder="+27..." /></F>
+                <F label="Reference 1 is a..." name="reference_1_relationship">
+                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" value={form.reference_1_relationship ?? ""} onChange={(e) => setForm({ ...form, reference_1_relationship: e.target.value })}>
+                    <option value="">Select relationship</option>
+                    <option value="former_employer">Former employer</option>
+                    <option value="institution">Institution</option>
+                    <option value="friend">Friend</option>
+                    <option value="colleague">Colleague</option>
+                  </select>
+                </F>
+                <F label="Reference 2 name" name="reference_2_name"><Input value={form.reference_2_name ?? ""} onChange={(e) => setForm({ ...form, reference_2_name: e.target.value })} /></F>
+                <F label="Reference 2 phone" name="reference_2_phone"><Input value={form.reference_2_phone ?? ""} onChange={(e) => setForm({ ...form, reference_2_phone: e.target.value })} placeholder="+27..." /></F>
+                <F label="Reference 2 is a..." name="reference_2_relationship">
+                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" value={form.reference_2_relationship ?? ""} onChange={(e) => setForm({ ...form, reference_2_relationship: e.target.value })}>
+                    <option value="">Select relationship</option>
+                    <option value="former_employer">Former employer</option>
+                    <option value="institution">Institution</option>
+                    <option value="friend">Friend</option>
+                    <option value="colleague">Colleague</option>
+                  </select>
+                </F>
+              </div>
+            </div>
+          )}
 
           {step === 5 && (
             <div className="space-y-3">

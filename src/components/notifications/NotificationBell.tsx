@@ -7,13 +7,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
 import { NativePushPrompt } from "@/components/notifications/NativePushPrompt";
-import { resolveNotificationLink } from "@/lib/notification-routing";
+import { resolveNotificationLinkForRoles } from "@/lib/notification-routing";
+import { loadCurrentUserRoles } from "@/lib/user-roles";
 
 type N = { id: string; kind: string; title: string; body: string | null; link: string | null; read: boolean; created_at: string };
 
 export const NotificationBell = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<N[]>([]);
+  const [roles, setRoles] = useState<string[]>(["user"]);
 
   const load = async () => {
     if (!user) return;
@@ -28,6 +30,7 @@ export const NotificationBell = () => {
   useEffect(() => {
     load();
     if (!user) return;
+    void loadCurrentUserRoles(user.id).then(setRoles);
     const ch = supabase
       .channel(`notif-${user.id}`)
       .on(
@@ -87,7 +90,11 @@ export const NotificationBell = () => {
                   </div>
                 </div>
               );
-              const safeLink = resolveNotificationLink(n.link);
+              /*
+               * Role-aware: a Xooter tapping a client-surface link lands on the Xooter portal,
+               * not inside the client web app. See `notification-routing.ts`.
+               */
+              const safeLink = resolveNotificationLinkForRoles(n.link, roles);
               return safeLink ? <Link key={n.id} to={safeLink}>{Body}</Link> : <div key={n.id}>{Body}</div>;
             })
           )}

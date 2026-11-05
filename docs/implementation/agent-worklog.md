@@ -28,6 +28,76 @@ Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live stat
 
 ---
 
+## 2026-11-05 — Founder-requested onboarding hardening, notification deep-link fix, README (external session)
+
+Worked from the founder's instruction list against `main` @ `dde795a`. **All changes are local to
+this working copy — not pushed, not deployed.** Verified: 1,228/1,229 tests (the 1 failure is
+`ios-build-setup.test.ts`, pre-existing, needs `mobile/node_modules` which this environment does not
+install), `tsc --noEmit` clean, `eslint` clean on touched files, `security:scan` 4/4, `vite build`
+clean.
+
+### Onboarding (`src/pages/xooter/Apply.tsx` + `submit-xooter-application`)
+
+- **18+ age gate, enforced server-side at submit** (drafts stay lenient): new
+  `supabase/functions/_shared/xooter-identity.ts` mirrors `src/lib/xooter-identity.ts` (same rules,
+  both must change together — pinned by `xooter-identity.test.ts`).
+- **SA ID validation**: 13-digit Luhn checksum, embedded-DOB reality, citizenship digit; **DOB↔ID
+  correlation** — an SA ID whose first six digits disagree with the entered date of birth is
+  rejected with a specific message. Passports validated as 5–20 alphanumerics, uppercased and
+  de-spaced on both sides.
+- **Reference rules**, client at step 4 + server at submit: no self-reference (phone **or** name),
+  no duplicate reference, and — the database one — **a reference who is a draft/submitted/rejected
+  Xoot applicant is rejected** (`findUnverifiedApplicantReferences`, phone matched on last 9 digits
+  across `+27`/`0`/`27` variants, own application excluded). Approved Xooters and non-applicants
+  remain valid references. Relationship type (former employer / institution / friend / colleague)
+  is now collected and stored in `references_payload` (column already existed, was unused).
+- **Off-platform question removed** from the form, the client payload and the edge-function
+  payload. Historical `behavioural_screening.off_platform` values stay where they are; no reader
+  rendered them.
+- **Suburb**: the form now shows the launch-area list (`src/lib/launch-regions.ts`, parity-tested
+  against the Edge Function list) and validates before submit — this was the most likely real cause
+  of the founder's "Edge function returned a non-2xx code" on submit, together with the item below.
+
+### "Edge function returned a non-2xx code"
+
+`supabase.functions.invoke` throws `FunctionsHttpError` whose `message` is that generic sentence;
+the function's actual reason (missing fields, launch suburb, identity code) is in `error.context`,
+which nothing read. New `src/lib/edge-function-error.ts` + wiring in `Apply.tsx` (`saveDraft`,
+document upload) surfaces the function's own `error`/`reason` and the `missing` list in the toast.
+Rejections from the server now carry a stable `code` too.
+
+### Notification deep links were role-blind — fixed in all three tap paths
+
+`/app/*` is guarded only by sign-in, so a Xooter tapping a booking/loyalty push landed in the
+**client web app** — exactly what the founder reported. `notification-routing.ts` now exports
+`resolveNotificationLinkForRoles` / `resolveNativeRouteForRoles`: a `xooter` (unless also `admin`)
+is rewritten `/app/bookings*` → `/xooter/jobs`, other `/app*` → `/xooter`. Applied in
+`NotificationBell`, `NativeInteractionLayer` (push taps, `appUrlOpen`, launch URL — now resolves the
+session and looks up `user_roles` via cached `src/lib/user-roles.ts`), and `NativePushPrompt` (which
+passed raw `navigate` into push registration and bypassed every check). Tests in
+`notification-routing.test.ts`.
+
+### Selfie camera button opened the file picker
+
+`mobile-upload.ts`: web input now sets `capture="user"` (mobile browsers open the **front camera**
+directly; desktop falls back to a chooser), and the native path uses `CameraSource.Camera` instead
+of `Prompt`. `captureOrSelectImage()` defaults to camera-first, which also fixes the
+before/after-photo capture in `BookingDetail.tsx` that shared the helper.
+
+### README + this entry
+
+Root `README.md` was one line; it is now the real one (stack, architecture, layout, security model,
+getting started, docs map). This worklog entry is the claim record.
+
+### Not done / needs a human
+
+Nothing here is pushed — the founder applies the patch. The three **live-DB columns this relies on**
+(`references_payload`, `emergency_contact`, `activation_locked_reason` family) exist per
+`types.ts` but in **no migration file**; they were added live in August. The migration drift
+allowlist already knows the schema drifted, but anyone rebuilding from migrations alone will not get
+this table shape. Flagged for Correctness & Safety — it predates this change and I did not touch
+migrations.
+
 ## 🚢 Release & Infrastructure — 2026-09-03 — the design port, five sections in
 
 Founder supplied a full Claude Design redesign and asked for it built. Bundle committed at

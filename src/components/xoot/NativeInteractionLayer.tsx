@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { resolveNativeRoute } from "@/lib/native-routing";
+import { resolveNativeRouteForRoles } from "@/lib/notification-routing";
+import { loadCurrentUserRoles } from "@/lib/user-roles";
 import { importOptionalNativePlugin } from "@/lib/optional-capacitor";
 
 const editableSelector = 'input, textarea, select, [contenteditable="true"]';
@@ -126,14 +129,25 @@ export const NativeInteractionLayer = () => {
       removers.push(remove);
     };
 
-    const routeNativePayload = (payload: unknown) => {
+    /*
+     * Deep links land here from three sources: push taps (this layer and
+     * `push-notifications.ts`), `appUrlOpen`, and the cold-start launch URL. All of them used to
+     * navigate straight to the resolved route, which pushed Xooters into the CLIENT web app
+     * (`/app/*`) whenever a notification carried a client link — that surface is guarded only by
+     * sign-in, so the tap just worked. The roles lookup rewrites client routes to the Xooter
+     * portal first; see `notification-routing.ts` for the rule.
+     */
+    const routeNativePayload = async (payload: unknown) => {
       const route = resolveNativeRoute(payload);
       if (!route) return;
-      navigate(route);
+      const session = await supabase.auth.getSession();
+      const userId = session.data.session?.user?.id ?? null;
+      const roles = await loadCurrentUserRoles(userId);
+      navigate(resolveNativeRouteForRoles(route, roles));
     };
 
     const handleNativeRouteEvent: EventListener = (event) => {
-      routeNativePayload((event as CustomEvent<unknown>).detail);
+      void routeNativePayload((event as CustomEvent<unknown>).detail);
     };
 
     const registerAppListeners = async () => {
@@ -141,10 +155,10 @@ export const NativeInteractionLayer = () => {
         const App = (await importOptionalNativePlugin<CapacitorAppModule>("@capacitor/app"))?.App ?? null;
         if (!App) return;
         const launch = await App.getLaunchUrl();
-        if (!disposed) routeNativePayload(launch?.url);
+        if (!disposed) await routeNativePayload(launch?.url);
 
         const handle = await App.addListener("appUrlOpen", (event: CapacitorAppUrlOpen) => {
-          routeNativePayload(event?.url);
+          void routeNativePayload(event?.url);
         });
         addRemover(handle);
       } catch {
@@ -161,7 +175,7 @@ export const NativeInteractionLayer = () => {
           "pushNotificationActionPerformed",
           (event) => {
             const notification = event?.notification as unknown as CapacitorPushNotification | undefined;
-            routeNativePayload(notification?.data ?? notification);
+            void routeNativePayload(notification?.data ?? notification);
           },
         );
         addRemover(handle);
