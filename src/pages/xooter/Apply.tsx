@@ -22,6 +22,7 @@ import {
   validateXooterIdentity,
   validateXooterReferences,
 } from "@/lib/xooter-identity";
+import { validateXooterFieldFormats } from "@/lib/xooter-field-validation";
 import { XooterApplicationInput } from "@/lib/validators";
 
 /**
@@ -74,8 +75,10 @@ const emptyForm = {
   emergency_contact_phone: "",
   reference_1_name: "",
   reference_1_phone: "",
+  reference_1_email: "",
   reference_2_name: "",
   reference_2_phone: "",
+  reference_2_email: "",
   reference_1_relationship: "",
   reference_2_relationship: "",
   background_check_consent: false,
@@ -105,9 +108,14 @@ const splitList = (value: string) => value.split(",").map((item) => item.trim())
 const joinList = (value?: string[] | null) => (value ?? []).join(", ");
 const safeFileName = (name: string) => name.replace(/[^a-zA-Z0-9._-]/g, "-").replace(/-+/g, "-").slice(0, 90);
 const getFileExtension = (name: string) => name.split(".").pop()?.toLowerCase() ?? "";
-const looksLikeEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-const looksLikePhone = (value: string) => /^\+?[0-9\s().-]{7,20}$/.test(value.trim());
-const looksLikeBankAccount = (value: string) => /^[0-9]{6,20}$/.test(value.trim());
+
+/*
+ * Field-format checks (email, SA phone, address, postal code, banking, names) live in
+ * `@/lib/xooter-field-validation` — one shared module, mirrored server-side, so the form and
+ * the Edge Function can never disagree about what a valid phone number is. The old inline
+ * `looksLikeEmail` / `looksLikePhone` / `looksLikeBankAccount` one-liners accepted "a@b.c",
+ * "......." and "1234" respectively; they are gone.
+ */
 
 const validateUpload = (file: File) => {
   if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
@@ -156,9 +164,18 @@ const Apply = () => {
           background_check_consent: appRow.background_check_consent ?? false,
         });
         if (appRow.status === "submitted" || appRow.status === "approved") { navigate("/xooter"); return; }
-        const { data: dlist } = await supabase.from("xooter_documents").select("doc_type, storage_path").eq("user_id", user.id);
+        const { data: dlist } = await supabase
+          .from("xooter_documents")
+          .select("doc_type, storage_path")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
         const m: Record<string, string> = {};
-        (dlist ?? []).forEach((d: any) => { m[d.doc_type] = d.storage_path; });
+        /*
+         * Newest upload wins per document type. Without the ordering the API returned rows in
+         * storage order, so an applicant who replaced a rejected selfie could be shown (and
+         * could re-submit) the OLD path — the exact document the reviewer just rejected.
+         */
+        (dlist ?? []).forEach((d: any) => { if (d.doc_type && !m[d.doc_type]) m[d.doc_type] = d.storage_path; });
         setDocs(m);
       } else {
         setForm((f) => ({ ...f, email: user.email ?? "" }));
@@ -196,9 +213,11 @@ const Apply = () => {
     emergency_contact_phone: sourceForm.emergency_contact_phone,
     reference_1_name: sourceForm.reference_1_name,
     reference_1_phone: sourceForm.reference_1_phone,
+    reference_1_email: sourceForm.reference_1_email,
     reference_1_relationship: sourceForm.reference_1_relationship || null,
     reference_2_name: sourceForm.reference_2_name,
     reference_2_phone: sourceForm.reference_2_phone,
+    reference_2_email: sourceForm.reference_2_email,
     reference_2_relationship: sourceForm.reference_2_relationship || null,
     background_check_consent: sourceForm.background_check_consent,
     selfie_storage_path: docs.selfie ?? null,
@@ -289,16 +308,57 @@ const Apply = () => {
     if (step === 1) return ["address", "city", "suburb", "postal_code"];
     if (step === 2) return ["transport", "supplies_owned", "pet_comfort", "availability_notes", "luxury_home_answer", "fragile_items_answer", "punctuality_answer"];
     if (step === 3) return ["bank_name", "bank_account_number", "bank_branch_code"];
-    if (step === 4) return ["emergency_contact_name", "emergency_contact_phone", "reference_1_name", "reference_1_phone", "reference_1_relationship", "reference_2_name", "reference_2_phone", "reference_2_relationship"];
+    if (step === 4) return ["emergency_contact_name", "emergency_contact_phone", "reference_1_name", "reference_1_phone", "reference_1_email", "reference_1_relationship", "reference_2_name", "reference_2_phone", "reference_2_email", "reference_2_relationship"];
+    return [];
+  };
+
+  /*
+   * Every filled field on the current step is judged by the shared format module before the
+   * step can advance. One issue at a time, in form order — the same rule the server enforces
+   * at submit, so an applicant can never reach submit with a format the server would reject.
+   */
+  const formatIssuesForStep = () => {
+    if (step === 0) {
+      return validateXooterFieldFormats({
+        full_name: form.full_name,
+        email: form.email,
+        phone: form.phone,
+        years_experience: form.years_experience,
+      });
+    }
+    if (step === 1) {
+      return validateXooterFieldFormats({
+        address: form.address,
+        city: form.city,
+        postal_code: form.postal_code,
+      });
+    }
+    if (step === 3) {
+      return validateXooterFieldFormats({
+        bank_name: form.bank_name,
+        bank_account_number: form.bank_account_number,
+        bank_branch_code: form.bank_branch_code,
+      });
+    }
+    if (step === 4) {
+      return validateXooterFieldFormats({
+        emergency_contact_name: form.emergency_contact_name,
+        emergency_contact_phone: form.emergency_contact_phone,
+        reference_1_phone: form.reference_1_phone,
+        reference_1_email: form.reference_1_email,
+        reference_2_phone: form.reference_2_phone,
+        reference_2_email: form.reference_2_email,
+      });
+    }
     return [];
   };
 
   const validateStep = () => {
     const missing = requiredForStep().filter((key) => !String((form as any)[key] ?? "").trim());
     if (missing.length) { haptic("warning"); toast.error("Please complete all required fields"); return false; }
-    if (step === 0 && !looksLikeEmail(form.email)) { haptic("warning"); toast.error("Enter a valid email address"); return false; }
-    if (step === 0 && !looksLikePhone(form.phone)) { haptic("warning"); toast.error("Enter a valid phone number"); return false; }
     if (step === 0 && Number(form.years_experience) < 0) { haptic("warning"); toast.error("Years of experience cannot be negative"); return false; }
+    const formatIssues = formatIssuesForStep();
+    if (formatIssues.length) { haptic("warning"); toast.error(formatIssues[0].message); return false; }
     if (step === 0) {
       /*
        * Age gate, ID format, and ID↔DOB correlation. These run client-side for immediate
@@ -322,20 +382,22 @@ const Apply = () => {
       toast.error(`Xoot is launching in selected areas only: ${approvedLaunchRegionLabels().join(", ")}.`);
       return false;
     }
-    if (step === 3 && !looksLikeBankAccount(form.bank_account_number)) { haptic("warning"); toast.error("Enter a valid bank account number"); return false; }
-    if (step === 3 && !/^[0-9]{4,8}$/.test(form.bank_branch_code.trim())) { haptic("warning"); toast.error("Enter a valid branch code"); return false; }
+    if (step === 3 && !/^[0-9]{6}$/.test(form.bank_branch_code.trim())) { haptic("warning"); toast.error("Enter a valid branch code"); return false; }
     if (step === 4) {
       /*
-       * No self-references, no duplicate reference. The platform-user check (a reference who
-       * is an unverified Xoot applicant) needs the database and is enforced server-side at
-       * submit, together with these same two rules.
+       * No self-references, no duplicate reference. Self-reference is detected on the
+       * applicant's PHONE and EMAIL — including the email on their Xoot account — never on
+       * names, which strangers share. The platform-user check (a reference who is an
+       * unverified Xoot applicant) needs the database and is enforced server-side at submit,
+       * together with these same rules.
        */
       const referenceIssues = validateXooterReferences({
-        applicantName: form.full_name,
         applicantPhone: form.phone,
+        applicantEmail: form.email,
+        applicantAuthEmail: user?.email ?? null,
         references: [
-          { label: "Reference 1", name: form.reference_1_name, phone: form.reference_1_phone },
-          { label: "Reference 2", name: form.reference_2_name, phone: form.reference_2_phone },
+          { label: "Reference 1", phone: form.reference_1_phone, email: form.reference_1_email },
+          { label: "Reference 2", phone: form.reference_2_phone, email: form.reference_2_email },
         ],
       });
       if (referenceIssues.length) {
@@ -373,18 +435,38 @@ const Apply = () => {
       return;
     }
     /*
-     * Final gate before the network call: the same identity and reference rules the server
-     * enforces. Running them here means a rejection is a toast in context, not a round trip
-     * that comes back as an error the user has to decode.
+     * Final gate before the network call: the same identity, format and reference rules the
+     * server enforces. Running them here means a rejection is a toast in context, not a round
+     * trip that comes back as an error the user has to decode.
      */
     const identityIssues = validateXooterIdentity({ dateOfBirth: form.date_of_birth, idNumber: form.id_number });
     if (identityIssues.length) { haptic("warning"); toast.error(identityIssues[0]); return; }
+    const allFormatIssues = validateXooterFieldFormats({
+      full_name: form.full_name,
+      email: form.email,
+      phone: form.phone,
+      emergency_contact_name: form.emergency_contact_name,
+      emergency_contact_phone: form.emergency_contact_phone,
+      address: form.address,
+      city: form.city,
+      postal_code: form.postal_code,
+      bank_name: form.bank_name,
+      bank_account_number: form.bank_account_number,
+      bank_branch_code: form.bank_branch_code,
+      years_experience: form.years_experience,
+      reference_1_phone: form.reference_1_phone,
+      reference_1_email: form.reference_1_email,
+      reference_2_phone: form.reference_2_phone,
+      reference_2_email: form.reference_2_email,
+    });
+    if (allFormatIssues.length) { haptic("warning"); toast.error(allFormatIssues[0].message); return; }
     const referenceIssues = validateXooterReferences({
-      applicantName: form.full_name,
       applicantPhone: form.phone,
+      applicantEmail: form.email,
+      applicantAuthEmail: user?.email ?? null,
       references: [
-        { label: "Reference 1", name: form.reference_1_name, phone: form.reference_1_phone },
-        { label: "Reference 2", name: form.reference_2_name, phone: form.reference_2_phone },
+        { label: "Reference 1", phone: form.reference_1_phone, email: form.reference_1_email },
+        { label: "Reference 2", phone: form.reference_2_phone, email: form.reference_2_email },
       ],
     });
     if (referenceIssues.length) { haptic("warning"); toast.error(referenceIssues[0]); return; }
@@ -442,14 +524,13 @@ const Apply = () => {
           {step === 4 && (
             <div className="space-y-4">
               <h2 className="font-display text-2xl font-bold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> References & emergency contact</h2>
-              <p className="text-sm text-muted-foreground">References must be people who know your work — a former employer, an institution, or a friend. You cannot list yourself, and your references cannot be Xoot applicants who are still in verification.</p>
+              <p className="text-sm text-muted-foreground">References must be people who know your work — a former employer, an institution, or a friend. Enter each reference's phone <span className="font-semibold">and</span> email: that is how Xoot verifies them. You cannot list yourself, and your references cannot be Xoot applicants who are still in verification.</p>
               <div className="grid sm:grid-cols-2 gap-3">
-                <F label="Emergency contact name" name="emergency_contact_name"><Input value={form.emergency_contact_name ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_name: e.target.value })} /></F>
-                <F label="Emergency contact phone" name="emergency_contact_phone"><Input value={form.emergency_contact_phone ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} /></F>
+                <F label="Emergency contact name" name="emergency_contact_name"><Input value={form.emergency_contact_name ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_name: e.target.value })} autoComplete="name" /></F>
+                <F label="Emergency contact phone" name="emergency_contact_phone"><Input inputMode="tel" autoComplete="tel" value={form.emergency_contact_phone ?? ""} onChange={(e) => setForm({ ...form, emergency_contact_phone: e.target.value })} placeholder="082 555 1234" /></F>
               </div>
-              <div className="grid sm:grid-cols-3 gap-3">
+              <div className="grid sm:grid-cols-2 gap-3">
                 <F label="Reference 1 name" name="reference_1_name"><Input value={form.reference_1_name ?? ""} onChange={(e) => setForm({ ...form, reference_1_name: e.target.value })} /></F>
-                <F label="Reference 1 phone" name="reference_1_phone"><Input value={form.reference_1_phone ?? ""} onChange={(e) => setForm({ ...form, reference_1_phone: e.target.value })} placeholder="+27..." /></F>
                 <F label="Reference 1 is a..." name="reference_1_relationship">
                   <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" value={form.reference_1_relationship ?? ""} onChange={(e) => setForm({ ...form, reference_1_relationship: e.target.value })}>
                     <option value="">Select relationship</option>
@@ -459,8 +540,9 @@ const Apply = () => {
                     <option value="colleague">Colleague</option>
                   </select>
                 </F>
+                <F label="Reference 1 phone" name="reference_1_phone"><Input inputMode="tel" value={form.reference_1_phone ?? ""} onChange={(e) => setForm({ ...form, reference_1_phone: e.target.value })} placeholder="082 555 1234" /></F>
+                <F label="Reference 1 email" name="reference_1_email"><Input type="email" inputMode="email" autoComplete="email" value={form.reference_1_email ?? ""} onChange={(e) => setForm({ ...form, reference_1_email: e.target.value })} placeholder="name@example.com" /></F>
                 <F label="Reference 2 name" name="reference_2_name"><Input value={form.reference_2_name ?? ""} onChange={(e) => setForm({ ...form, reference_2_name: e.target.value })} /></F>
-                <F label="Reference 2 phone" name="reference_2_phone"><Input value={form.reference_2_phone ?? ""} onChange={(e) => setForm({ ...form, reference_2_phone: e.target.value })} placeholder="+27..." /></F>
                 <F label="Reference 2 is a..." name="reference_2_relationship">
                   <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" value={form.reference_2_relationship ?? ""} onChange={(e) => setForm({ ...form, reference_2_relationship: e.target.value })}>
                     <option value="">Select relationship</option>
@@ -470,6 +552,8 @@ const Apply = () => {
                     <option value="colleague">Colleague</option>
                   </select>
                 </F>
+                <F label="Reference 2 phone" name="reference_2_phone"><Input inputMode="tel" value={form.reference_2_phone ?? ""} onChange={(e) => setForm({ ...form, reference_2_phone: e.target.value })} placeholder="082 555 1234" /></F>
+                <F label="Reference 2 email" name="reference_2_email"><Input type="email" inputMode="email" autoComplete="email" value={form.reference_2_email ?? ""} onChange={(e) => setForm({ ...form, reference_2_email: e.target.value })} placeholder="name@example.com" /></F>
               </div>
             </div>
           )}

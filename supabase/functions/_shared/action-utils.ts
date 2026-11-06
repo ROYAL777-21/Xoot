@@ -6,6 +6,28 @@ export const defaultAllowedOrigins = [
   "http://127.0.0.1:4173",
   "https://xoot.co.za",
   "https://www.xoot.co.za",
+  /*
+   * Native WebView origins (added 2026-11-06). A Capacitor shell loads the app from a local
+   * origin, and the WebView attaches that origin to every fetch — so on the legacy mobile shell
+   * EVERY Edge Function call answered 403 "origin not allowed", which the client surfaced as the
+   * undiagnosable "Edge function returned a non-2xx code". These origins are not web-reachable:
+   * no remote site can be served from them, and every function still requires a valid JWT, so
+   * adding them cannot widen the browser attack surface.
+   *
+   *   https://localhost          — Capacitor Android, `androidScheme: "https"` (current config)
+   *   http://localhost           — Capacitor Android, default scheme (older builds)
+   *   capacitor://localhost      — Capacitor iOS, default scheme
+   *   zoot://localhost           — Capacitor iOS, `iosScheme: "zoot"` (current config)
+   *   xoot://localhost           — the `xoot:` deep-link scheme, if the shell ever adopts it
+   *
+   * Expo (the production mobile target) uses React Native fetch, which sends NO Origin header,
+   * and a missing origin is already allowed by `isAllowedOrigin`.
+   */
+  "https://localhost",
+  "http://localhost",
+  "capacitor://localhost",
+  "zoot://localhost",
+  "xoot://localhost",
 ];
 
 export const approvedLaunchRegions = [

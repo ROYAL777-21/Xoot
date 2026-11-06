@@ -17,23 +17,47 @@ export function compiledOrigins(sharedSource) {
 }
 
 /**
- * Production takes the public origins only.
+ * Production takes the public origins, plus the native WebView origins.
  *
  * Setting this variable REPLACES the fallback list rather than extending it, so every entry
- * here is something production will accept from a browser. A developer machine is not that,
- * which is why localhost is filtered out rather than carried across.
+ * here is something production will accept. A developer machine is not that, which is why
+ * the port-carrying loopback origins are filtered out rather than carried across.
+ *
+ * The WebView origins are kept on purpose (2026-11-06): the legacy Capacitor shell loads the
+ * app from `https://localhost` (Android) / `zoot://localhost` (iOS), and the WebView sends
+ * that as the Origin on every fetch. Without them here, the shell gets 403 on every Edge
+ * Function call — the "Edge function returned a non-2xx code" failure mode. They are not
+ * remotely reachable origins, and JWT auth is still required, so they widen nothing.
  */
-export const productionValue = (origins) =>
-  origins.filter((origin) => origin.startsWith("https://")).join(",");
+const NATIVE_WEBVIEW_ORIGINS = [
+  "https://localhost",
+  "http://localhost",
+  "capacitor://localhost",
+  "zoot://localhost",
+  "xoot://localhost",
+];
+
+export const productionValue = (origins) => {
+  const entries = [...origins.filter((origin) => origin.startsWith("https://"))];
+  for (const origin of NATIVE_WEBVIEW_ORIGINS) {
+    if (!entries.includes(origin)) entries.push(origin);
+  }
+  return entries.join(",");
+};
 
 /**
  * Staging keeps the loopback origins, because that is what staging is for, and swaps the
  * public host for the staging one.
  */
-export const stagingValue = (origins) =>
-  [
+export const stagingValue = (origins) => {
+  const entries = [
     ...origins.filter((o) => o.startsWith("http://localhost") || o.startsWith("http://127.0.0.1")),
     "https://staging.xoot.co.za",
-  ].join(",");
+  ];
+  for (const origin of NATIVE_WEBVIEW_ORIGINS) {
+    if (!entries.includes(origin)) entries.push(origin);
+  }
+  return entries.join(",");
+};
 
 export const PROJECTS = { production: "mvlrkelahhsyjrwgsxaf", staging: "fxmxyabdjqviqbcxmvlp" };

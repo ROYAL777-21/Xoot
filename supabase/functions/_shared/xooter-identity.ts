@@ -143,42 +143,63 @@ export const normalisePhoneForComparison = (value: unknown) => {
   return digits.length > 9 ? digits.slice(-9) : digits;
 };
 
-const normaliseNameForComparison = (value: unknown) =>
+/** Lowercased, trimmed — the shape two email addresses must share to be "the same person". */
+export const normaliseEmailForComparison = (value: unknown) =>
   String(value ?? "")
+    .trim()
     .toLowerCase()
-    .replace(/[^a-z\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+    .slice(0, 254);
 
 /**
- * Database-free reference rules: no self-references (by phone or name), no duplicate reference.
+ * Database-free reference rules: no self-references, no duplicate reference.
+ *
+ * ── Why matching is on PHONE and EMAIL, never on names ──────────────────────────
+ * Names are not identity: strangers share names, and a self-referencing applicant simply types
+ * a different name. Phone and email are the identifiers Xoot can actually verify and the ones
+ * reference outreach uses, so they are the only signals enforced here. Name equality was
+ * previously flagged and is deliberately removed — it produced false rejections while blocking
+ * none of the collusion it was aimed at.
+ *
  * Returns machine codes the caller maps onto client messages.
  */
 export const validateReferenceShape = (input: {
-  applicantName: unknown;
   applicantPhone: unknown;
-  reference1Name: unknown;
+  applicantEmail: unknown;
+  applicantAuthEmail?: unknown;
   reference1Phone: unknown;
-  reference2Name: unknown;
+  reference1Email?: unknown;
   reference2Phone: unknown;
+  reference2Email?: unknown;
 }): string[] => {
   const reasons: string[] = [];
   const applicantPhone = normalisePhoneForComparison(input.applicantPhone);
-  const applicantName = normaliseNameForComparison(input.applicantName);
+  const applicantEmails = new Set(
+    [input.applicantEmail, input.applicantAuthEmail]
+      .map(normaliseEmailForComparison)
+      .filter(Boolean),
+  );
+
   const references = [
-    { label: "reference_1", name: input.reference1Name, phone: input.reference1Phone },
-    { label: "reference_2", name: input.reference2Name, phone: input.reference2Phone },
+    { label: "reference_1", phone: input.reference1Phone, email: input.reference1Email },
+    { label: "reference_2", phone: input.reference2Phone, email: input.reference2Email },
   ];
-  const seen = new Map<string, string>();
+  const seenPhones = new Map<string, string>();
+  const seenEmails = new Map<string, string>();
 
   for (const reference of references) {
     const phone = normalisePhoneForComparison(reference.phone);
-    const name = normaliseNameForComparison(reference.name);
+    const email = normaliseEmailForComparison(reference.email);
+
     if (phone && phone === applicantPhone) reasons.push(`${reference.label}_is_applicant_phone`);
-    if (name && applicantName && name === applicantName) reasons.push(`${reference.label}_is_applicant_name`);
-    const prior = seen.get(phone);
-    if (phone && prior) reasons.push("references_duplicate");
-    else if (phone) seen.set(phone, reference.label);
+    if (email && applicantEmails.has(email)) reasons.push(`${reference.label}_is_applicant_email`);
+
+    const priorPhone = phone ? seenPhones.get(phone) : undefined;
+    if (phone && priorPhone) reasons.push("references_duplicate_phone");
+    else if (phone) seenPhones.set(phone, reference.label);
+
+    const priorEmail = email ? seenEmails.get(email) : undefined;
+    if (email && priorEmail) reasons.push("references_duplicate_email");
+    else if (email) seenEmails.set(email, reference.label);
   }
 
   return reasons;

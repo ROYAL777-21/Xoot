@@ -98,7 +98,16 @@ Xooter onboarding, in particular, is enforced at the Edge Function, not just in 
   must **match the supplied date of birth** (passports are validated as passports);
 - references **cannot be the applicant**, cannot be the **same person twice**, and cannot be
   **another Xoot applicant who has not passed verification** — former employers, institutions,
-  friends and already-approved Xooters are the acceptable sources;
+  friends and already-approved Xooters are the acceptable sources. Self-references are detected
+  by **phone and email** (the applicant's contact email and the email on their Xoot account),
+  never by name — strangers share names, and a name proves nothing;
+- every contact field is format-checked at submit — email, South African phone numbers
+  (applicant, emergency contact, both references), street address, city, 4-digit postal code,
+  bank account number, 6-digit branch code and whole-number years of experience — by the same
+  shared rules in the form and in the Edge Function;
+- the application lifecycle is a state machine at the server: an approved application can
+  never be edited or replayed back to `submitted`, and a submitted one stays put until trust
+  review decides — regardless of what a crafted client sends;
 - activation requires all seven verification areas plus four documents, training and consent —
   `approve-xooter` refuses otherwise and every decision is audit-logged.
 

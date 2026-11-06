@@ -4416,8 +4416,10 @@ export type Database = {
           postal_code: string | null
           reference_1_name: string | null
           reference_1_phone: string | null
+          reference_1_email: string | null
           reference_2_name: string | null
           reference_2_phone: string | null
+          reference_2_email: string | null
           reference_verification_status: string
           references_payload: Json
           reviewed_at: string | null
@@ -4466,8 +4468,10 @@ export type Database = {
           postal_code?: string | null
           reference_1_name?: string | null
           reference_1_phone?: string | null
+          reference_1_email?: string | null
           reference_2_name?: string | null
           reference_2_phone?: string | null
+          reference_2_email?: string | null
           reference_verification_status?: string
           references_payload?: Json
           reviewed_at?: string | null
@@ -4516,8 +4520,10 @@ export type Database = {
           postal_code?: string | null
           reference_1_name?: string | null
           reference_1_phone?: string | null
+          reference_1_email?: string | null
           reference_2_name?: string | null
           reference_2_phone?: string | null
+          reference_2_email?: string | null
           reference_verification_status?: string
           references_payload?: Json
           reviewed_at?: string | null

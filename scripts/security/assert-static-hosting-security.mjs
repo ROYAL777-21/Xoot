@@ -51,7 +51,18 @@ requireMatch("Netlify CSP blocks plugins", headersText, /Content-Security-Policy
 requireMatch("Netlify headers enable HSTS", headersText, /Strict-Transport-Security:\s+max-age=31536000; includeSubDomains; preload/);
 requireMatch("Netlify headers disable MIME sniffing", headersText, /X-Content-Type-Options:\s+nosniff/);
 requireMatch("Netlify headers set referrer policy", headersText, /Referrer-Policy:\s+strict-origin-when-cross-origin/);
-requireMatch("Netlify headers restrict device permissions", headersText, /Permissions-Policy:\s+.*camera=\(\).*microphone=\(\).*payment=\(\)/);
+/*
+ * Camera and geolocation are allowed SAME-ORIGIN on purpose (2026-11-06): the KYC selfie
+ * flow and the SOS/proximity features call them from the app itself. They were previously
+ * `()` — fully blocked — which silently disabled the SOS location fix on every deployed host
+ * while the code looked fine, because a Permissions-Policy denial is invisible until the
+ * permission request fails. Microphone, payment and the rest stay fully denied.
+ */
+requireMatch(
+  "Netlify headers allow same-origin camera and geolocation, deny the rest",
+  headersText,
+  /Permissions-Policy:\s+.*camera=\(self\).*geolocation=\(self\).*microphone=\(\).*payment=\(\)/,
+);
 requireMatch("Netlify service worker is not cached immutably", headersText, /\/sw\.js\s+Cache-Control:\s+no-cache/s);
 
 for (const route of requiredPrivateRoutes) {
@@ -108,7 +119,11 @@ if (!existsSync(vercelPath)) {
   requireMatch("Vercel headers enable HSTS", globalHeaders, /Strict-Transport-Security:\s+max-age=31536000; includeSubDomains; preload/);
   requireMatch("Vercel headers disable MIME sniffing", globalHeaders, /X-Content-Type-Options:\s+nosniff/);
   requireMatch("Vercel headers set referrer policy", globalHeaders, /Referrer-Policy:\s+strict-origin-when-cross-origin/);
-  requireMatch("Vercel headers restrict device permissions", globalHeaders, /Permissions-Policy:\s+.*camera=\(\).*microphone=\(\).*payment=\(\)/);
+  requireMatch(
+    "Vercel headers allow same-origin camera and geolocation, deny the rest",
+    globalHeaders,
+    /Permissions-Policy:\s+.*camera=\(self\).*geolocation=\(self\).*microphone=\(\).*payment=\(\)/,
+  );
   requireMatch("Vercel service worker is not cached immutably", vercelHeadersFor((source) => source === "/sw.js"), /Cache-Control:\s+no-cache/);
 
   /*

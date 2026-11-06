@@ -28,6 +28,83 @@ Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live stat
 
 ---
 
+## 2026-11-06 — Format validation, phone/email self-reference detection, submit-path state machine (external session)
+
+Founder instruction: a patch that guarantees the FORMAT of application information (address,
+email, phone, ID, DOB…); self-references verified by **phone and email, never names**; fix the
+non-2xx submit error itself, not its wording; and a company-wide sweep for security, logic and
+data-security defects. All changes in this working copy — commit made locally; **not pushed, not
+deployed.** Verified against `main` @ `24527de`: `tsc --noEmit` clean, `eslint` clean on touched
+files, `security:scan` 4/4, `vite build` clean, vitest 1,251/1,252 (the 1 failure is
+`ios-build-setup.test.ts`, pre-existing, needs `mobile/node_modules`).
+
+### New shared format validation (`src/lib/xooter-field-validation.ts` + `_shared` mirror)
+
+Email (RFC-pragmatic), SA phone (mobile+landline, +27/0X, rejects 09x/short/UK), street address
+(≥8 chars, ≥2 words, ≥1 letter), city, 4-digit SA postal code, full name (2 words, ID-matchable),
+bank account (6–17 digits), branch code (**exactly 6** — the old client check accepted 4–8),
+years of experience (whole number 0–60; `Number("") === 0` was caught by the tests and guarded).
+Client copy runs per step in `Apply.tsx` + once at submit; server copy runs at submit with
+machine codes → messages. Replaces `looksLikeEmail`/`looksLikePhone`/`looksLikeBankAccount`,
+which accepted `a@b.c`, `.......` and `1234`.
+
+### Self-reference by phone + email, not names
+
+`validateXooterReferences` (client) and `validateReferenceShape` (server) now compare the
+reference's phone and email against the applicant's phone + contact email + **auth email**;
+name equality is removed everywhere (false rejections for shared names, zero collusion stopped).
+References now REQUIRE email: new form fields, new columns
+(`20261106120000_xooter_reference_emails.sql` — **needs `db push`**), required at submit,
+stored in `references_payload`, and the unverified-applicant lookup now also matches by email.
+Duplicate references checked by phone AND email.
+
+### `submit-xooter-application` — the actual error, not the text
+
+Five defects fixed, any of which produced the persistent non-2xx:
+1. **No server-side rate limit** — client `checkRateLimit` is bypassable by a direct call; each
+   accepted submit writes 5 rows. Now 5 submits/hour via `consumeRateLimit` (same RPC as the
+   payment functions).
+2. **State-machine hole** — an approved application could be replayed back to `submitted` (and
+   its verification statuses reset) by a crafted request. Approved is now terminal (409);
+   submitted accepts neither draft-downgrades nor resubmits.
+3. **Document `storage_path` accepted anything** — including another user's folder. Now must be
+   `${user.id}/…`, no traversal/scheme/absolute path.
+4. **Malformed/oversized body (readJson → `{}`) answered "full_name required"** — a wrong
+   diagnosis. Now states the body is missing/invalid/too large.
+5. **500s were opaque** — now carry an `error_reference` UUID echoed into the log line and the
+   audit trail, so a founder-reported failure is greppable.
+Also: resubmission clears the previous review cycle's `reviewer_notes/reviewed_by/reviewed_at`;
+reference relationships are required at submit.
+
+### Permissions-Policy: camera/geolocation were fully disabled on all three host configs
+
+`public/_headers`, `vercel.json`, `public/.htaccess` shipped `camera=(), geolocation=()` while
+`SosButton` calls `navigator.geolocation.getCurrentPosition` — the SOS location fix was silently
+policy-blocked on every deployed host. Now `camera=(self), geolocation=(self)`;
+`assert-static-hosting-security.mjs` pins the new policy (microphone/payment stay `()`).
+
+### WebView origins were 403'd
+
+The legacy Capacitor shell (Android `https://localhost`, iOS `zoot://localhost`) got
+403 "origin not allowed" on EVERY Edge Function call — surfacing as exactly the generic non-2xx
+error. Origins added to `defaultAllowedOrigins` + `allowed-origins.mjs` production/staging
+derivation (test updated; developer port-origins still excluded). Expo sends no Origin header
+and was never affected.
+
+### Misc
+
+`Apply.tsx` document map now orders by `created_at desc` (an upload replacement could previously
+re-show the rejected path); `types.ts` gained the reference-email columns;
+README onboarding section updated.
+
+### ⚠️ Deployment notes (unchanged from last session, still true)
+
+Edge Functions deploy is **manual** (`deploy-edge-functions.yml`, workflow_dispatch). The
+migration needs `db push` (dry-run first). `ALLOWED_ORIGINS` needs a re-run of
+`scripts/ops/set-allowed-origins.mjs` to pick up the WebView origins without a redeploy.
+
+---
+
 ## 2026-11-05 — Security round 2: deep-audit fixes across payments, admin MFA, races, E2EE (external session)
 
 Follow-up to the entry below, from the founder's "find more bugs before hackers do" pass. A

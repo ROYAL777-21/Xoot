@@ -46,20 +46,43 @@ describe("the origins the code falls back to", () => {
 describe("the production value", () => {
   const value = productionValue(origins);
 
-  it("is exactly the two public Xoot origins", () => {
-    expect(value).toBe("https://xoot.co.za,https://www.xoot.co.za");
+  it("is the two public Xoot origins plus the native WebView origins", () => {
+    expect(value).toBe(
+      "https://xoot.co.za,https://www.xoot.co.za,https://localhost,http://localhost,capacitor://localhost,zoot://localhost,xoot://localhost",
+    );
   });
 
   /**
    * The security-relevant property.
    *
    * Setting this variable REPLACES the fallback list rather than extending it, so anything
-   * included is something production accepts from a browser. Carrying localhost across would
-   * let any page on a developer's machine call production Edge Functions with a real session.
+   * included is something production accepts. Developer loopback origins (port-carrying
+   * localhost / 127.0.0.1) must never be carried across — any page on a developer's machine
+   * could then call production Edge Functions with a real session. The WebView origins ARE
+   * localhost-shaped, but they are the app's own native shell: no remote page can be served
+   * from them, and every function still requires a valid JWT.
    */
-  it("admits no loopback origin", () => {
-    expect(value).not.toMatch(/localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]/);
-    for (const entry of value.split(",")) expect(entry.startsWith("https://")).toBe(true);
+  it("admits no developer loopback origin, and no origin beyond the web + WebView set", () => {
+    expect(value).not.toMatch(/127\.0\.0\.1|0\.0\.0\.0|\[::1\]|:\d{4}/);
+    const entries = value.split(",").filter(Boolean);
+    const nativeWebViewOrigins = new Set([
+      "https://localhost",
+      "http://localhost",
+      "capacitor://localhost",
+      "zoot://localhost",
+      "xoot://localhost",
+    ]);
+    for (const entry of entries) {
+      expect(nativeWebViewOrigins.has(entry) || entry.startsWith("https://")).toBe(true);
+    }
+  });
+
+  it("keeps every native WebView origin the shell may present", () => {
+    // The legacy Capacitor shell 403s on every Edge Function call if its origin drops off
+    // this list — the "Edge function returned a non-2xx code" failure mode.
+    for (const origin of ["https://localhost", "http://localhost", "capacitor://localhost", "zoot://localhost", "xoot://localhost"]) {
+      expect(value.split(",")).toContain(origin);
+    }
   });
 
   it("is never empty, which would lock every browser out", () => {

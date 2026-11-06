@@ -161,8 +161,9 @@ describe("latestAcceptableDob", () => {
 
 describe("validateXooterReferences", () => {
   const base = {
-    applicantName: "Thandi Mokoena",
     applicantPhone: "+27 82 555 1234",
+    applicantEmail: "thandi.mokoena@example.co.za",
+    applicantAuthEmail: "thandi@xoot-account.co.za",
   };
 
   it("accepts two distinct external references", () => {
@@ -170,8 +171,8 @@ describe("validateXooterReferences", () => {
       validateXooterReferences({
         ...base,
         references: [
-          { label: "Reference 1", name: "Priya Naidoo", phone: "083 555 9876" },
-          { label: "Reference 2", name: "John Sithole", phone: "+27 84 555 2222" },
+          { label: "Reference 1", phone: "083 555 9876", email: "priya.naidoo@example.com" },
+          { label: "Reference 2", phone: "+27 84 555 2222", email: "john.sithole@example.com" },
         ],
       }),
     ).toEqual([]);
@@ -181,33 +182,68 @@ describe("validateXooterReferences", () => {
     const issues = validateXooterReferences({
       ...base,
       references: [
-        { label: "Reference 1", name: "Thandi Mokoena", phone: "0825551234" },
-        { label: "Reference 2", name: "John Sithole", phone: "+27 84 555 2222" },
+        { label: "Reference 1", phone: "0825551234", email: "someone.else@example.com" },
+        { label: "Reference 2", phone: "+27 84 555 2222", email: "john.sithole@example.com" },
       ],
     });
-    expect(issues.some((issue) => issue.includes("cannot list yourself"))).toBe(true);
+    expect(issues.some((issue) => issue.includes("phone number is yours"))).toBe(true);
   });
 
-  it("rejects the applicant listing themselves by name even with another phone", () => {
+  it("rejects the applicant listing themselves by contact email", () => {
     const issues = validateXooterReferences({
       ...base,
       references: [
-        { label: "Reference 1", name: "thandi mokoena", phone: "0835559876" },
-        { label: "Reference 2", name: "John Sithole", phone: "+27 84 555 2222" },
+        { label: "Reference 1", phone: "0835559876", email: "Thandi.Mokoena@Example.co.za" },
+        { label: "Reference 2", phone: "+27 84 555 2222", email: "john.sithole@example.com" },
       ],
     });
-    expect(issues.some((issue) => issue.includes("cannot list yourself"))).toBe(true);
+    expect(issues.some((issue) => issue.includes("email address is yours"))).toBe(true);
   });
 
-  it("rejects the same person listed as both references", () => {
+  it("rejects the applicant listing themselves by the email on their Xoot account", () => {
     const issues = validateXooterReferences({
       ...base,
       references: [
-        { label: "Reference 1", name: "Priya Naidoo", phone: "083 555 9876" },
-        { label: "Reference 2", name: "Priya N.", phone: "+27 83 555 9876" },
+        { label: "Reference 1", phone: "0835559876", email: "thandi@xoot-account.co.za" },
+        { label: "Reference 2", phone: "+27 84 555 2222", email: "john.sithole@example.com" },
       ],
     });
-    expect(issues.some((issue) => issue.includes("same person"))).toBe(true);
+    expect(issues.some((issue) => issue.includes("email address is yours"))).toBe(true);
+  });
+
+  it("does NOT reject a reference who merely shares the applicant's name", () => {
+    // Names are not identity. A shared name must never block a genuine external reference —
+    // that was the old behaviour and it produced false rejections while stopping no collusion.
+    const issues = validateXooterReferences({
+      ...base,
+      references: [
+        { label: "Reference 1", name: "Thandi Mokoena", phone: "0835559876", email: "other.thandi@example.com" },
+        { label: "Reference 2", phone: "+27 84 555 2222", email: "john.sithole@example.com" },
+      ],
+    });
+    expect(issues).toEqual([]);
+  });
+
+  it("rejects the same person listed as both references, by phone", () => {
+    const issues = validateXooterReferences({
+      ...base,
+      references: [
+        { label: "Reference 1", phone: "083 555 9876", email: "priya.naidoo@example.com" },
+        { label: "Reference 2", phone: "+27 83 555 9876", email: "priya.the.same@example.com" },
+      ],
+    });
+    expect(issues.some((issue) => issue.includes("share a phone number"))).toBe(true);
+  });
+
+  it("rejects the same person listed as both references, by email", () => {
+    const issues = validateXooterReferences({
+      ...base,
+      references: [
+        { label: "Reference 1", phone: "083 555 9876", email: "priya.naidoo@example.com" },
+        { label: "Reference 2", phone: "084 555 2222", email: "Priya.Naidoo@example.com" },
+      ],
+    });
+    expect(issues.some((issue) => issue.includes("share an email address"))).toBe(true);
   });
 
   it("normalises phone formats before comparing", () => {

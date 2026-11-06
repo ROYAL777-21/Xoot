@@ -238,52 +238,83 @@ export const normalisePhoneForComparison = (value: unknown) => {
   return digits.length > 9 ? digits.slice(-9) : digits;
 };
 
-const normaliseNameForComparison = (value: unknown) =>
+/** Lowercased, trimmed — the shape two email addresses must share to be "the same person". */
+export const normaliseEmailForComparison = (value: unknown) =>
   String(value ?? "")
+    .trim()
     .toLowerCase()
-    .replace(/[^a-z\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+    .slice(0, 254);
 
-export type ReferenceInput = { name: unknown; phone: unknown; label: string };
+export type ReferenceInput = { name?: unknown; phone: unknown; email?: unknown; label: string };
 
 /**
- * Reference checks that need no database: an applicant cannot reference themselves, the same
- * person cannot be listed twice, and a reference cannot share the applicant's phone number.
+ * Reference checks that need no database.
+ *
+ * ── Why matching is on PHONE and EMAIL, never on names ──────────────────────────
+ * A name proves nothing: two strangers can share a full name, and an applicant who wants to
+ * self-reference simply types a nickname. Phone numbers and email addresses are the identifiers
+ * Xoot can actually verify — they are what reference outreach is sent to, and what the
+ * unverified-applicant lookup matches on — so they are the only signals this check trusts.
+ * Name equality was previously flagged here and is deliberately gone: a shared name is not
+ * evidence, and treating it as evidence produced false rejections ("John Smith" listing a
+ * different John Smith) while blocking none of the collusion it was aimed at.
+ *
+ * Enforced per reference:
+ *   1. self-reference — the reference's phone matches the applicant's phone, OR the reference's
+ *      email matches the applicant's contact email or the email on their Xoot account;
+ *   2. duplicate — both references are the same person, by phone OR by email.
  *
  * The platform-user check (a reference who is an unverified Xoot applicant) needs the database
  * and is enforced server-side in `submit-xooter-application`, alongside these rules.
  */
 export const validateXooterReferences = (
-  input: { applicantName: unknown; applicantPhone: unknown; references: ReferenceInput[] },
+  input: {
+    applicantPhone: unknown;
+    applicantEmail: unknown;
+    applicantAuthEmail?: unknown;
+    references: ReferenceInput[];
+  },
 ): IdentityIssue[] => {
   const issues: IdentityIssue[] = [];
   const applicantPhone = normalisePhoneForComparison(input.applicantPhone);
-  const applicantName = normaliseNameForComparison(input.applicantName);
-  const seen = new Map<string, string>();
+  const applicantEmails = new Set(
+    [input.applicantEmail, input.applicantAuthEmail]
+      .map(normaliseEmailForComparison)
+      .filter(Boolean),
+  );
+
+  const seenPhones = new Map<string, string>();
+  const seenEmails = new Map<string, string>();
 
   for (const reference of input.references) {
-    const phone = normalisePhoneForComparison(reference.phone);
-    const name = normaliseNameForComparison(reference.name);
     const label = reference.label;
+    const phone = normalisePhoneForComparison(reference.phone);
+    const email = normaliseEmailForComparison(reference.email);
 
     if (phone && phone.length < 9) {
       issues.push(`${label}: enter a valid South African phone number.`);
     }
 
     if (phone && phone === applicantPhone) {
-      issues.push(`${label}: you cannot list yourself as a reference.`);
+      issues.push(`${label}: that phone number is yours — you cannot list yourself as a reference.`);
     }
 
-    if (name && applicantName && name === applicantName) {
-      issues.push(`${label}: you cannot list yourself as a reference.`);
+    if (email && applicantEmails.has(email)) {
+      issues.push(`${label}: that email address is yours — you cannot list yourself as a reference.`);
     }
 
-    const priorLabel = seen.get(phone);
-    if (phone && priorLabel) {
-      issues.push(`${label} and ${priorLabel} are the same person — list two different references.`);
+    const priorPhoneLabel = phone ? seenPhones.get(phone) : undefined;
+    if (phone && priorPhoneLabel) {
+      issues.push(`${label} and ${priorPhoneLabel} share a phone number — list two different references.`);
     } else if (phone) {
-      seen.set(phone, label);
+      seenPhones.set(phone, label);
+    }
+
+    const priorEmailLabel = email ? seenEmails.get(email) : undefined;
+    if (email && priorEmailLabel) {
+      issues.push(`${label} and ${priorEmailLabel} share an email address — list two different references.`);
+    } else if (email) {
+      seenEmails.set(email, label);
     }
   }
 
