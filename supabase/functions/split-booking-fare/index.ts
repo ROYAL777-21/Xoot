@@ -260,14 +260,31 @@ Deno.serve(async (req) => {
      */
     const resolvedSplitId = String(split.id);
 
+    /*
+     * ⚠️ CLAIM THE SPLIT BEFORE CREATING THE PAYMENT OBLIGATION.
+     *
+     * The old order was: check `status !== "invited"` → insert payment_records → update the
+     * split. Two concurrent accepts both passed the check, both inserted a payment row, and the
+     * second split update silently overwrote `payer_user_id` — one share, two live payment
+     * obligations and an orphaned row in the ledger.
+     *
+     * The claim below is the same optimistic-lock pattern `respond-xooter-job` uses, and uses
+     * only status values the DB CHECK constraint already allows (`invited`, `accepted`,
+     * `declined`, `settled` — no schema change): the update lands only while the status is
+     * STILL `invited`, so exactly one racing request wins. The loser gets a 409 before any
+     * money-adjacent row exists. `payment_record_id` is attached in a second, guarded update
+     * once the payment row exists; a failed insert rolls the claim back to `invited`.
+     */
     if (action === "decline") {
-      const { error } = await supa
+      const { data: declineClaim } = await supa
         .from("booking_fare_splits")
         .update({ status: "declined", updated_at: new Date().toISOString() })
-        .eq("id", resolvedSplitId);
-      if (error) {
-        console.error("fare split decline failed", error);
-        return fail("Could not record that.", origin, 500);
+        .eq("id", resolvedSplitId)
+        .eq("status", "invited")
+        .select("id")
+        .maybeSingle();
+      if (!declineClaim?.id) {
+        return fail("This split has already been answered.", origin, 409);
       }
       // The organiser has to re-split before the booking can be collected, so tell them.
       await insertOutbox(supa, {
@@ -282,8 +299,25 @@ Deno.serve(async (req) => {
       return json({ ok: true, status: "declined" }, 200, origin);
     }
 
-    // Accepting creates the payment row: now there is a real user to own it, which is why
-    // `payer_user_id` is nullable until here.
+    // Accepting: claim the split atomically. Concurrent accepts race on this update; one wins.
+    const { data: acceptClaim } = await supa
+      .from("booking_fare_splits")
+      .update({
+        status: "accepted",
+        payer_user_id: user.id,
+        accepted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", resolvedSplitId)
+      .eq("status", "invited")
+      .select("id")
+      .maybeSingle();
+    if (!acceptClaim?.id) {
+      return fail("This split has already been answered.", origin, 409);
+    }
+
+    // Accepting creates the payment row: now there is a real user to own it (`payer_user_id` is
+    // nullable until the claim above, which is why the insert could only happen here).
     const providerReference = `xoot_split_${resolvedSplitId}_${Date.now()}`;
     const { data: payment, error: paymentError } = await supa
       .from("payment_records")
@@ -305,19 +339,27 @@ Deno.serve(async (req) => {
       .single();
     if (paymentError || !payment?.id) {
       console.error("fare split payment record failed", paymentError);
+      // The claim above must not strand the split as `accepted` with no payment: put it back so
+      // the invitee can retry. Best-effort; a failure here is logged and visible in ops.
+      await supa
+        .from("booking_fare_splits")
+        .update({ status: "invited", payer_user_id: null, accepted_at: null, updated_at: new Date().toISOString() })
+        .eq("id", resolvedSplitId)
+        .eq("status", "accepted")
+        .eq("payer_user_id", user.id)
+        .then(() => {}, () => {});
       return fail("Could not record your share.", origin, 500);
     }
 
     const { error: acceptError } = await supa
       .from("booking_fare_splits")
       .update({
-        status: "accepted",
-        payer_user_id: user.id,
         payment_record_id: payment.id,
-        accepted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq("id", resolvedSplitId);
+      .eq("id", resolvedSplitId)
+      .eq("status", "accepted")
+      .eq("payer_user_id", user.id);
     if (acceptError) {
       console.error("fare split accept failed", acceptError);
       return fail("Could not record your share.", origin, 500);

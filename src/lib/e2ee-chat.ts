@@ -58,6 +58,12 @@ export type DecryptChatMessageInput = {
   currentUserId: string;
   currentDeviceId?: string;
   privateJwk: JsonWebKey;
+  /**
+   * Registered public keys for the OTHER participants (from `get-booking-public-keys`, which is
+   * participant-scoped). When provided, the envelope's `senderPublicJwk` must match the
+   * registered key for `envelope.senderId` — see `decryptChatMessage`.
+   */
+  trustedSenderKeys?: E2eeRecipientKey[];
 };
 
 const encodeText = (value: string) => new TextEncoder().encode(value);
@@ -187,6 +193,18 @@ export const createDeviceKeyPair = async (deviceId = randomDeviceId()): Promise<
 
 export const getDeviceKeyStorageKey = (userId: string) => `xoot:e2ee:device-key:v1:${userId}`;
 
+/**
+ * Removes this user's stored device key pair. Called on sign-out so the private key does not
+ * outlive the session on a shared device (security round 2, H-2). Note the trade-off, which is
+ * deliberate: a user who signs out and back in gets a NEW device key, so messages wrapped for
+ * the old device can no longer be decrypted on it — privacy on shared devices beats history
+ * retention, and that is the choice an E2EE product has to make.
+ */
+export const clearStoredDeviceKeyPair = (userId: string, storage?: Storage | null) => {
+  const targetStorage = storage ?? (typeof window !== "undefined" ? window.localStorage : null);
+  targetStorage?.removeItem(getDeviceKeyStorageKey(userId));
+};
+
 export const readStoredDeviceKeyPair = (userId: string, storage?: Storage | null): StoredDeviceKeyPair | null => {
   const targetStorage = storage ?? (typeof window !== "undefined" ? window.localStorage : null);
   const raw = targetStorage?.getItem(getDeviceKeyStorageKey(userId));
@@ -301,16 +319,46 @@ export const encryptChatMessage = async ({
   });
 };
 
+/**
+ * Compare two JWKs by their cryptographic material only — key_ops/ext metadata can be ordered
+ * differently without changing the key.
+ */
+const sameJwkMaterial = (a: JsonWebKey, b: JsonWebKey) =>
+  a.kty === b.kty && a.crv === b.crv && a.x === b.x && a.y === b.y;
+
 export const decryptChatMessage = async ({
   body,
   currentUserId,
   currentDeviceId,
   privateJwk,
+  trustedSenderKeys,
 }: DecryptChatMessageInput) => {
   if (!isEncryptedChatBody(body)) return body;
 
   const envelope = parseEncryptedChatBody(body);
   if (!envelope) throw new Error("Secure chat envelope is invalid.");
+
+  /*
+   * ⚠️ SENDER AUTHENTICATION (security round 2, H-1).
+   *
+   * The envelope carries `senderId` AND `senderPublicJwk`, both attacker-controlled. Before this
+   * check, a malicious participant could craft an envelope with `senderId: "<other party>"` and
+   * their own ECDH key: it decrypted cleanly and rendered as the other party. Confidentiality
+   * held; authenticity did not — which is the property "end-to-end encrypted" promises.
+   *
+   * When the caller supplies the registered keys (BookingChat fetches them from
+   * `get-booking-public-keys`), the envelope's key must match the REGISTERED key for its claimed
+   * sender. A mismatch throws, and the caller renders the failure instead of the spoofed text.
+   */
+  if (trustedSenderKeys && trustedSenderKeys.length > 0) {
+    const registered = trustedSenderKeys.filter((key) => key.userId === envelope.senderId);
+    if (registered.length === 0) {
+      throw new Error("Secure chat sender is not registered on this booking.");
+    }
+    if (!registered.some((key) => sameJwkMaterial(key.publicJwk, envelope.senderPublicJwk))) {
+      throw new Error("Secure chat sender could not be verified.");
+    }
+  }
 
   const wrapped =
     envelope.keys.find((key) => key.userId === currentUserId && key.deviceId === currentDeviceId) ??

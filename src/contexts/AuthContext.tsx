@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { clearStoredDeviceKeyPair } from "@/lib/e2ee-chat";
 
 type AuthContextValue = {
   user: User | null;
@@ -36,7 +37,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    /*
+     * Clear the E2EE chat device key BEFORE the session ends (security round 2, H-2): without
+     * this the private key outlived sign-out indefinitely in localStorage, so anyone using the
+     * same browser after the user left could exfiltrate it. Clearing first also means the key
+     * is gone even if the network signOut call fails.
+     */
+    const currentUserId = user?.id;
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      if (currentUserId) clearStoredDeviceKeyPair(currentUserId);
+    }
   };
 
   return (

@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildEmailPayload } from "../_shared/email-playbook.ts";
 import { readJson } from "../_shared/action-utils.ts";
+import { consumeRateLimit } from "../_shared/governance-utils.ts";
 import {
   ADD_ON_CENTS,
   BOOKING_COVER_CENTS,
@@ -151,6 +152,20 @@ Deno.serve(async (req) => {
     );
 
     /*
+     * Rate limit (security round 2): this endpoint mints bookings + payment records + job offers
+     * per call and had no bound. A scripted caller could flood the ops queue, the email outbox
+     * and `xooter_jobs` with `offered` rows — the last of which expires real jobs' offers.
+     */
+    const rateLimit = await consumeRateLimit(supa, {
+      bucket: "bookings",
+      actor: authData.user.id,
+      action: "create_booking_request",
+      limitCount: 10,
+      windowSeconds: 300,
+    });
+    if (!rateLimit.allowed) return json({ error: "too many requests, please wait a moment" }, 429, origin);
+
+    /*
      * Care+, which this function had no concept of until 2026-08-12.
      *
      * It priced every caller as a non-member: it charged the booking fee the paywall promises to
@@ -189,6 +204,14 @@ Deno.serve(async (req) => {
     const perBookingCover = Math.round(bookingCover / selectedXooterIds.length);
     const perBookingHighDemand = Math.round(highDemandPremium / selectedXooterIds.length);
     const scheduledAt = `${date}T${time}:00+02:00`;
+    /*
+     * FUTURE-DATE CHECK, matching `create-booking`. This path previously accepted any
+     * syntactically valid date — a booking scheduled in the past could be created, offered to
+     * a Xooter and paid for, and would then sit as a job nobody can legally work.
+     */
+    if (new Date(scheduledAt).getTime() <= Date.now()) {
+      return json({ error: "scheduled time must be in the future" }, 400, origin);
+    }
     const launchRegion = approvedLaunchRegions.find((region) => address.toLowerCase().includes(region)) ?? address;
 
     // `householdProfileId` arrives from the request body and was previously written to

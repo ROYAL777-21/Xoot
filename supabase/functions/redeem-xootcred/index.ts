@@ -9,6 +9,7 @@ import {
   toNumber,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
+import { consumeRateLimit } from "../_shared/governance-utils.ts";
 import { normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
 
 const getAvailableBalance = async (supa: any, userId: string) => {
@@ -72,6 +73,29 @@ Deno.serve(async (req) => {
     const redeemable = Math.min(requestedAmount, balance, Math.max(0, currentAmountDue - 50));
     if (redeemable <= 0) return fail("XootCred cannot reduce booking below R50", origin, 409);
 
+    /*
+     * ⚠️ DOUBLE-SPEND GUARD. The balance above is a sum over ledger rows read BEFORE this write;
+     * two concurrent redemptions both saw the same balance and both inserted debits, spending
+     * credits twice (and the DB has no constraint to stop it). Two locks now make that
+     * practically impossible without a migration:
+     *
+     *   1. A per-user rate limit of ONE redemption per 15s — a concurrent attempt from the same
+     *      user is refused before it can race. (The first debit is committed well within 15s.)
+     *   2. An optimistic lock on the payment record: the update only lands if the amount is
+     *      STILL what we read, so two racing writers cannot both apply their reduction.
+     *
+     * The durable fix is a SECURITY DEFINER RPC that recomputes the balance inside the
+     * transaction (same shape as `claim_provider_event`); recorded in the security notes.
+     */
+    const limit = await consumeRateLimit(supa, {
+      bucket: "xootcred",
+      actor: booking.user_id,
+      action: "redeem_xootcred",
+      limitCount: 1,
+      windowSeconds: 15,
+    });
+    if (!limit.allowed) return fail("XootCred redemption is being processed — please retry in a moment", origin, 429);
+
     await supa.from("xootcred_ledger").insert({
       user_id: booking.user_id,
       booking_id: booking.id,
@@ -83,11 +107,29 @@ Deno.serve(async (req) => {
     });
 
     const newAmountDue = Math.max(50, Math.round((currentAmountDue - redeemable) * 100) / 100);
-    await supa.from("payment_records").update({
+    const { data: amountClaim } = await supa.from("payment_records").update({
       amount: newAmountDue,
       meta: { ...(payment.meta ?? {}), xootcred_redemption: redeemable },
       updated_at: new Date().toISOString(),
-    }).eq("id", payment.id);
+    }).eq("id", payment.id).eq("status", "pending").eq("amount", currentAmountDue).select("id").maybeSingle();
+    if (!amountClaim?.id) {
+      /*
+       * Zero affected rows means another redemption (or a webhook) moved the amount between our
+       * read and this write. The debit above is orphaned, so reverse it rather than leave the
+       * user's balance wrong — this path should be unreachable thanks to the rate limit, but a
+       * guard that leaves the books unbalanced when it trips is worse than no guard.
+       */
+      await supa.from("xootcred_ledger").insert({
+        user_id: booking.user_id,
+        booking_id: booking.id,
+        amount: redeemable,
+        direction: "credit",
+        reason: "redemption_reversal",
+        status: "available",
+        meta: { reason: "concurrent_redemption_reversed", payment_record_id: payment.id },
+      });
+      return fail("XootCred redemption is being processed — please retry in a moment", origin, 409);
+    }
 
     await writeAuditLog(supa, {
       actorId: user.id,

@@ -14,11 +14,25 @@ import {
 } from "./xooter-identity";
 
 /**
- * `7801236789017`-style numbers below are synthetic: the DOB prefix decodes, the checksum is
- * computed by the same Luhn the module implements, and no real person is described. The one
- * documentary fact used is the format itself — 13 digits, embedded DOB, Luhn check digit.
+ * The ID numbers below are documentary examples whose DHA check digits are published facts —
+ * `8001015009087`, `8801235111088` and `9202204720083` are widely cited as valid SA IDs, and
+ * their last digits (7, 8, 3) are what the Department of Home Affairs actually computed.
+ *
+ * They are pinned here on purpose. The first version of these tests generated "valid" IDs with
+ * `saIdChecksumDigit` itself, so when that function inverted its Luhn parity the tests inverted
+ * with it and stayed green while every real applicant was rejected. A test that derives its
+ * expectation from the code under test cannot catch the code being wrong.
  */
-const withChecksum = (firstTwelve: string) => `${firstTwelve}${saIdChecksumDigit(firstTwelve)}`;
+const PINNED_VALID_IDS: { id: string; firstTwelve: string; checkDigit: number; dob: string }[] = [
+  { id: "8001015009087", firstTwelve: "800101500908", checkDigit: 7, dob: "1980-01-01" },
+  { id: "8801235111088", firstTwelve: "880123511108", checkDigit: 8, dob: "1988-01-23" },
+  { id: "9202204720083", firstTwelve: "920220472008", checkDigit: 3, dob: "1992-02-20" },
+  // Leap-day DOB: 29 February 2000 (year 00 → century 2000, which WAS a leap year).
+  { id: "0002295009084", firstTwelve: "000229500908", checkDigit: 4, dob: "2000-02-29" },
+];
+
+/** The check digit the OLD, parity-inverted implementation computed for a real prefix. */
+const INVERTED_CHECKSUM_ID = "8001015009083";
 
 /** An 18th birthday exactly today: the boundary the age gate must allow. */
 const dobExactlyEighteen = (now: Date) => {
@@ -35,7 +49,13 @@ const dobSeventeen = (now: Date) => {
 };
 
 describe("saIdChecksumDigit", () => {
-  it("computes the Luhn check digit over the first twelve digits", () => {
+  it("matches the published DHA check digits for documentary ID prefixes", () => {
+    for (const sample of PINNED_VALID_IDS) {
+      expect(saIdChecksumDigit(sample.firstTwelve)).toBe(sample.checkDigit);
+    }
+  });
+
+  it("computes a digit in range and rejects non-12-digit input", () => {
     expect(saIdChecksumDigit("780123678901")).toBeTypeOf("number");
     expect(saIdChecksumDigit("780123678901")).toBeLessThan(10);
     expect(saIdChecksumDigit("12345")).toBeNull();
@@ -43,20 +63,25 @@ describe("saIdChecksumDigit", () => {
 });
 
 describe("parseSaIdNumber", () => {
-  it("accepts a structurally valid SA ID and returns its embedded date of birth", () => {
-    const id = withChecksum("991214500908");
-    const result = parseSaIdNumber(id);
-    expect(result.ok).toBe(true);
-    if (result.ok) expect(result.details.dateOfBirth).toBe("1999-12-14");
+  it("accepts documentary SA IDs and returns their embedded dates of birth", () => {
+    for (const sample of PINNED_VALID_IDS) {
+      const result = parseSaIdNumber(sample.id);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.details.dateOfBirth).toBe(sample.dob);
+    }
+  });
+
+  it("rejects the parity-inverted checksum the old implementation produced", () => {
+    // `8001015009083` is what the inverted Luhn blessed; DHA's digit for that prefix is 7.
+    expect(parseSaIdNumber(INVERTED_CHECKSUM_ID).ok).toBe(false);
   });
 
   it("rejects wrong length, non-digits, bad dates and bad checksums", () => {
-    expect(parseSaIdNumber(withChecksum("991214500908").slice(0, 12)).ok).toBe(false);
-    expect(parseSaIdNumber("99121450090A7").ok).toBe(false);
-    expect(parseSaIdNumber(withChecksum("991332500908")).ok).toBe(false);
-    const badChecksum = `${withChecksum("991214500908").slice(0, 12)}${
-      (Number(withChecksum("991214500908")[12]) + 1) % 10
-    }`;
+    expect(parseSaIdNumber("80010150090871").ok).toBe(false); // too long
+    expect(parseSaIdNumber("80010150090A7").ok).toBe(false); // non-digit
+    expect(parseSaIdNumber("9913325009088").ok).toBe(false); // month 33
+    const valid = PINNED_VALID_IDS[0];
+    const badChecksum = `${valid.firstTwelve}${(valid.checkDigit + 1) % 10}`;
     expect(parseSaIdNumber(badChecksum).ok).toBe(false);
   });
 });
@@ -85,25 +110,37 @@ describe("validateXooterIdentity", () => {
   });
 
   it("flags an SA ID whose embedded DOB disagrees with the supplied DOB", () => {
-    const id = withChecksum("991214500908"); // embedded DOB 1999-12-14
-    const issues = validateXooterIdentity({ dateOfBirth: "1999-12-15", idNumber: id });
+    const { id, dob } = PINNED_VALID_IDS[1]; // embedded DOB 1988-01-23
+    const issues = validateXooterIdentity({ dateOfBirth: "1988-01-24", idNumber: id });
     expect(issues.some((issue) => issue.includes("does not match"))).toBe(true);
   });
 
   it("accepts an SA ID whose embedded DOB matches, and a valid passport", () => {
-    const id = withChecksum("991214500908");
-    expect(validateXooterIdentity({ dateOfBirth: "1999-12-14", idNumber: id })).toEqual([]);
-    expect(validateXooterIdentity({ dateOfBirth: "1999-12-14", idNumber: "A12345678" })).toEqual([]);
+    const { id, dob } = PINNED_VALID_IDS[1];
+    expect(validateXooterIdentity({ dateOfBirth: dob, idNumber: id })).toEqual([]);
+    expect(validateXooterIdentity({ dateOfBirth: "1988-01-23", idNumber: "A12345678" })).toEqual([]);
   });
 
   it("rejects malformed passports and missing IDs", () => {
-    expect(validateXooterIdentity({ dateOfBirth: "1999-12-14", idNumber: "A1" }).length).toBe(1);
-    expect(validateXooterIdentity({ dateOfBirth: "1999-12-14", idNumber: "" }).length).toBe(1);
+    expect(validateXooterIdentity({ dateOfBirth: "1988-01-23", idNumber: "A1" }).length).toBe(1);
+    expect(validateXooterIdentity({ dateOfBirth: "1988-01-23", idNumber: "" }).length).toBe(1);
   });
 
   it("normalises spaces and case before validating", () => {
     expect(normaliseIdNumber(" a12345678 ")).toBe("A12345678");
-    expect(validateXooterIdentity({ dateOfBirth: "1999-12-14", idNumber: " a12345678 " })).toEqual([]);
+    expect(validateXooterIdentity({ dateOfBirth: "1988-01-23", idNumber: " a12345678 " })).toEqual([]);
+  });
+
+  it("rejects impossible calendar dates instead of letting them roll over", () => {
+    // February 31st does not exist; `new Date("1990-02-31")` silently becomes March 3rd.
+    expect(validateXooterIdentity({ dateOfBirth: "1990-02-31", idNumber: "A12345678" }).length).toBeGreaterThan(0);
+    expect(ageOn("1990-02-31")).toBeNull();
+    expect(ageOn("2001-04-31")).toBeNull();
+    expect(ageOn("1999-13-01")).toBeNull();
+    // Unpadded dates must fail the same way the server copy fails them.
+    expect(ageOn("1999-3-5")).toBeNull();
+    // A real leap day stays valid.
+    expect(ageOn("2000-02-29")).toBeTypeOf("number");
   });
 });
 

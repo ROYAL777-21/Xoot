@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { readJson } from "../_shared/action-utils.ts";
+import { adminMfaRequired, getAccessClaim, readJson } from "../_shared/action-utils.ts";
 import {
   assertTransition,
   normaliseBookingStatus,
@@ -254,6 +254,14 @@ Deno.serve(async (req) => {
 
     if (action === "admin_set_kyc_verification") {
       if (!(await isAdminUser(supa, userId))) return json({ error: "admin role required" }, 403, origin);
+      /*
+       * AAL2 (MFA) enforced server-side for this admin action, exactly as `requireAdmin`
+       * enforces it for the typed admin functions. This endpoint is the only remaining admin
+       * surface that checks the role inline, so the MFA assertion lives inline with it.
+       */
+      if (adminMfaRequired() && getAccessClaim(req, "aal") !== "aal2") {
+        return json({ error: "admin actions require MFA sign-in (AAL2) — re-authenticate and retry" }, 403, origin);
+      }
       const applicationId = cleanId(body.applicationId);
       const field = cleanText(body.field, 80);
       const status = cleanText(body.status, 20);
@@ -429,10 +437,22 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (!loyalty || Number(loyalty.free_credits) < 1) return json({ error: "no free credits available" }, 409, origin);
 
-      await supa
+      /*
+       * Optimistic lock on the exact balance we read. Two concurrent redemptions used to both
+       * read `free_credits = 1`, both write 0, and both insert a debit — one credit spent twice,
+       * and each debit also drags the user's XootCred balance calculation negative. Now the
+       * second write matches zero rows and the request is refused instead of double-spending.
+       */
+      const { data: creditClaim, error: creditClaimError } = await supa
         .from("loyalty_points")
         .update({ free_credits: Number(loyalty.free_credits) - 1 })
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .eq("free_credits", Number(loyalty.free_credits))
+        .select("free_credits")
+        .maybeSingle();
+      if (creditClaimError || !creditClaim) {
+        return json({ error: "credits changed while redeeming — please retry" }, 409, origin);
+      }
       const { data: ledger, error: ledgerError } = await supa.from("xootcred_ledger").insert({
         user_id: userId,
         amount: 1,
@@ -459,6 +479,24 @@ Deno.serve(async (req) => {
     if (action === "booking_status_changed") {
       const bookingId = cleanId(body.bookingId);
       const status = cleanText(body.status, 40);
+      /*
+       * ⚠️ PROGRESS STATUSES ONLY. This endpoint is the contractor's job-timeline control, and
+       * it used to accept ANY status the state machine could reach — including `payment_confirmed`,
+       * `awaiting_assignment`, `assigned` and `contractor_accepted`. Those are money and
+       * allocation states: a CLIENT (who is also a booking participant) could walk a `draft`
+       * booking straight to `contractor_accepted` and dispatch work with no payment at all,
+       * because `assertTransition` below checks the transition GRAPH, not WHO is driving it.
+       *
+       * Payment confirmation has exactly two legal entry points — the verified PayFast webhook
+       * (`confirm-payment`) and the audited admin path (`admin-confirm-payment`). Assignment and
+       * acceptance live in `respond-xooter-job` with its own authority checks. Cancellation is
+       * `cancel-booking` with its refund workflow. If a new timeline status is needed here, add
+       * it to THIS whitelist deliberately, never by removing it.
+       */
+      const progressStatuses = ["enroute", "en_route", "arrived", "in_progress", "completed"];
+      if (!progressStatuses.includes(status)) {
+        return json({ error: "this endpoint only accepts job progress statuses" }, 400, origin);
+      }
       const requestedStatus = (status === "enroute" ? "en_route" : status === "arrived" ? "in_progress" : status) as BookingStatus;
       const label = bookingStatusLabels[status] ?? bookingStatusLabels[requestedStatus];
       if (!label) return json({ error: "unsupported booking status" }, 400, origin);
@@ -472,7 +510,7 @@ Deno.serve(async (req) => {
 
       const participant = await isBookingParticipant(supa, booking, userId);
       if (!participant.participant) return json({ error: "booking access denied" }, 403, origin);
-      if (["enroute", "en_route", "arrived", "in_progress", "completed"].includes(status) && participant.role !== "contractor") {
+      if (participant.role !== "contractor") {
         return json({ error: "contractor status action required" }, 403, origin);
       }
       const currentStatus = normaliseBookingStatus(booking.status);
@@ -492,7 +530,23 @@ Deno.serve(async (req) => {
       if (timestampField) updatePayload[timestampField] = new Date().toISOString();
       if (status === "completed") updatePayload.completed_at = new Date().toISOString();
 
-      await supa.from("bookings").update(updatePayload).eq("id", booking.id);
+      /*
+       * Optimistic status guard: the update only lands if the status is STILL what we read.
+       * Without it, two concurrent calls (or a webhook advancing the booking between read and
+       * write) both "succeed" and the second overwrites the first — e.g. a completion stamped
+       * over a cancellation. Zero affected rows means someone else moved the booking first,
+       * which is a 409, not a silent no-op. `respond-xooter-job` uses the same pattern.
+       */
+      const { data: statusUpdate, error: statusUpdateError } = await supa
+        .from("bookings")
+        .update(updatePayload)
+        .eq("id", booking.id)
+        .eq("status", booking.status)
+        .select("id")
+        .maybeSingle();
+      if (statusUpdateError || !statusUpdate?.id) {
+        return json({ error: "booking status changed while updating — please retry" }, 409, origin);
+      }
       await supa.from("booking_status_events").insert({
         booking_id: booking.id,
         actor_id: userId,
@@ -516,16 +570,25 @@ Deno.serve(async (req) => {
       }
 
       if (status === "completed") {
+        /*
+         * Optimistic guard on the award, same reasoning as the status update above: two
+         * completions racing must not double-award 10 points (or a free clean every 10th).
+         * `.eq("total_bookings", …)` makes the second write affect zero rows.
+         */
         const { data: lp } = await supa.from("loyalty_points").select("*").eq("user_id", booking.user_id).maybeSingle();
         if (lp) {
           const total = Number(lp.total_bookings) + 1;
-          await supa.from("loyalty_points").update({
+          const { data: awardUpdate } = await supa.from("loyalty_points").update({
             total_bookings: total,
             points: Number(lp.points) + 10,
             free_credits: Number(lp.free_credits) + (total % 10 === 0 ? 1 : 0),
-          }).eq("user_id", booking.user_id);
+          }).eq("user_id", booking.user_id).eq("total_bookings", Number(lp.total_bookings)).select("user_id").maybeSingle();
+          if (awardUpdate?.user_id) {
+            await supa.from("xooter_jobs").update({ state: "completed" }).eq("booking_id", booking.id);
+          }
+        } else {
+          await supa.from("xooter_jobs").update({ state: "completed" }).eq("booking_id", booking.id);
         }
-        await supa.from("xooter_jobs").update({ state: "completed" }).eq("booking_id", booking.id);
       }
 
       return json({ status: bookingStatus, timeline_status: status }, 200, origin);

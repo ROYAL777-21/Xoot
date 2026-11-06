@@ -14,6 +14,7 @@ import {
   toNumber,
   writeAuditLog,
 } from "../_shared/action-utils.ts";
+import { consumeRateLimit } from "../_shared/governance-utils.ts";
 import {
   REFERRAL_FUNDING,
   checkReferral,
@@ -189,6 +190,20 @@ Deno.serve(async (req) => {
   const auth = await requireAuth(req, origin);
   if (auth.response) return auth.response;
   const { user, supa } = auth as { user: any; supa: any };
+
+    /*
+     * Rate limit (security round 2): this endpoint mints money-adjacent / queue rows per
+     * call and previously had no bound, so a scripted caller could flood bookings, queues
+     * or the email outbox through it.
+     */
+    const rateLimit = await consumeRateLimit(supa, {
+      bucket: "bookings",
+      actor: user.id,
+      action: "create_booking",
+      limitCount: 10,
+      windowSeconds: 300,
+    });
+    if (!rateLimit.allowed) return fail("too many requests, please wait a moment", origin, 429);
 
   try {
     const body = await readJson(req);

@@ -44,6 +44,17 @@ export const latestAcceptableDob = (now = new Date()) => {
 };
 
 export const ageOn = (dateOfBirth: string, on = new Date()): number | null => {
+  /*
+   * Strict shape, then a calendar check. `new Date("1990-02-31T00:00:00")` does NOT produce
+   * Invalid Date — it rolls over to March 3rd — so a structurally "valid" but impossible DOB
+   * used to pass the age gate as a shifted date. The regex also enforces zero-padded month and
+   * day, matching what the server copy accepts ("1999-3-5" must fail identically on both
+   * sides, or the server rejects what the client blessed).
+   */
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) return null;
+  const [year, month, day] = dateOfBirth.split("-").map(Number);
+  if (month < 1 || month > 12) return null;
+  if (day < 1 || day > daysInMonth(year, month)) return null;
   const dob = new Date(`${dateOfBirth}T00:00:00`);
   if (Number.isNaN(dob.getTime())) return null;
   const reference = new Date(on);
@@ -91,13 +102,22 @@ const dobFromIdPrefix = (prefix: string, now = new Date()): string | null => {
   return `${String(year).padStart(4, "0")}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
 };
 
-/** Luhn check digit as the Department of Home Affairs computes it for the 13th digit. */
+/**
+ * Luhn check digit as the Department of Home Affairs computes it for the 13th digit.
+ *
+ * ⚠️ The doubling is on 1-BASED EVEN positions — 0-based ODD indices. The first version of this
+ * function doubled 0-based EVEN indices, which inverts the parity: every genuine DHA number
+ * failed with "not valid" while ~10% of random 13-digit strings passed. Verified against
+ * documentary examples before and after: `800101500908` → 7, `880123511108` → 8,
+ * `920220472008` → 3. `src/lib/xooter-identity.test.ts` pins those exact pairs so the two
+ * mirrored copies can never invert again.
+ */
 export const saIdChecksumDigit = (firstTwelveDigits: string): number | null => {
   if (!/^\d{12}$/.test(firstTwelveDigits)) return null;
   let sum = 0;
   for (let index = 0; index < 12; index += 1) {
     let digit = Number(firstTwelveDigits[index]);
-    if (index % 2 === 0) {
+    if (index % 2 === 1) {
       digit *= 2;
       if (digit > 9) digit -= 9;
     }

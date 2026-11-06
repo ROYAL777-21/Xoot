@@ -22,7 +22,8 @@ export const getAdminActionContext = async (req: Request): Promise<AdminActionCo
   if (auth.response) return { response: auth.response, origin, user: null, supa: null, body: null };
 
   const { user, supa } = auth as { user: any; supa: ReturnType<typeof getServiceClient> };
-  const adminError = await requireAdmin(supa, user.id, origin);
+  // `req` is forwarded so requireAdmin can assert the session's AAL2 (MFA) claim server-side.
+  const adminError = await requireAdmin(supa, user.id, origin, req);
   if (adminError) return { response: adminError, origin, user: null, supa: null, body: null };
 
   const body = await readJson(req);

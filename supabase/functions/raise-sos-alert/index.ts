@@ -1,4 +1,5 @@
 import {
+  assertBookingParticipant,
   cleanId,
   cleanText,
   fail,
@@ -73,6 +74,12 @@ Deno.serve(async (req) => {
       // The address is the single most useful field and the one a caller in trouble is least
       // able to give. Snapshotted from the booking rather than referenced, so it survives the
       // booking being edited or deleted afterwards.
+      //
+      // ⚠️ PARTICIPANTS ONLY. This function used to snapshot the address of ANY booking whose id
+      // the caller supplied, and RLS lets the raiser read their own alert rows back — so any
+      // authenticated user who learned a booking id (support thread, screenshot, log) could read
+      // that household's street address. An SOS is never blocked: a non-participant alert is
+      // still recorded, just without the address. The victim's own location, if sent, is used.
       let addressSnapshot: string | null = null;
       if (bookingId) {
         const { data: booking } = await supa
@@ -80,7 +87,10 @@ Deno.serve(async (req) => {
           .select("id,address,user_id,xooter_id")
           .eq("id", bookingId)
           .maybeSingle();
-        if (booking?.id) addressSnapshot = booking.address ?? null;
+        if (booking?.id) {
+          const participant = await assertBookingParticipant(supa, booking, user.id);
+          if (participant.participant) addressSnapshot = booking.address ?? null;
+        }
       }
 
       const latitude = Number.isFinite(body.latitude) ? (body.latitude as number) : null;

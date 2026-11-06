@@ -86,10 +86,21 @@ Deno.serve(async (req) => {
      * loop. Generous, because the legitimate pattern is a person opening a link, then reloading it
      * once because they were not sure it worked.
      */
-    const forwarded = req.headers.get("x-forwarded-for") ?? "unknown";
+    /*
+     * ⚠️ Platform-controlled client IP, NOT the first XFF entry. On chained proxies the first
+     * `x-forwarded-for` value is client-supplied and the proxy appends the real address — so
+     * keying on `.split(",")[0]` let a scripted caller rotate buckets and bypass the bound
+     * entirely (the token's 192 bits still protected the data; only the abuse limit was
+     * bypassable). `cf-connecting-ip` (when present) and the LAST XFF entry are the values the
+     * platform set. Mirrors `_shared/turnstile.ts`.
+     */
+    const clientIp =
+      req.headers.get("cf-connecting-ip") ??
+      (req.headers.get("x-forwarded-for") ?? "unknown").split(",").pop()?.trim() ??
+      "unknown";
     const rateLimit = await consumeRateLimit(supa, {
       bucket: "booking.fare_split_invite",
-      actor: `fare-split-invite:${forwarded.split(",")[0].trim()}`,
+      actor: `fare-split-invite:${clientIp}`,
       action: "view",
       limitCount: 60,
       windowSeconds: 600,

@@ -26,8 +26,17 @@ export const normaliseIdNumber = (value: unknown) =>
 
 export const ageOn = (dateOfBirth: unknown, on = new Date()): number | null => {
   const value = String(dateOfBirth ?? "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  /*
+   * Calendar check: `new Date("1990-02-31T00:00:00")` rolls over to March 3rd instead of
+   * producing Invalid Date, so an impossible DOB used to slip through as a shifted date.
+   * Mirrors the client copy in `src/lib/xooter-identity.ts`.
+   */
+  const [year, month, day] = value.split("-").map(Number);
+  if (month < 1 || month > 12) return null;
+  if (day < 1 || day > daysInMonth(year, month)) return null;
   const dob = new Date(`${value}T00:00:00`);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(dob.getTime())) return null;
+  if (Number.isNaN(dob.getTime())) return null;
   let age = on.getFullYear() - dob.getFullYear();
   const beforeBirthday =
     on.getMonth() < dob.getMonth() ||
@@ -55,12 +64,20 @@ const dobFromIdPrefix = (prefix: string, now = new Date()): string | null => {
   return `${String(year).padStart(4, "0")}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
 };
 
+/**
+ * Luhn check digit as the Department of Home Affairs computes it for the 13th digit.
+ *
+ * ⚠️ The doubling is on 1-BASED EVEN positions — 0-based ODD indices. The first version doubled
+ * 0-based EVEN indices, which inverted the parity: every genuine DHA number failed while ~10% of
+ * random 13-digit strings passed. Pinned documentary examples: `800101500908` → 7,
+ * `880123511108` → 8, `920220472008` → 3. Must stay identical to `src/lib/xooter-identity.ts`.
+ */
 export const saIdChecksumDigit = (firstTwelveDigits: string): number | null => {
   if (!/^\d{12}$/.test(firstTwelveDigits)) return null;
   let sum = 0;
   for (let index = 0; index < 12; index += 1) {
     let digit = Number(firstTwelveDigits[index]);
-    if (index % 2 === 0) {
+    if (index % 2 === 1) {
       digit *= 2;
       if (digit > 9) digit -= 9;
     }

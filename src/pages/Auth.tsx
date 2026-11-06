@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, type SVGProps } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link, useLocation, useSearchParams } from "react-router-dom";
 import { isSupabaseConfigured, supabase, supabaseConfigErrorMessage } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -41,9 +41,21 @@ type AuthLocationState = {
   };
 };
 
-const getRedirectPath = (state: unknown) => {
+const getRedirectPath = (state: unknown, nextParam: string | null) => {
+  /*
+   * Two sources, in priority order (security round 2, M-1):
+   *   1. router `state.from` — set by RequireAuth when it bounced the user to /auth;
+   *   2. the `?next=` query param — set by SplitInvite ("sign in to confirm your share") and
+   *      the admin MFA re-auth redirect. Until now `next` was WRITTEN by those pages but never
+   * READ here, so the invitee landed on /app instead of back on their split invite.
+   *
+   * Both go through `getSafeRedirectPath`, which forces same-origin and blocks /auth* bounce
+   * targets, so this widens the sources without widening the destination.
+   */
   const from = (state as AuthLocationState | null)?.from;
-  return getSafeRedirectPath(`${from?.pathname ?? "/app"}${from?.search ?? ""}`);
+  if (from?.pathname) return getSafeRedirectPath(`${from.pathname}${from.search ?? ""}`);
+  if (nextParam) return getSafeRedirectPath(nextParam);
+  return getSafeRedirectPath("/app");
 };
 
 const providerLabels: Record<SocialAuthProvider, string> = {
@@ -72,6 +84,7 @@ const AppleLogo = (props: SVGProps<SVGSVGElement>) => (
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const [mode, setMode] = useState<AuthView>("signin");
   const [email, setEmail] = useState("");
@@ -88,7 +101,10 @@ const Auth = () => {
   const [quickUnlockEnabled, setQuickUnlockEnabled] = useState(false);
   const [quickUnlockLoading, setQuickUnlockLoading] = useState(false);
 
-  const redirectPath = useMemo(() => getRedirectPath(location.state), [location.state]);
+  const redirectPath = useMemo(
+    () => getRedirectPath(location.state, searchParams.get("next")),
+    [location.state, searchParams],
+  );
   const authMode = mode === "signup" ? "signup" : "signin";
   const isForgotPassword = mode === "forgot";
   const isOtpMode = mode === "otp";

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  clearStoredDeviceKeyPair,
   createDeviceKeyPair,
   decryptChatMessage,
   encryptChatMessage,
@@ -92,5 +93,106 @@ describe("encrypted booking chat helpers", () => {
         { userId: "bob", deviceId: "bob-phone", publicJwk: {} },
       ]),
     ).toEqual(["charlie"]);
+  });
+
+  /*
+   * Security round 2, H-1: sender authentication. The envelope's `senderId` and
+   * `senderPublicJwk` are attacker-controlled; without the trusted-keys check a malicious
+   * participant could make their message render as the other party.
+   */
+  cryptoIt("accepts an envelope whose sender key matches the registered key", async () => {
+    const alice = await createDeviceKeyPair("alice-phone");
+    const bob = await createDeviceKeyPair("bob-phone");
+
+    const body = await encryptChatMessage({
+      plaintext: "Genuine alice message.",
+      bookingId: "booking-3",
+      senderId: "alice",
+      senderDeviceId: alice.deviceId,
+      senderPrivateJwk: alice.privateJwk,
+      senderPublicJwk: alice.publicJwk,
+      recipients: [{ userId: "bob", deviceId: bob.deviceId, publicJwk: bob.publicJwk }],
+    });
+
+    await expect(
+      decryptChatMessage({
+        body,
+        currentUserId: "bob",
+        currentDeviceId: bob.deviceId,
+        privateJwk: bob.privateJwk,
+        trustedSenderKeys: [{ userId: "alice", deviceId: alice.deviceId, publicJwk: alice.publicJwk }],
+      }),
+    ).resolves.toBe("Genuine alice message.");
+  });
+
+  cryptoIt("rejects an envelope claiming a sender whose key does not match the registered key", async () => {
+    const alice = await createDeviceKeyPair("alice-phone");
+    // Mallory is a real booking participant with her OWN registered key.
+    const mallory = await createDeviceKeyPair("mallory-phone");
+    const bob = await createDeviceKeyPair("bob-phone");
+
+    // Mallory encrypts a message with her own key but claims senderId "alice".
+    const spoofed = await encryptChatMessage({
+      plaintext: "Send me the gate code, it's alice.",
+      bookingId: "booking-4",
+      senderId: "alice",
+      senderDeviceId: mallory.deviceId,
+      senderPrivateJwk: mallory.privateJwk,
+      senderPublicJwk: mallory.publicJwk,
+      recipients: [{ userId: "bob", deviceId: bob.deviceId, publicJwk: bob.publicJwk }],
+    });
+
+    await expect(
+      decryptChatMessage({
+        body: spoofed,
+        currentUserId: "bob",
+        currentDeviceId: bob.deviceId,
+        privateJwk: bob.privateJwk,
+        trustedSenderKeys: [
+          { userId: "alice", deviceId: alice.deviceId, publicJwk: alice.publicJwk },
+          { userId: "mallory", deviceId: mallory.deviceId, publicJwk: mallory.publicJwk },
+        ],
+      }),
+    ).rejects.toThrow(/could not be verified/i);
+  });
+
+  cryptoIt("rejects an envelope whose claimed sender has no registered key on the booking", async () => {
+    const mallory = await createDeviceKeyPair("mallory-phone");
+    const bob = await createDeviceKeyPair("bob-phone");
+
+    const spoofed = await encryptChatMessage({
+      plaintext: "Unregistered sender.",
+      bookingId: "booking-5",
+      senderId: "ghost",
+      senderDeviceId: mallory.deviceId,
+      senderPrivateJwk: mallory.privateJwk,
+      senderPublicJwk: mallory.publicJwk,
+      recipients: [{ userId: "bob", deviceId: bob.deviceId, publicJwk: bob.publicJwk }],
+    });
+
+    await expect(
+      decryptChatMessage({
+        body: spoofed,
+        currentUserId: "bob",
+        currentDeviceId: bob.deviceId,
+        privateJwk: bob.privateJwk,
+        trustedSenderKeys: [{ userId: "bob", deviceId: bob.deviceId, publicJwk: bob.publicJwk }],
+      }),
+    ).rejects.toThrow(/not registered/i);
+  });
+
+  it("clearStoredDeviceKeyPair removes the key from storage (H-2)", () => {
+    const store = new Map<string, string>();
+    const fakeStorage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+      removeItem: (k: string) => void store.delete(k),
+    } as unknown as Storage;
+
+    fakeStorage.setItem("xoot:e2ee:device-key:v1:user-1", '{"deviceId":"d"}');
+    expect(fakeStorage.getItem("xoot:e2ee:device-key:v1:user-1")).not.toBeNull();
+
+    clearStoredDeviceKeyPair("user-1", fakeStorage);
+    expect(fakeStorage.getItem("xoot:e2ee:device-key:v1:user-1")).toBeNull();
   });
 });

@@ -15,7 +15,14 @@ type N = { id: string; kind: string; title: string; body: string | null; link: s
 export const NotificationBell = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<N[]>([]);
-  const [roles, setRoles] = useState<string[]>(["user"]);
+  /*
+   * `null` means "roles still loading" (security round 2, M-2). The list used to start as
+   * `["user"]`, so for the moment before `loadCurrentUserRoles` resolved, every notification
+   * link was resolved AS A CLIENT — a Xooter tapping a booking push in that window was
+   * deep-linked into `/app/bookings/…`, the exact bug the role-aware rewrite exists to prevent.
+   * Until roles resolve, notifications render without links; the window is one query long.
+   */
+  const [roles, setRoles] = useState<string[] | null>(null);
 
   const load = async () => {
     if (!user) return;
@@ -94,7 +101,7 @@ export const NotificationBell = () => {
                * Role-aware: a Xooter tapping a client-surface link lands on the Xooter portal,
                * not inside the client web app. See `notification-routing.ts`.
                */
-              const safeLink = resolveNotificationLinkForRoles(n.link, roles);
+              const safeLink = roles === null ? null : resolveNotificationLinkForRoles(n.link, roles);
               return safeLink ? <Link key={n.id} to={safeLink}>{Body}</Link> : <div key={n.id}>{Body}</div>;
             })
           )}

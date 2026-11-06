@@ -31,6 +31,17 @@ describe("launch regions", () => {
     expect(isApprovedLaunchRegion("")).toBe(false);
   });
 
+  it("requires the region to be its own word, not a substring (security round 2)", () => {
+    // The old `includes` rule matched these as launch regions.
+    expect(isApprovedLaunchRegion("notmidrand")).toBe(false);
+    expect(isApprovedLaunchRegion("sandtonville")).toBe(false);
+    expect(isApprovedLaunchRegion("fourwaysx")).toBe(false);
+    // A region still counts with punctuation and street-number context around it.
+    expect(isApprovedLaunchRegion("12 Hyde Park Blvd, Hyde Park")).toBe(true);
+    expect(isApprovedLaunchRegion("Sandton, Johannesburg")).toBe(true);
+    expect(isApprovedLaunchRegion("BRAAMFONTEIN PRECINCT")).toBe(true);
+  });
+
   it("labels are title-cased for display", () => {
     const labels = approvedLaunchRegionLabels();
     expect(labels).toContain("Hyde Park");

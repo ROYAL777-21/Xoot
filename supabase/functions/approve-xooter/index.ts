@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
   const auth = await requireAuth(req, origin);
   if (auth.response) return auth.response;
   const { user, supa } = auth as { user: any; supa: any };
-  const adminError = await requireAdmin(supa, user.id, origin);
+  const adminError = await requireAdmin(supa, user.id, origin, req);
   if (adminError) return adminError;
 
   try {

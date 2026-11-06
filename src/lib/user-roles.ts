@@ -37,8 +37,14 @@ export const loadCurrentUserRoles = async (userId: string | null | undefined): P
     const roles = (data ?? []).map((row) => String(row.role)).filter(Boolean);
     cache = { userId, roles, loadedAt: now };
     return roles;
-  } catch {
-    // Least-privilege fallback: treat as a plain user, never as admin/xooter.
+  } catch (error) {
+    /*
+     * Least-privilege fallback: treat as a plain user, never as admin/xooter. The warning makes
+     * the failure observable (security round 2, L-4): if RLS ever blocks self-reads of
+     * `user_roles`, every Xooter silently routes as a client through notifications — the
+     * role-aware rewrite quietly stops working. A console warning turns that into a bug report.
+     */
+    console.warn("[xoot] user_roles lookup failed; falling back to least-privilege roles", error);
     return ["user"];
   }
 };

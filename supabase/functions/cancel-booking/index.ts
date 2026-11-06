@@ -12,6 +12,7 @@ import {
   writeAuditLog,
 } from "../_shared/action-utils.ts";
 import { canTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
+import { consumeRateLimit } from "../_shared/governance-utils.ts";
 
 const calculateRefund = (booking: any, payment: any) => {
   if (!payment || payment.status !== "paid") return { eligible: false, amount: 0, reason: "not_paid" };
@@ -47,6 +48,19 @@ Deno.serve(async (req) => {
 
     const participant = await assertBookingParticipant(supa, booking, user.id);
     if (!participant.participant) return fail("booking access denied", origin, 403);
+    /*
+     * ⚠️ CONTRACTORS CANNOT CANCEL THROUGH THE CLIENT PATH.
+     *
+     * `assertBookingParticipant` grants the assigned contractor the same "participant" status
+     * as the client, so before this check the contractor could cancel a PAID booking at any
+     * point in the window — killing the job and firing the client's refund workflow without any
+     * admin involvement. A contractor who cannot make a job goes through
+     * `request-replacement` (which finds cover and compensates the client); cancellation with
+     * refunds is the client's (or an admin's) decision, not the contractor's.
+     */
+    if (participant.role === "contractor") {
+      return fail("a booking cannot be cancelled by its Xooter — request a replacement instead", origin, 403);
+    }
     const currentStatus = normaliseBookingStatus(booking.status);
     if (!currentStatus) return fail("booking status is unsupported", origin, 409);
     if (currentStatus === "cancelled" || booking.cancelled_at) {
@@ -58,6 +72,17 @@ Deno.serve(async (req) => {
       return fail("booking cannot be cancelled in its current state", origin, participant.role === "admin" ? 409 : 403);
     }
 
+    // Rate limit, then claim the cancellation optimistically so two concurrent cancels cannot
+    // both insert a refund request for the same payment.
+    const limit = await consumeRateLimit(supa, {
+      bucket: "cancellations",
+      actor: user.id,
+      action: "cancel_booking",
+      limitCount: 5,
+      windowSeconds: 300,
+    });
+    if (!limit.allowed) return fail("too many cancellation attempts, please wait a moment", origin, 429);
+
     const { data: payment } = await supa
       .from("payment_records")
       .select("id,amount,currency,status")
@@ -67,7 +92,12 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     const refund = calculateRefund(booking, payment);
-    await supa
+    /*
+     * Status-guarded cancellation claim (the pattern `respond-xooter-job` uses): the update
+     * lands only if the status is STILL the one we read, so two concurrent cancels cannot both
+     * proceed and mint two `refund_requests` rows for one payment.
+     */
+    const { data: cancelClaim } = await supa
       .from("bookings")
       .update({
         status: "cancelled",
@@ -77,7 +107,13 @@ Deno.serve(async (req) => {
         sensitive_data_revoked_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq("id", booking.id);
+      .eq("id", booking.id)
+      .eq("status", booking.status)
+      .select("id")
+      .maybeSingle();
+    if (!cancelClaim?.id) {
+      return fail("booking changed while cancelling — please retry", origin, 409);
+    }
 
     await supa.from("booking_status_events").insert({
       booking_id: booking.id,

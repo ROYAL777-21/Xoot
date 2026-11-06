@@ -13,6 +13,7 @@ import {
   writeAuditLog,
 } from "../_shared/action-utils.ts";
 import { canTransition, normaliseBookingStatus } from "../_shared/booking-state-machine.ts";
+import { consumeRateLimit } from "../_shared/governance-utils.ts";
 import { MAX_TRAVEL_KM, distanceKmToCoverage, type SuburbCentroid } from "../_shared/geo.ts";
 
 /**
@@ -91,13 +92,35 @@ Deno.serve(async (req) => {
       return fail("booking is not in a valid replacement state", origin, 409);
     }
 
-    await supa.from("bookings").update({
+    /*
+     * ⚠️ RATE LIMIT before the write, and a STATUS-GUARDED write after it.
+     *
+     * Two concurrent requests used to both read `assigned`, both pass `canTransition`, and both
+     * write — and when both found no replacement, both minted a R30 `no_show_compensation`
+     * credit. The guard below (`.eq("status", booking.status)`) means the second write matches
+     * zero rows and aborts before any compensation exists; the rate limit makes even that
+     * window hard to hit. The credit itself is ALSO checked for an existing row for this
+     * booking, so a retry after a partial failure cannot double-compensate.
+     */
+    const limit = await consumeRateLimit(supa, {
+      bucket: "replacement",
+      actor: user.id,
+      action: "request_replacement",
+      limitCount: 3,
+      windowSeconds: 300,
+    });
+    if (!limit.allowed) return fail("too many replacement requests, please wait a moment", origin, 429);
+
+    const { data: replacementClaim } = await supa.from("bookings").update({
       status: "replacement_required",
       replacement_status: "searching",
       at_risk: true,
       replacement_count: Number(booking.replacement_count ?? 0) + 1,
       updated_at: new Date().toISOString(),
-    }).eq("id", booking.id);
+    }).eq("id", booking.id).eq("status", booking.status).select("id").maybeSingle();
+    if (!replacementClaim?.id) {
+      return fail("booking changed while requesting a replacement — please retry", origin, 409);
+    }
 
     await supa.from("booking_status_events").insert({
       booking_id: booking.id,
@@ -146,15 +169,27 @@ Deno.serve(async (req) => {
         replacement_status: "no_match",
         updated_at: new Date().toISOString(),
       }).eq("id", booking.id);
-      await supa.from("xootcred_ledger").insert({
-        user_id: booking.user_id,
-        booking_id: booking.id,
-        amount: 30,
-        direction: "credit",
-        reason: "no_show_compensation",
-        status: "available",
-        meta: { source: "replacement_unavailable" },
-      });
+      /*
+       * Idempotent compensation: only mint the R30 credit if no `no_show_compensation` credit
+       * already exists for this booking. Combined with the status-guarded claim above, a retry
+       * or a race cannot stack credits.
+       */
+      const { count: existingCompensation } = await supa
+        .from("xootcred_ledger")
+        .select("id", { count: "exact", head: true })
+        .eq("booking_id", booking.id)
+        .eq("reason", "no_show_compensation");
+      if ((existingCompensation ?? 0) === 0) {
+        await supa.from("xootcred_ledger").insert({
+          user_id: booking.user_id,
+          booking_id: booking.id,
+          amount: 30,
+          direction: "credit",
+          reason: "no_show_compensation",
+          status: "available",
+          meta: { source: "replacement_unavailable" },
+        });
+      }
       await insertReviewQueue(supa, {
         queueType: "replacement",
         subjectTable: "bookings",

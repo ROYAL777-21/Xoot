@@ -28,6 +28,92 @@ Read the 🚨 **Xoot is NOT live** entry below before you trust any go-live stat
 
 ---
 
+## 2026-11-05 — Security round 2: deep-audit fixes across payments, admin MFA, races, E2EE (external session)
+
+Follow-up to the entry below, from the founder's "find more bugs before hackers do" pass. A
+full-codebase audit (all 52 Edge Functions + shared modules + web frontend) surfaced 16 defects;
+all fixed locally on top of the round-1 commit. **Not pushed, not deployed.** Verified:
+1,237/1,238 tests (the 1 failure is `ios-build-setup.test.ts`, pre-existing; the 3 mobile suite
+transform failures are the sandbox missing `mobile/node_modules`), `tsc --noEmit` clean, `eslint`
+clean, `security:scan` 4/4, `vite build` clean, all 21 modified Edge Functions parse under esbuild.
+
+### CRITICAL — the round-1 SA ID Luhn check was parity-inverted
+`saIdChecksumDigit` doubled 0-based EVEN indices; DHA doubles 1-based even positions (0-based
+ODD). Every genuine SA ID was rejected at step 0 AND at submit — the entire Xooter funnel was
+closed to real applicants, while ~10% of random 13-digit strings passed. The round-1 tests were
+circular (generated "valid" IDs with the broken function itself), which is why they stayed green.
+Fixed in both copies (`src/lib/xooter-identity.ts` + `_shared/xooter-identity.ts`), tests now pin
+documentary IDs (`8001015009087`, `8801235111088`, `9202204720083`) and reject the inverted
+checksum. Also added calendar validation so `1990-02-31` no longer rolls over to March (L-1).
+
+### Payment / booking integrity
+- **F1** `ops-workflow booking_status_changed` accepted ANY participant, so a CLIENT could walk a
+  `draft` booking to `contractor_accepted` with zero payment. Now progress-statuses-only
+  (enroute/arrived/in_progress/completed), contractor-only, with an optimistic status guard.
+- **F3** `split-booking-fare` accept race created two payment obligations for one share. The
+  split is now claimed atomically (`.eq("status","invited")`) before the payment insert, using
+  only CHECK-constraint-legal statuses.
+- **F4** `redeem-xootcred` double-spend: per-user rate limit (1/15s) + optimistic lock on the
+  payment amount + auto-reversal of an orphaned debit.
+- **F8** `request-replacement` could double-mint the R30 no-show credit; status-guarded claim +
+  idempotent credit check.
+- **F9** The assigned Xooter could cancel a PAID booking through the client path, firing the
+  client's refund workflow. Contractors now 403 → `request-replacement`; cancellations are
+  status-guarded + rate limited.
+
+### Admin MFA (H-3)
+`requireAdmin` now asserts AAL2 from the verified JWT (fail-closed, `XOOT_ADMIN_REQUIRE_MFA`
+staging escape hatch documented in `.env.example`). `/admin/kyc` had NO MFA gate at all — added
+the same client gate `/admin/ops` has. `ops-workflow admin_set_kyc_verification` (the one inline
+admin check) enforces it too.
+
+### Data exposure
+- **F2** `raise-sos-alert` snapshotted ANY booking's street address into an alert the raiser
+  could read back (POPIA-sensitive). Participant check added; the alert itself still records.
+- **F6** `ai-match` did `select("*")` on `xooters` and spread the row — leaking auth user ids,
+  vetting state and flags to every signed-in user. Explicit public-column list, mirroring
+  `xooters_public`.
+
+### E2EE chat authenticity (H-1, H-2)
+The envelope's `senderId`+`senderPublicJwk` were attacker-controlled: a malicious participant
+could spoof the other party (confidentiality held, authenticity did not). `decryptChatMessage`
+now verifies the sender key against the registered `get-booking-public-keys` set when provided;
+BookingChat passes it. Sign-out now clears the localStorage device key (was: kept forever). Three
+new crypto tests pin the spoof rejection.
+
+### Frontend correctness
+- **M-1** `/auth?next=` was never read — SplitInvite sign-ins landed on `/app` instead of the
+  invite. Both redirect sources (router state, `next` param) flow through `getSafeRedirectPath`.
+- **M-2** NotificationBell rendered links with roles `["user"]` before they resolved — the exact
+  Xooter-into-client-app bug round 1 fixed, reborn as a race. Roles now start `null` (no links
+  until resolved).
+- **F16** launch-region matching is word-boundary, not substring (`notmidrand` no longer passes);
+  mirrored client/server, parity tests extended.
+- **L-2** camera-cancel now resolves the capture promise (spinner no longer hangs forever).
+- **L-4** the user-roles least-privilege fallback logs a warning instead of failing silently.
+- **L-5** DOB picker max/min use local dates, not `toISOString()` (18th-birthday boundary).
+
+### Rate limits rolled out (F7)
+`create-booking`, `create-booking-request`, `create-support-case`, `report-booking-message`,
+`resend-booking-invoice`, `submit-xooter-application` (submit only), `activate-care-plus`,
+`care-plus-membership` — none had bounds; all mint queue/outbox/payment rows per call.
+Also: **F10** fare-split-invite's rate-limit key used the spoofable FIRST `x-forwarded-for`
+entry (now `cf-connecting-ip` / LAST entry), **F11** sensitive-access values capped at 500 chars,
+**F12** `create-booking-request` rejects past scheduled times, **F15** duplicate Care+
+subscriptions self-heal (the schema-contract test caught my first sweep writing a non-existent
+`updated_at` column — `cancelled_at` is correct).
+
+### Known remaining (not fixed here, needs founder/deploy)
+- XootCred balance and Care+ subscription uniqueness are still app-level, not DB-constraint
+  level; the durable fix is a SECURITY DEFINER RPC (same shape as `claim_provider_event`).
+- E2EE private keys remain an extractable JWK in localStorage between sign-in and sign-out
+  (cleared on sign-out now); the full fix is non-extractable CryptoKeys in IndexedDB + a
+  `navigator.locks` creation guard — a migration with history-loss tradeoffs, founder call.
+- Admin self-approval for critical provider gates (F14) is a policy decision, documented in the
+  round-2 report.
+
+---
+
 ## 2026-11-05 — Founder-requested onboarding hardening, notification deep-link fix, README (external session)
 
 Worked from the founder's instruction list against `main` @ `dde795a`. **All changes are local to

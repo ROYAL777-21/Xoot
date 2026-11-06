@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,17 @@ const verificationFields = [
 ] as const;
 
 const AdminKyc = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  /*
+   * ⚠️ AAL2 (MFA) gate, client-side. This page performs the most sensitive decisions in the
+   * product — approving Xooters who will enter customers' homes. Until this patch it had NO
+   * MFA gate at all (Ops.tsx had one; this page was forgotten), and the server-side AAL2
+   * assertion in `requireAdmin` did not exist either. Both layers now enforce it: this gate is
+   * UX, `requireAdmin`'s `getAccessClaim(req, "aal")` check is the control.
+   */
+  const [mfaVerified, setMfaVerified] = useState(false);
+  const [checkingMfa, setCheckingMfa] = useState(true);
   const [apps, setApps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<any>(null);
@@ -36,6 +48,30 @@ const AdminKyc = () => {
   };
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.mfa
+      .getAuthenticatorAssuranceLevel()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || data?.currentLevel !== "aal2") {
+          toast.error("Admin MFA verification is required before reviewing KYC applications.");
+          navigate("/auth?reauth=admin-mfa", { replace: true, state: { from: location } });
+          return;
+        }
+        setMfaVerified(true);
+        setCheckingMfa(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        toast.error("Admin MFA verification is required before reviewing KYC applications.");
+        navigate("/auth?reauth=admin-mfa", { replace: true, state: { from: location } });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [location, navigate]);
 
   const openApp = async (a: any) => {
     setActive(a);
@@ -119,7 +155,8 @@ const AdminKyc = () => {
     load();
   };
 
-  if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  if (checkingMfa || loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  if (!mfaVerified) return null;
 
   return (
     <div className="container py-8 lg:py-12 max-w-6xl">

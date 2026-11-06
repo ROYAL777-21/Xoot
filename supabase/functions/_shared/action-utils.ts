@@ -157,19 +157,75 @@ export const isAdminUser = async (supa: ReturnType<typeof getServiceClient>, use
   return Boolean(data?.id);
 };
 
-export const requireAdmin = async (supa: ReturnType<typeof getServiceClient>, userId: string, origin: string | null) => {
-  if (await isAdminUser(supa, userId)) return null;
-  return fail("admin role required", origin, 403);
+/**
+ * Read a claim (e.g. `aal`) out of the caller's access token.
+ *
+ * Safe only because every caller has ALREADY verified the token through `getAuthUser` — this
+ * function decodes, it does not authenticate. It exists so admin functions can assert the
+ * session's authenticator-assurance level without a second network round trip: Supabase puts
+ * `aal` ("aal1" | "aal2") in the access token payload, and `auth.getUser()` does not return it.
+ */
+export const getAccessClaim = (req: Request, claim: string): string | null => {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader.slice("Bearer ".length).trim();
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
+    return typeof payload[claim] === "string" ? (payload[claim] as string) : null;
+  } catch {
+    return null;
+  }
 };
+
+/**
+ * Admin actions demand MFA by default. The escape hatch exists for a staging project whose
+ * admin has not enrolled a second factor yet — set `XOOT_ADMIN_REQUIRE_MFA=false` there, never
+ * in production. Unset (the normal case) means required.
+ */
+export const adminMfaRequired = () =>
+  (Deno.env.get("XOOT_ADMIN_REQUIRE_MFA") ?? "true").trim().toLowerCase() !== "false";
+
+export const requireAdmin = async (
+  supa: ReturnType<typeof getServiceClient>,
+  userId: string,
+  origin: string | null,
+  req?: Request,
+) => {
+  if (!(await isAdminUser(supa, userId))) return fail("admin role required", origin, 403);
+  /*
+   * ⚠️ AAL2 ENFORCED SERVER-SIDE. The browser gates admin pages on
+   * `mfa.getAuthenticatorAssuranceLevel()`, but a UI gate stops nothing that talks to the API
+   * directly — a stolen or cloned AAL1 session (refresh token in localStorage) could call every
+   * admin function with full privileges. The claim is read from the very token that
+   * `getAuthUser` just verified, so it cannot be forged by the caller. `/admin/kyc` had no gate
+   * at all, server or client — this is the control that covers both pages.
+   */
+  if (req && adminMfaRequired() && getAccessClaim(req, "aal") !== "aal2") {
+    return fail("admin actions require MFA sign-in (AAL2) — re-authenticate and retry", origin, 403);
+  }
+  return null;
+};
+
+/*
+ * Word-boundary matching (security round 2). `value.includes(region)` matched "notmidrand" as
+ * Midrand and "sandtonville" as Sandton. A region now only counts when it appears as its own
+ * word. Mirrored in `src/lib/launch-regions.ts` — keep the two identical.
+ */
+const regionMatches = (value: string, region: string) =>
+  new RegExp(`(^|[^a-z])${region.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z]|$)`).test(value);
 
 export const isApprovedLaunchRegion = (input: string) => {
   const value = input.toLowerCase();
-  return approvedLaunchRegions.some((region) => value.includes(region));
+  return approvedLaunchRegions.some((region) => regionMatches(value, region));
 };
 
 export const resolveLaunchRegion = (input: string) => {
   const value = input.toLowerCase();
-  return approvedLaunchRegions.find((region) => value.includes(region)) ?? "";
+  return approvedLaunchRegions.find((region) => regionMatches(value, region)) ?? "";
 };
 
 export const getPriority = (text: string) => {

@@ -50,6 +50,10 @@ const selectWebImage = (mode: "camera" | "picker") =>
     input.accept = "image/*";
     if (mode === "camera") input.capture = "user";
     input.onchange = () => resolve(input.files?.[0] ?? null);
+    // Cancel must resolve too (security round 2, L-2): without a `cancel` listener the promise
+    // stayed pending forever when the user dismissed the camera, so the selfie step's spinner
+    // never stopped and the applicant had to reload the page.
+    input.addEventListener("cancel", () => resolve(null));
     input.click();
   });
 

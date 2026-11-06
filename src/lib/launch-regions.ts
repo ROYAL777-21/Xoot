@@ -37,9 +37,20 @@ const titleCase = (value: string) =>
 export const approvedLaunchRegionLabels = (): string[] =>
   APPROVED_LAUNCH_REGIONS.map((region) => titleCase(region));
 
-/** Same containment rule the Edge Function applies: substring, case-insensitive. */
+/**
+ * Word-boundary containment, not raw substring (security round 2). The old `includes` rule
+ * matched "notmidrand" as Midrand and "sandtonville" as Sandton. An address only counts when
+ * the region appears as its own word (allowing a comma or other punctuation around it, which
+ * the boundary escapes handle). Must stay identical to the server's rule in
+ * `supabase/functions/_shared/action-utils.ts` — the parity test pins the values, this pins
+ * the behaviour on both sides.
+ */
+const matchesRegion = (value: string, region: string) =>
+  new RegExp(`(^|[^a-z])${region.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z]|$)`).test(value);
+
+/** Same containment rule the Edge Function applies: word-boundary, case-insensitive. */
 export const isApprovedLaunchRegion = (input: unknown): boolean => {
   const value = String(input ?? "").trim().toLowerCase();
   if (!value) return false;
-  return APPROVED_LAUNCH_REGIONS.some((region) => value.includes(region));
+  return APPROVED_LAUNCH_REGIONS.some((region) => matchesRegion(value, region));
 };

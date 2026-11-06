@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
     if (!isServiceRole) {
       const { response: authFailure, user, supa } = await requireAuth(req, origin);
       if (authFailure || !user || !supa) return authFailure ?? fail("Authentication required", origin, 401);
-      const adminFailure = await requireAdmin(supa, user.id, origin);
+      const adminFailure = await requireAdmin(supa, user.id, origin, req);
       if (adminFailure) return adminFailure;
     }
 

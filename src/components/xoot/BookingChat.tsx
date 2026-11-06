@@ -214,6 +214,9 @@ export const BookingChat = ({ bookingId, booking, xooter, messages, currentUserI
               currentUserId,
               currentDeviceId: deviceKey.deviceId,
               privateJwk: deviceKey.privateJwk,
+              // Registered participant keys — the sender-authentication check (H-1) compares the
+              // envelope's claimed sender against these before unwrapping.
+              trustedSenderKeys: security.recipientKeys,
             });
           } catch {
             next[message.id] = "This secure message cannot be decrypted on this device.";
@@ -231,7 +234,7 @@ export const BookingChat = ({ bookingId, booking, xooter, messages, currentUserI
     return () => {
       cancelled = true;
     };
-  }, [messages, currentUserId, security.deviceKey]);
+  }, [messages, currentUserId, security.deviceKey, security.recipientKeys]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });

@@ -94,7 +94,10 @@ Deno.serve(async (req) => {
     const filtered = Object.fromEntries(
       Object.entries(fields as Record<string, unknown>)
         .filter(([key, value]) => sensitiveKeyPattern.test(key) && typeof value === "string" && value.trim().length > 0)
-        .map(([key, value]) => [key, String(value).trim()]),
+        // Cap values (security round 2): the 256 KB body cap alone allowed a single 250 KB
+        // "gate code" into the encrypted vault. Sensitive access fields are names, codes, alarm
+        // instructions and notes — 500 characters is generous for all of them.
+        .map(([key, value]) => [key, String(value).trim().slice(0, 500)]),
     ) as Record<string, string>;
 
     if (Object.keys(filtered).length === 0) return jsonResponse({ saved: false, reason: "no_sensitive_fields" }, 200, origin);

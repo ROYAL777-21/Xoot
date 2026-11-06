@@ -20,6 +20,7 @@ import {
   validateReferenceShape,
   validateXooterIdentity,
 } from "../_shared/xooter-identity.ts";
+import { consumeRateLimit } from "../_shared/governance-utils.ts";
 
 const docTypes = new Set(["id", "proof_of_residence", "bank_statement", "selfie"]);
 const allowedRelationships = new Set(["former_employer", "institution", "friend", "colleague"]);
@@ -206,6 +207,23 @@ Deno.serve(async (req) => {
   try {
     const body = await readJson(req);
     const mode = cleanText(body.mode, 20) || "submitted";
+
+    /*
+     * Rate limit on SUBMIT only (security round 2): a submission mints an application row, a KYC
+     * review-queue entry, an MIE screening outbox row and an email — a scripted caller could
+     * flood admin review and the outbox. Draft saves (`mode: "draft"`) stay unlimited so an
+     * applicant can save progress as often as they like.
+     */
+    if (mode !== "draft" && mode !== "document") {
+      const submitLimit = await consumeRateLimit(supa, {
+        bucket: "applications",
+        actor: user.id,
+        action: "submit_xooter_application",
+        limitCount: 5,
+        windowSeconds: 3600,
+      });
+      if (!submitLimit.allowed) return fail("too many submissions, please wait a moment", origin, 429);
+    }
 
     if (mode === "document") {
       const applicationId = cleanId(body.applicationId ?? body.application_id);

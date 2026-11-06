@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildEmailPayload } from "../_shared/email-playbook.ts";
 
 import { readJson } from "../_shared/action-utils.ts";
+import { consumeRateLimit } from "../_shared/governance-utils.ts";
 const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
@@ -95,6 +96,23 @@ Deno.serve(async (req) => {
     if (planError || !plan) return json({ error: "plan not found" }, 404, origin);
 
     if (action === "request_membership") {
+      /*
+       * Rate limit + duplicate guard (security round 2). The `existing` lookup below is a
+       * read-then-insert: two concurrent requests both found no subscription and both created
+       * one — and `getCarePlusDiscount`'s `maybeSingle()` then THROWS on multiple active rows,
+       * breaking pricing for that user entirely. The rate limit collapses the race window; the
+       * post-insert sweep below removes any duplicate that still slips through, keeping the
+       * one-row invariant self-healing.
+       */
+      const membershipLimit = await consumeRateLimit(supa, {
+        bucket: "care_plus",
+        actor: authData.user.id,
+        action: "request_membership",
+        limitCount: 3,
+        windowSeconds: 300,
+      });
+      if (!membershipLimit.allowed) return json({ error: "too many requests, please wait a moment" }, 429, origin);
+
       const { data: existing } = await supa
         .from("user_subscriptions")
         .select("id, status")
@@ -128,6 +146,22 @@ Deno.serve(async (req) => {
         status: "pending_payment",
       }).select("id,status").single();
       if (subscriptionError || !subscription?.id) throw new Error("subscription insert failed");
+
+      /*
+       * Duplicate sweep (see the comment at the top of this action): if a concurrent request
+       * still managed to insert a second `pending_payment` row for this plan, keep the one this
+       * request created (its payment record is wired to the review queue below) and cancel the
+       * other. Best-effort self-healing so `getCarePlusDiscount`'s `maybeSingle()` can never
+       * throw on duplicate rows. (`user_subscriptions` has no `updated_at` column — `cancelled_at`
+       * is the lifecycle timestamp, pinned by the schema-contract test.)
+       */
+      await supa
+        .from("user_subscriptions")
+        .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
+        .eq("user_id", authData.user.id)
+        .eq("plan_id", plan.id)
+        .eq("status", "pending_payment")
+        .neq("id", subscription.id);
 
       const { error: reviewError } = await supa.from("admin_review_queue").insert({
         queue_type: "payment",

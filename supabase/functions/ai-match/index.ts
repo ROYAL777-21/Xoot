@@ -77,7 +77,20 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const query = supa.from("xooters").select("*").eq("active", true);
+    /*
+     * ⚠️ EXPLICIT PUBLIC COLUMNS — never `select("*")` here, and never spread the row.
+     *
+     * The `xooters` table carries `user_id` (the cleaner's auth id), `application_status`,
+     * `verification_status`, `reliability_flagged` and `background_check_status` — internal
+     * vetting state that links a public profile to an account identity. This endpoint used to
+     * `select("*")` and spread the row into the response, handing all of that to every signed-in
+     * user. The list below mirrors what the `xooters_public` view already exposes to customers,
+     * which is the intended surface. A new column here must be a deliberate decision, not a
+     * side effect of `*`.
+     */
+    const publicXooterColumns =
+      "id,name,role,bio,photo_url,rating,jobs_completed,is_zotm,tags,suburb_coverage,airbnb_specialist,premium_care_plus,pet_comfort,transport,supplies_owned,languages_spoken,years_experience,hourly_rate,verified";
+    const query = supa.from("xooters").select(publicXooterColumns).eq("active", true);
     const { data: xooters } = await (safeService ? query.eq("role", safeService) : query);
     if (!xooters || xooters.length === 0) {
       return json({ ranked: [] }, 200, origin);
