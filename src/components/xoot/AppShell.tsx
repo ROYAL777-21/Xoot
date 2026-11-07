@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ConciergeOmnibox } from "@/components/xoot/ConciergeOmnibox";
+import { ThemeToggle } from "@/components/xoot/ThemeToggle";
 import { haptic } from "@/lib/haptics";
 
 const nav = [
@@ -73,6 +74,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
         <div className="liquid-glass-readable border-t border-border/60 pt-4 mt-4">
           <p className="text-xs text-muted-foreground truncate mb-2">{user?.email}</p>
+          <ThemeToggle className="mb-1" />
           <Button variant="ghost" size="sm" onClick={handleSignOut} className="interactive-press w-full justify-start rounded-2xl">
             <LogOut className="h-4 w-4 mr-2" /> Sign out
           </Button>

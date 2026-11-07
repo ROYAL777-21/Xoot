@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Briefcase, GraduationCap, Wallet, ShieldCheck, User, LogOut, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/xoot/ThemeToggle";
 
 const nav = [
   { to: "/xooter", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -55,6 +56,7 @@ export const XooterShell = ({ children }: { children: ReactNode }) => {
 
         <div className="liquid-glass-readable border-t border-border/60 pt-4 mt-4">
           <p className="text-xs text-muted-foreground truncate mb-2">{user?.email}</p>
+          <ThemeToggle className="mb-1" />
           <Button variant="ghost" size="sm" onClick={handleSignOut} className="interactive-press liquid-glass-interactive w-full justify-start rounded-2xl">
             <LogOut className="h-4 w-4 mr-2" /> Sign out
           </Button>

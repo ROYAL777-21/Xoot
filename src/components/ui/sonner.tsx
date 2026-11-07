@@ -4,11 +4,14 @@ import { Toaster as Sonner, toast } from "sonner";
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
+  // `forcedTheme` wins when active: on the public website the page is always
+  // light, so a stored dark preference from the web-app must not theme the
+  // toasts differently from the page they appear on.
+  const { theme = "system", forcedTheme } = useTheme();
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={(forcedTheme ?? theme) as ToasterProps["theme"]}
       className="toaster group"
       toastOptions={{
         classNames: {

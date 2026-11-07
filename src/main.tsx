@@ -1,5 +1,6 @@
 import { assertProductionEnv } from "@/lib/env-check";
 import { initMonitoring } from "@/lib/monitoring";
+import { applyPrePaintThemeClass } from "@/lib/theme-scope";
 import { createRoot } from "react-dom/client";
 import "@fontsource/space-grotesk/400.css";
 import "@fontsource/space-grotesk/500.css";
@@ -14,6 +15,10 @@ import "./index.css";
 import "./mobile-safety.css";
 
 assertProductionEnv();
+// Before any paint: the public website is light always; only web-app routes
+// (/app, /xooter, /admin) may honour a stored dark preference. See
+// src/lib/theme-scope.ts for why this lives here and not an inline <script>.
+applyPrePaintThemeClass();
 initMonitoring();
 
 createRoot(document.getElementById("root")!).render(<App />);

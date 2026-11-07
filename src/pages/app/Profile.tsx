@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, User, Bell, CreditCard, Sparkles, Home, ShieldCheck } from "lucide-react";
+import { Loader2, User, Bell, CreditCard, Sparkles, Home, ShieldCheck, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { ProfileUpdateInput } from "@/lib/validators";
+import { ThemeToggle } from "@/components/xoot/ThemeToggle";
 
 type HouseholdProfile = {
   id?: string;
@@ -147,6 +148,17 @@ const Profile = () => {
         <Button onClick={saveHousehold} disabled={savingHousehold} className="mt-5">
           {savingHousehold ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save household"}
         </Button>
+      </Card>
+
+      <Card className="p-6 rounded-3xl mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Palette className="h-5 w-5 text-primary" />
+          <h2 className="font-display text-xl font-bold">Appearance</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">The Xoot website is always light. Inside the app you can switch between light and dark — your choice applies here and in the helper portal, and is remembered for next time.</p>
+        <div className="max-w-xs">
+          <ThemeToggle />
+        </div>
       </Card>
 
       <Card className="p-6 rounded-3xl mb-6">

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
@@ -17,6 +17,7 @@ import { ConciergeProvider } from "@/contexts/ConciergeContext";
 import { XooterShell } from "@/components/xooter/XooterShell";
 import { RequireRole } from "@/components/RequireRole";
 import { XootAnalyticsProvider } from "@/lib/analytics";
+import { isWebAppRoute, WEB_APP_THEME_STORAGE_KEY } from "@/lib/theme-scope";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
@@ -132,26 +133,62 @@ const RouteLoading = () => (
   </div>
 );
 
+/**
+ * Theme scoping (founder rule, 2026-10-28): the public website is light mode,
+ * always — no stored preference, no OS preference, no toggle can change it.
+ * Light/dark customisation exists only inside the signed-in web-app surfaces
+ * (`/app/*`, `/xooter/*`, `/admin/*`).
+ *
+ * next-themes' `forcedTheme` re-applies on every change (it owns an effect on
+ * `[forcedTheme, theme]`), so this stays correct across client-side
+ * navigation without remounting the tree:
+ *   - public route  → forcedTheme="light" → dark class is stripped, setTheme is
+ *     a visual no-op (it still writes storage, which is fine — the choice was
+ *     made in the app and survives the visit to the website);
+ *   - web-app route → forcedTheme=undefined → the stored choice applies and
+ *     the ThemeToggle in the shells can customise it.
+ *
+ * `applyPrePaintThemeClass()` in main.tsx closes the load-time gap so a stored
+ * dark choice can never flash onto a public page before React mounts. The
+ * storage key is pinned to `WEB_APP_THEME_STORAGE_KEY` by theme-scope.test.ts.
+ */
+const RouteScopedTheme = ({ children }: { children: ReactNode }) => {
+  const { pathname } = useLocation();
+  const webAppSurface = isWebAppRoute(pathname);
+  return (
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      forcedTheme={webAppSurface ? undefined : "light"}
+      enableSystem={false}
+      disableTransitionOnChange
+      storageKey={WEB_APP_THEME_STORAGE_KEY}
+    >
+      {children}
+    </ThemeProvider>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <XootAnalyticsProvider>
       <HelmetProvider>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange storageKey="xoot-theme">
         <TooltipProvider>
           <ErrorBoundary>
-            <Toaster />
-            <Sonner />
             <BrowserRouter>
-              <AppLaunch />
-              <NativeInteractionLayer />
-              <PreloadCoreRoutes />
-              <ScrollToTop />
-              <AuthProvider>
-                {/* Wraps the routes AND the launcher, so the omnibox inside AppShell and the
-                    Concierge panel at the root share one open state. */}
-                <ConciergeProvider>
-                <Suspense fallback={<RouteLoading />}>
-                <Routes>
+              <RouteScopedTheme>
+                <Toaster />
+                <Sonner />
+                <AppLaunch />
+                <NativeInteractionLayer />
+                <PreloadCoreRoutes />
+                <ScrollToTop />
+                <AuthProvider>
+                  {/* Wraps the routes AND the launcher, so the omnibox inside AppShell and the
+                      Concierge panel at the root share one open state. */}
+                  <ConciergeProvider>
+                    <Suspense fallback={<RouteLoading />}>
+                      <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/welcome" element={<Welcome />} />
                   <Route path="/onboarding" element={<Onboarding />} />
@@ -224,15 +261,15 @@ const App = () => (
 
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
-                </Routes>
-                </Suspense>
-                <XootSupportBot />
-                </ConciergeProvider>
-              </AuthProvider>
+                    </Routes>
+                    </Suspense>
+                    <XootSupportBot />
+                  </ConciergeProvider>
+                </AuthProvider>
+              </RouteScopedTheme>
             </BrowserRouter>
           </ErrorBoundary>
         </TooltipProvider>
-        </ThemeProvider>
       </HelmetProvider>
     </XootAnalyticsProvider>
   </QueryClientProvider>

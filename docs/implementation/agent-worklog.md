@@ -261,6 +261,649 @@ allowlist already knows the schema drifted, but anyone rebuilding from migration
 this table shape. Flagged for Correctness & Safety — it predates this change and I did not touch
 migrations.
 
+### 27 October — PayFast retry integrity repair prepared for review
+
+Cross-role shared payment helper and three Edge handlers plus additive receipt migration
+20261027150000 are changed together because the previous payment-first writes and unconditional
+paid acknowledgement could leave fulfilment incomplete. Both confirmation paths now use a
+single locked service-only SQL transaction, including strict audit, notification and assignment
+outbox. Starting checkout requires its versioned readiness RPC and holds unsupported financial
+fulfilment kinds and the separate crew model. Preserve provider intent/evidence gates; no
+production migration, charge or provider activation. See the updated PayFast acceptance runbook.
+105 focused tests, three Deno checks and34 actual staging rollback-only SQL contract assertions
+pass. Follow-up reads show no test schema or booking/payment residue and0 duplicate job pairs.
+Synthetic SQL provider rows are not genuine provider, JWT, MFA or concurrency proof. No active
+worker was fabricated. The founder saved five staging PayFast values privately; only names and
+known sandbox/staging hashes were verified. No merchant credential is copied into this log.
+
+### 27 October — appearance and handoff repair source prepared
+
+On the owned integration branch, preserve PR72 in a clean merge (17e7155). Its64 focused
+PayFast checks and both Deno handler checks pass; no provider gate or secret changed.
+Cross-role edits to shared kit logo/token generator are necessary to repair the founder's
+non-working dark mode: next-themes used a root class while the handoff listened only to a data
+attribute, and system appearance was explicitly disabled. Preserve all284 light/78 dark token
+values; emit the class alias from the generator, fix its Windows entry-point comparison,
+follow device default, allow a saved system/light/dark choice, and apply a CSP-compatible
+external pre-paint script. Profile/place, toast and Tailwind audited palette remain intact.
+Render review still required.78 focused existing/new UI checks pass, and5 theme checks pass
+after both planted original defects were detected and restored. Lockfiles, web types, full
+lint, four header checks and four security scans pass. Latest copy/style-only changes will
+also be covered by the final complete run.
+
+Port taped object showcase cards and original display type; rename the planned fragrance
+without asserting unverified ingredients/manufacturing. Keep real referral-code ownership
+and server qualification, restore violet referral steps, add original flowers to the Care+
+profile card and recovery screen, animate the reward flower with reduced-motion support,
+remove the redundant suburb input, preserve modal scrolling while hiding its track, and
+return account destinations to You. Reduce speculative route preloads and respect Data Saver.
+No real reward milestone, free-clean redemption, merch fulfilment or staffed SOS is claimed.
+Those require explicit product/operating rules and reviewed server enforcement.
+
+Read-only GSC report (updated23Oct) reports1 indexed/17 not indexed:3 noindex,2 canonical
+alternates,1 redirect and11 crawled-not-indexed. Detail clicks do not open examples while
+the report remains Loading. Google Cloud branding fails loading JavaScript from gstatic.
+No SEO or OAuth setting changed based on that incomplete UI.
+
+## HOLDING — 27 October 2026 — PayFast sandbox and handoff/account repairs
+
+The founder now brings PayFast forward while required GitHub jobs await restored included usage.
+Reuse the clean linked xoot-gps workspace and owned PR101 integration branch, retaining its explicit
+staging configuration and already authorised exact origin. Integrate/review existing PR72 strict
+PayFast callbacks and checkout routing; preserve both histories and canonical price/role/worker
+invariants. No live payment, merchant secret readback, paid plan, spending increase, production
+promotion or invented CI result. Sandbox configuration and real signed provider acceptance remain
+separate from source checks. Preserve approved homepage structure and unrelated PR98/99.
+
+Claim the requested shared logo/type/object/referral fidelity, booking suburb/scrollbar repairs,
+profile return navigation and Care+ presentation, colourful refresh recovery, Xooter dashboard
+presentation, reward-tab flower animation and device-default appearance with a saved manual choice.
+Inspect the exact supplied handoff before porting; retain real owner reads/loading/error states and
+server-only financial eligibility. Add no mock gamification, review, balance or verification claim.
+Record the newly requested twelve-clean/increasing reward decision; its second threshold awaits
+founder clarification. Merch remains unpromised until its actual eligibility/fulfilment is defined.
+
+Audit the reported Google Search Console URLs and existing Google branding/verification without
+removing intentional private-page noindex or buying a custom-domain add-on. Inspect notification
+delivery/nudges and unique referral allocation/redemption, then repair verified defects. SOS must
+distinguish an honest user-initiated emergency-call option from monitored dispatch; partner readiness
+awaits clarification. Do not turn an unavailable response service into a success message.
+Cross-role payment/guard/design edits will identify their reason and receive independent review.
+
+## RELEASED CLAIM — 27 October 2026 — one combined website staging candidate
+
+Reuse the existing clean isolated xoot-gps worktree on integration/website-staging-20261027;
+the original call branch is preserved. Claim reconciliation of current PR97/100 with reviewed
+PR71 GPS/ETA, PR81 geography/address lookup, PR91 private entry indexing, PR93 private call gates,
+PR94 native Auth and PR96 chat policy. Preserve all histories and behaviours, exact approved public
+homepage/handoff, server money/role/worker eligibility, provider caps and private capability guards.
+No revert of another implementation to make a merge pass; record any genuine semantic conflict.
+PR98 Journal and PR99 separate release candidate are read-only references, not editing targets.
+Configure only this owned Preview branch for staging before acceptance; do not publish its initial
+default-config build or change global/Production variables. Run integrated checks/build, reconcile
+actual staged schemas/frozen handlers and get independent release/safety review. This is not
+permission to enable production tracking/calls, approve workers, send queued mail, run paid builds,
+raise spending or bypass required CI. Apple stays pending; personalisation stays planning only.
+
+Full initial integration run atbe7eb5b completed189 files/1935 tests:1924 pass,7 existing skips and
+4 fail. Claim the required guard reconciliation: source-parity scanner misreads dynamic fallback
+strings and generic mode fields; old address test expects removed direct-browser geocoding; old
+commission guard expects the intentionally removed activation payload; public lookup must have
+its explicitly approved, bounded-only gateway exception documented in the strict config allowlist.
+Retain positive/negative coverage for real forbidden writes, private gates, server-capped address
+confirmation and no-activation approval. Independent review also finds the old hosted GPS fixture
+cannot create new active workers under the delivered quarantine interlock. Add an explicit fail-fast
+preflight and keep that acceptance deferred; never disable the interlock or fabricate verification.
+No product pricing, approval, geocoder allowance or production switch is changed to make tests pass.
+
+Integrated full web run at18739a4 passes189files/1931checks with7existing skips. Independent review
+finds a guard-only logical-fallback gap;fc15d06 restores nullish/logical value-branch detection,
+passes7focused checks and rejects an actual planted forbidden fallback before clean restoration.
+Claim the remaining integration preflight repair: mobile declares expo-crypto but its root lock
+entry is missing; regenerate with the already locked56.0.4 package, without SDK/version upgrades.
+Use isolated installation paths so the shared worktree dependencies remain intact. Claim the exact
+owned integration-preview origin for bounded address discovery and owner-authenticated calendar
+settings on staging alone; retain existing origins, quotas/JWTs and every production origin rule.
+No general preview wildcard, global secret overwrite, calendar capability read or unrelated frozen
+handler deployment. Independent review and staged byte readback are required before delivery.
+
+Founder approved the exact staging-origin change at action time. Dashboard confirms only staging's
+new digest a800d3e8bd0e9f77b191fb10408ca11945599cb1dd1ee59c6be8389095dae8b7; runtime
+preflight and no-auth denials remain to check without provider spend. Source scan identifies two
+committed voice-test fixture strings, explicitly synthetic but shaped like long assigned secrets,
+plus generated full test-report text containing a synthetic SID. Claim short unambiguous test keys
+in those two tests and relocation of the owned ignored report outside repository scan scope;
+retain scanner patterns/allowlists and every signature/denial assertion. This is not live key
+rotation or concealment of a real credential. Re-run relevant voice tests and the unchanged scanner.
+Founder adds PayFast as the next implementation phase after current website readiness; record it
+in the single checklist and preserve/review existing PR72 before any payment-source integration.
+No payment switch, merchant credential, charge, sandbox acceptance or production clearance is implied.
+
+Final b190544 web run completes189files:1931pass,7existing skips,1 five-second website-booking
+UI timeout; its unchanged focused23-test rerun passes. Record the full failure, not a full-green
+final-head claim. All59 native script tests and the byte-identical isolated mobile typecheck pass.
+The50-page staging build/artifact scan pass, but the design smoke still targets only the former
+textbox role and cannot recognise the legitimate combobox. Claim its one exact-name selector
+repair supporting both input roles, retaining all existing typing/focus/section/startup assertions
+and deadlines. Verify the actual enabled-suggestion artifact rather than disabling the feature to
+pass. Hosted real public-address suggestion/confirmation and guest booking prefill work; no private
+address universal-resolution claim, actual worker, booking write or charge is made.
+
+The unchanged generic startup verifier also assumes the former email-sign-in-first screen.
+Claim its explicit transition from Create your account through the real returning-user action,
+on both navigation and direct reload, retaining all email-code/password/roster/runtime checks and
+timeouts. Add actual CLI positive/negative signup-first fixtures, including a missing/broken
+returning-user transition, so the gate cannot pass an inaccessible sign-in form. No Auth handler,
+credentials, signup copy, public configuration or runtime access policy changes are included.
+
+Final source f48fc98 passes all189 files/1937 tests with7 existing skips when file parallelism is
+explicitly disabled; assertions/deadlines stay unchanged. Earlier17 timeouts and the88/91 focused
+rerun remain recorded, followed by all three remaining individual cases passing. Exact final
+staging-config build/50 prerenders/artifact/design390/1440/rendered startup and final full lint,
+web TypeScript, lockfiles and unchanged source/header/security scans pass. Independent final
+release/security guard reviews and documentation review find no blocker in their scoped changes.
+
+Founder privately completes a genuinely new staging password signup/confirmation/sign-in. Normal
+UI and targeted aggregate show1 confirmed ordinary customer and1 owner profile. Normal owner save
+and reload retain a labelled public test place; anonymous Data API returns0 rows for that existing
+ID. Founder then signs in on the physical iPhone12 and confirms the place appears. This is real
+cross-device place acceptance, not GPS/chat/audio/native/production acceptance. No Auth identity,
+role or private home instruction is fabricated. Address use is56/200 Temporary and7/20 shared
+Permanent; no renewal, production setting or allowance increase. Public fixture remains labelled.
+
+Google now visibly refreshes the private calendar fixture to11–13SAST/revision1. Only that exact
+marker/owner/time/zero-price/no-payment/no-assignee fixture is then cancelled, returning1 row at
+revision2. Retain its tombstone until provider cancellation observation, then clean only the fixture.
+Production still serves approved e0c021e; fresh ledger read preserves external20261008011821 and
+records none of the nine integration versions. The staging in-app-voice configuration row is absent
+and fails closed. Required GitHub execution, exact production effects/frozen delivery, remaining
+provider/legal/worker/device/product gates and PayFast next-phase work remain. No merge, paid plan,
+spending increase or production activation. Release the integration source/documentation paths;
+the combined candidate proceeds only to a draft review, preserving original/unrelated PRs.
+
+## RELEASED AUDIT — 27 October 2026 — applicant contact columns already exist
+
+A broad preflight inventory appeared to omit six contact/reference columns, leading to a provisional
+repair claim. Targeted information_schema and pg_attribute checks establish that all six already
+exist as text (staging attribute positions24–29); both staging and production have the user_id unique
+key and no missing contact column. The provisional diagnosis is withdrawn before any migration or
+source edit. No extra column/migration, discarded input or production change was made. Real normal-
+account save/readback acceptance remains separate from these catalog checks. Release this audit.
+
+## RELEASED CLAIM — 27 October 2026 — quarantine reconciled and delivered to staging
+
+PR100 is now CONFLICTING with its PR97 base after legitimate calendar and account changes.
+Claim a rebase of this owned quarantine branch onto the current PR97 head, preserving both
+calendar schema/RPC/contracts and quarantine/activation controls plus both worklog histories.
+No revert of the other implementation, no production delivery, approval bypass, role or provider
+activation. Re-run the meaningful quarantine, calendar/config/type checks and Deno after resolution.
+Current source containment remains distinct from unconfigured Cloudmersive and authentic-document
+review. Independent final patch review remains required before delivery; review-agent usage limit
+is not clearance. Preserve unrelated PR98/99 and all staged/live customer data.
+
+27 October follow-up: rebase preserves both implementations and all three adjacent RPC declarations.
+Independent final security review clears cb3442f for staging-only containment after parent checks.
+All61 focused quarantine/RPC/config/calendar checks, TypeScript, scoped lint and three Deno checks
+now pass. Claim the authorised staging-only migration and exact changed-handler delivery, readback
+and non-destructive acceptance. Preserve the existing active staging Xooter and all Auth accounts;
+preflight has0 applications/documents/KYC objects. No production migration, scanner verdict,
+real applicant file transfer, new role, approval or paid provider change is included.
+
+Delivered reviewed migration20261027032349 (exact SQL hash read back), submit v19, approve v18
+and independently reviewed narrow v33-based ops v34. All11 returned files exactly match payloads;
+JWT stays enabled, no-bearer401/allowed-origin OPTIONS204 pass. Four private RLS tables, four
+restrictive Storage policies, five enabled triggers and table+column revocations are confirmed.
+Existing Xooter/role fingerprints are unchanged, all KYC rows/objects remain0 and both limits0/32.
+The canonical ops handler's unrelated gift-RPC changes are deliberately held for stack integration;
+only its verification denial is backported, retaining all frozen gift/pricing/dependency bytes.
+Independent final source and artifact reviews pass. Raw-path containment is not scanner completion,
+normal applicant/MFA acceptance or production clearance. Release this path claim.
+
+## RELEASED CLAIM — 27 October 2026 — Rewards, Safety and calendar copy acceptance
+
+Source8b5e367 applies the original Rewards flower/pastel/type composition with real owner balances,
+removes unsupported derived tiers/milestone promises and renames navbar Trust to Safety.61current
+wallet/kit/shell checks,41calendar/address/booking checks, TS/lint,50-page build/artifact and source
+security checks pass. Actual normal-account hosted layout at390/1440CSSpx has no overflow; Safety
+opens the unchanged trust-centre route. Preview READY; independent final UI/device review remains.
+Shared Care+ SVG geometry already matches the handoff. Do not copy prototype benefits or enable
+unfinished redemption/laundry. The single current checklist retains all requested launch work.
+
+Calendarcopy sourcee720c32 passed6independent checks. Founder privately replaced/copied/added it;
+Google visibly imports the disposable10–12SAST event asbusy/Private. Fixturealone now11–13SAST,
+revision1; provider refresh/cancellation still pending. Rawcapability not read byroot. Labelled
+local PostgreSQLfixture removed; live staging fixture retained/documented. Addressprivateexample
+still unresolved, source experiment removed, capped finalv4staged. No production promotion.
+Current8b5requiredsecurity/typejobs121978579704/121978578825 failedwith0steps and actualbilling/
+spending annotations; no checks fabricated, spending changed or gate bypass. Release these paths.
+## Historical claim — 27 October 2026 — Safety navigation and remaining handoff product work
+
+Founder explicitly retains GPS/ETA, in-Xoot chat/calling, customer/Xooter notification journeys,
+private upload malware/authenticity review, real matching, laundry/ironing, Rewards and Care+
+visual fidelity. Claim Navbar Trust→Safety label, Rewards handoff presentation and shared Care+
+mark audit; preserve route destinations, real balances/eligibility, locked prices and approval gates.
+Update the single production checklist with verified/pending implementation and acceptance status.
+Source design is design/handoff-2026-09-03. Do not port its fabricated balances/rewards/workers or
+prototype commercial rules. Personalisation stays planning only, Apple stays pending. No production
+release/check bypass, paid plan, credit, spend increase or trust-status change. Cross-role styling or
+reward claims require review before merge; existing required checks remain exhausted.
+
+## Historical claim — 26 October 2026 — calendar copy recovery and incomplete address suggestions
+
+Founder reports the staging private link did not reach the clipboard despite the copied status,
+and some Sunninghill inputs return no useful suggestions. Claim CalendarSubscription private
+manual-copy/reveal fallback, masked analytics-safe link field and focused privacy/interaction tests;
+keep raw capability out of logs, screenshots and persistent storage. Preserve the founder's existing
+private link and provisional calendar fixture; do not rotate/revoke behind the owner. Claim address
+discovery recall/empty-result guidance and provider contract tests in coordination with PR81 after
+specific failing street examples. Do not promise universal provider coverage or turn an uncertain
+address into a verified booking. Existing costs/normal Auth/POPIA and production release gates stand.
+Cross-role capability and provider tests require independent review before release.
+
+## RELEASED CLAIM — 26 October 2026 — automatic private calendar subscription and signup recovery
+
+Independently reviewedfa37e4e,106final focused checks/TS/lint/Deno and real PG/concurrency/targeted
+negative controls pass. Exact revised schema and v1management/feed files staged/read back; real
+normal-Auth founder customer enabled/copied its private link. No root read of link/code/JWT. Provider
+subscription form is privately handed to the founder; one labelled disposable staging calendar
+fixture is retained for reschedule/cancellation acceptance and cleanup, documented in the current
+checklist. Full production is not cleared. File paths released while that owner/device step is pending.
+
+Correction from founder: .vom was a chat typo, not established as the live input. Actual production audit shows existing-account repeated signup200 at16:03UTC followed by successful login16:04UTC. Generic confirmation-to-sign-in recovery preserves enumeration protections. Independent calendar review found delayed-digest account switching and subsecond revision collisions; deny-only expectedSubject checked against actual Auth plus post-digest identity guard and durable booking-row revisions address these. Exact final review and staging/provider acceptance remain required.
+
+Founder explicitly requests automatic calendar sync and reports no signup PIN on live xoot.co.za. The supplied .vom spelling was later clarified as a chat typo. Production read-only confirms the existing .com founder account is confirmed. Claim Auth email typo guidance and focused tests, calendar subscription management/feed/owner schema, signed-in calendar UI, privacy/rotation/cancellation tests and delivery evidence. Use a free read-only calendar subscription, with explicit customer connection, revocable random capability, only a hash stored, minimal visit fields, no private address/access/email/GPS, and truthful provider refresh delays. Normal account JWT remains required to enable/disable; a calendar reader must prove the separate unguessable capability. Cross-role migration, handler and security tests cannot wait because export-only is not the requested sync. Preserve all production gates, booking/pricing/worker approval restrictions and planning-only home personalisation. No paid provider, Google calendar write scope, Apple enrolment or production activation is authorised by this claim.
+
+## RELEASED CLAIM — 26 October 2026 — saved places, calendars and Manage more continuity
+
+Source5639556plus reviewed calendar/address follow-up is on the hosted staging preview. Saved places,
+Manage more, flowers and8approved exact reviews are prepared with focused owner/privacy checks and
+browser layout proof. Real place persistence, full property/team operations and production release
+remain listed in the current checklist; personalisation remains planning only. Paths released.
+
+Scope extension before review edits: founder supplied40 named customer quotes (numbered1–20 and41–60), confirmed each is genuine/original and each five-star rating is customer-supplied despite the sample heading. Publication permission already confirmed. Claim public Reviews component, its scoped handoff CSS, a small approved source collection and truthful behavior guards. Publish only selected quotes without unsupported currently-disabled feature claims, aggregate rating claims or verified-booking badges; no Xooter quote was supplied.
+
+Founder explicitly asks for canonical Your places persistence during booking, scheduling that can be added to their existing calendar, the original Manage more handoff and measured responsiveness. Claim the signed-in profile/home/property/calendar destinations and route wiring, owner-bound household-profile booking selection/save acknowledgements, a minimal shared calendar export helper and relevant web/native entry points/tests plus release evidence. Preserve home-first personalisation as planning only, existing money/availability gates and the approved homepage. Calendar export must use actual booking time/duration/status and omit gate/alarm/access notes; it is not continuous account sync. No unverified place is labelled provider-verified. No private profile caching across accounts. Cross-role shared helpers, tests and optional native wiring require correctness/release review. Do not claim zero lag or production delivery without measurement and actual checks.
+
+## RELEASED CLAIM — 26 October 2026 — flowers, genuine review publishing and website release assessment
+
+Original HandoffFlowerField decorates Apply/Kyc, clipped and non-interactive. Nine existing behaviour checks and scoped lint pass; synthetic CUA390/1440 confirms readable layouts, no horizontal overflow and usable input focus; screenshots saved and viewport reset. Exact review text is deferred to the founder's requested one-time12:00 SAST reminder; permission is already confirmed. No invented quote/rating/verified-booking badge. Owner GitHub Billing establishes3,000/3,000 Actions minutes used, reset in6days; no paid plan/spending change or gate bypass. Production remains e0c021e. Malware containment is separate and unfinished; address typeahead and lifecycle delivery are new authorised scope, not completed by this visual patch. Release this path claim after scoped delivery.
+
+Founder explicitly requests production deployment after checks, original handoff flowers in Xooter onboarding, genuine customer reviews and a full remaining-work report. Claim Apply/Kyc scoped artwork and CSS, review collection/publication UI/server contracts only after inventory, focused tests and release evidence. Production has0 bookings/reviews; never fabricate testimonials or publish private feedback without permission. Preserve supplied wording/approved homepage and planning-only home personalisation. Check current CI/rollout prerequisites; deployment is authorised once actual gates pass, without fake checks, paid upgrades or unverified communications/coverage activation. Malware/authenticity is separately held in the child quarantine branch. Cross-role data access/guard tests require review.
+
+## RELEASED CLAIM — 26 October 2026 — prepared KYC containment; scanner/authenticity remain pending
+
+Architecture review found path-based signed URLs can outlive a storage replacement, and the existing approval writes activation before application status/role in separate requests. Therefore this first safety patch must close raw browser reads and all new activation paths, including service/ops bypasses, until a separately reviewed immutable scan/authenticity pipeline and transactional approval are available. Do not add a browser/admin toggle that pretends to unlock malware protection. Implement bounded server file inspection plus atomic owner-bound quarantine registration; explicitly label this as containment, not an antivirus or genuine-ID verdict. Founder selected Cloudmersive Free; direct API adapter, effective Free-account DPA/POPIA transfer clearance and actual clean/threat acceptance remain unimplemented. Provider login is failing; no account bypass, key, private file transfer or paid upgrade. Source containment passes21 helper/RPC checks, Deno and exact local PostgreSQL role/quota/concurrency/negative-control checks; no staging/production delivery or completed independent patch review is claimed. Path claim released after source preparation; retain these explicit release blockers. The independent reviewer reached its account usage limit after delivering architecture findings; no completed patch review or staging deployment may be inferred. Client table and column grants both require revocation.
+
+Founder explicitly requires legitimate documents and malware protection before production. Claim CLI-created quarantine/attestation/approval migration, submit-xooter-application inspection, private scan/metadata-review endpoints, admin safe-preview/readiness UI, pure helpers and meaningful SQL/handler adversarial tests, scanner deployment/runbook and release evidence. Both live inventories have0 document rows; preserve all existing objects/users and unrelated policies. Never equate extension/magic/hash/antivirus to identity authenticity. Unconfigured/failed private scanner must keep file inaccessible; authentic status needs evidence-backed authorised review/issuer verification, no fake MIE/clean verdict. Revoke owner-forgeable critical metadata writes, bind clean verdict to current immutable object fingerprint, guard4 distinct clean/authentic documents before activation. No public file-scanning service, new paid host/provider, wholesale migration push or production approval. Cross-role security/activation/backend paths and tests cannot wait because the founder explicitly requests them. Independent architecture review is underway before code.
+
+## RELEASED CLAIM — 27 October 2026 — capped address recall follow-up
+
+Reviewed aa354fa final source is restored by 4ede72e after the structured-input comparison failed
+the founder's private locality. Staging v4, five returned files match; bundle a905952d…6a1c.
+26 root checks, independent22, lint/Deno and the five-result negative control pass. Actual public
+Sunninghill/CapeTown cases succeed; the private example and a second public case still miss.
+No universal-address or verified-booking claim. Twelve root Temporary attempts, latest shared
+usage53/200 suggestions and4/20Permanent; caps were not increased/refilled. Full query/Temporary
+payloads are not committed. Preserve actual worker/privacy/booking/production gates. Current
+PR97 checklist and27October evidence retain the unresolved matching/address/device work. Release
+these paths; no production delivery or broader structured heuristic is cleared.
+## Historical claim — 26 October 2026 — address recall and honest matching guidance
+
+Founder reports a complete Sunninghill address is missing. PR97 holds calendar copy recovery;
+claim this PR81 search handler/provider tests and VerifiedAddressInput interaction guidance.
+Compare only redacted outcomes from approved capped staging requests; never persist the private
+query or Temporary payload. Improve result depth and an approved Gauteng proximity bias without
+excluding other ZA addresses. Keep every upstream attempt under the existing atomic allowance,
+keep final Permanent accuracy/match rules, and do not fabricate coverage or worker availability.
+Align the documented provider word limit. Cross-role provider guards require independent review.
+No production activation, new provider spend allowance or automatic retry fan-out.
+
+Scope extension before further code: v2actual capped provider checks still fail the founder's
+private Sunninghill example, while a public Sunninghillcollege address and Cape Town address
+succeed. Claim a single-request Structured Input strategy only for four explicit comma-delimited
+street/suburb/city/four-digit-postcode parts. Do not infer coordinates or silently fan out/retry;
+confirmation retains exact provider identity and Permanent quality rules. No private query is
+written to source/evidence. Independent review and actual capped acceptance remain required.
+## RELEASED CLAIM — 26 October 2026 — address typeahead, province-wide discovery and cost boundaries
+
+Delivered reviewed lookup v1to staging;5runtime files match91fbc96. Founder explicitly approved
+200suggestions/20Permanent attempts, no renewal, capped staging only. Actual public provider checks
+and hosted phone-width Permanent selection passed; uncertain match rejects. Actual counters4/200,
+3/20and shared3/20at readback. Exact allowance/source/ledger/bundle evidence updated. No production
+activation, availability fabrication or booking fulfilment claim; those gates remain. Release this
+source claim after delivery, retaining the pending user/calendar/device handoff in PR97's checklist.
+
+Founder now explicitly requests suggestions as an address is typed, including suburbs outside the current served list, and a normal request journey without false inputs. Claim VerifiedAddressInput, its focused interaction tests, a new narrow server address-search/confirmation function with pure tests, CLI-created zero-default global request allowances and contract tests, booking coverage/request handoff only where truthful and release evidence. Preserve exact Gauteng source polygons, independently verified worker availability and private GPS/chat gates. Remove the need for a search-button tap; debounce/cancel stale requests and preserve keyboard focus. No billable request without an owner-approved finite allowance; no browser Permanent Geocoding bypass of the server cap. Suggestions are address discovery, never a claim that a Xooter is available. Do not claim outside-area payment/assignment works until canonical booking/status/payment flows have been checked. Cross-role backend/migration/testing changes are required by the founder's address and cost request. Current production remains e0c021e and GitHub Actions3,000/3,000 minutes are exhausted, reset in6days; do not invent successful release gates or raise spending.
+
+Two Claude sessions work on this repo and **cannot message each other**. Neither can ask the
+other what it is holding. This file is how they find out.
+
+Roles and path ownership are in `/CLAUDE.md`. This file is the live state.
+
+## RELEASED CLAIM — 26 October 2026 — Xooter handoff onboarding and honest saved details
+
+PR97 prepares the handoff application/review and honest owner-bound saves. Independent UI9/9, combined13/13 and9 synthetic real-entrypoint document checks passed; guard removal exposes2 failures. Full local rerun169 files /1,690 passed /7existing skips, TS/scopedlint/Deno/build50pages/artifact passed. Synthetic CUA390/1440 layouts verified. Reviewed submit-xooter-application v18 is staging-only,4 deployed files match and no-bearer401. Production stille0; required GitHub jobs never start due account billing/usage restriction. No real-applicant, browser Realtime/MFA/device/audio or production activation claim; manual KYC unchanged. Source/acceptance limits and exact stage evidence are in26October release records. All claims in this26October scope released; preserve unrelated growth claim.
+
+Founder requests real account/detail storage and Xooter onboarding matching the original handoff. Production aggregate readback confirms2 registered emails and2 owner profiles, none missing; do not claim every signup route accepted or copy auth emails into public data. Claim src/pages/xooter/Apply.tsx, targeted behavior tests, scoped handoff CSS if required, and release evidence. Match Work with Xoot, You/Where/What/Checks composition and brand typography while preserving backend requirements and real verification. Correct Save & continue advancing after failed save, bind labels to fields, show load errors and isolate drafts on account change. Preserve private documents, manual review, no fake jobs/checks/payout promises, signup PR95 and personalisation planning-only. Cross-role guard tests are needed for actual persistence/privacy.
+
+Scope extension before editing: include src/pages/xooter/Kyc.tsx and focused review-state tests. The corrected submitted-applicant route reaches this page, so carry the handoff there, report read failures honestly, select only the displayed review fields and prevent stale account results. No change to backend verification, admin decisions or activation rules.
+
+Further scope before edits: the rendered review screen retains XooterShell's old X logo/unearned Pro badge, so claim its brand-only markup while retaining navigation/auth behaviour. Independent review cleared b2c6598 UI9/9 but found inherited submit-xooter-application document mode can return success after an ignored metadata insert error. Claim that handler, a local pure document-persistence helper and meaningful error/owner-path/readback tests. Cross-role backend delivery and guard tests cannot wait because the founder explicitly asks whether details are really saved. Preserve manual verification/activation; distinguish stored pending document metadata from accepted real KYC. No production deploy; staging requires reviewed exact source first.
+
+## RELEASED CLAIM — 26 October 2026 — chat ciphertext participant read without recursive policies
+
+Reviewed exact SQL is applied only to staging as20261026024032 (SHA25687770e5317056987ea91a4e559bc2e7fd4221f3be9a3faa9558a2f26ae47058d). Private-schema owner UI and catalogue/ledger/ACL/RLS readbacks passed; message/job policies unchanged. Fresh four normal Auth sessions then passed9 actual GPS/ETA/E2EE/closed-voice groups. Disposable fixture rows are0; both new public device records revoked. Local positive/negative PostgreSQL checks passed; invalid OOM experiment is not acceptance. No production apply/merge/activation, browser Realtime, admin MFA or physical device/audio claim. Detailed26October evidence supersedes earlier failed chat runs. File claim released.
+
+Actual four-account staging test at f6dd7b6 failed customer-to-Xooter REST read with HTTP500/SQLSTATE42P17 after server-authorised ciphertext insertion. Catalog confirms messages SELECT expands bookings -> xooter_jobs -> bookings. Claim one CLI-created migration for a private auth.uid-bound read predicate and only messages SELECT policy, an isolated PostgreSQL positive/negative fixture harness and release evidence. Preserve booking/job RLS and current customer/admin/accepted-assigned-worker boundaries; no public data endpoint, arbitrary actor, client write grant or production change. Security-definer use, if necessary to break recursion, is limited to a private boolean predicate with empty search_path and explicit grants. Independent security review and actual staging verification remain required.
+
+Scope correction from independent architecture review before further edits: BookingDetail itself reads bookings and xooter_jobs, so a messages-only predicate would leave the website broken. Replace only the canonical bookings_participant_read policy with the private fixed-auth.uid predicate, retaining original messages and job policies. Require current booking assignment plus accepted matching job for worker reads, denying stale reassigned workers. Test all three actual read paths, keep private columns/other policies/write grants unchanged, and record inherited role-only admin semantics separately from AAL2 acceptance. The initial messages-only SQL draft was never applied.
+
+## How to use it
+
+**Claim before you code, and push the claim.** An unpushed claim is invisible and therefore
+useless. One commit containing only a worklog claim is a normal and good thing to do.
+
+**Release the claim when you stop**, whether you finished or not. A stale `HOLDING` is worse than
+no claim: the other session will route around work that is not actually happening.
+
+**Read this file after every `git pull`.** The other session may have claimed something you were
+about to start.
+
+Newest entry at the top. Keep closed entries — the history is how each session learns what the
+other has already tried.
+
+---
+
+## RELEASED CLAIM — 25 October 2026 — complete new-account email confirmation
+
+PR95 d036520 is prepared and independently reviewed; 24 focused checks, independent20/20, TS/lint/build50pages/artifact and synthetic browser checks passed. Old implementation fails three regressions. Production Confirm sign up template saved and read back in a fresh dashboard tab with Token and ConfirmationURL; website source remains unmerged/not live because required CI cannot start. No real new-account completion, confirmation bypass or production role change claimed. Exact-head preview READY. Current checklist/evidence records actual limits and next owner actions; file claim released.
+
+Earlier preparation notes below are historical.
+
+Founder reports customers cannot create accounts during onboarding. Read-only production shows signups/Email enabled, confirmation required, one signup200 followed by an email_not_confirmed password failure. The live trigger guards missing optional referral dependencies; do not claim them as the cause. Claim src/pages/Auth.tsx, its meaningful behavior tests, a branded confirm-signup template/readme and release evidence. Add a dedicated verification step after password signup, correct resend semantics, preserve provider confirmation, account-enumeration protections and canonical callback. No production Auth disable/bypass, role change, credential readback or fabricated new-account acceptance. Cross-role authentication tests are required to fix the observed incomplete flow. Base is PR92 signed-in website, retaining approved homepage and the separate calls/GPS/mobile PRs.
+
+## RELEASED CLAIM — 25 October 2026 — align native config to verified Expo project
+
+Independent review closed d7c84d8 with no blocker: existing identity checks 5/5, immutable development/preview/staging/production identity comparisons and owner fallback/override checks passed. It confirms no displayed-name, bundle, scheme or update-target change. Remote ownership comes from the primary agent's actual authenticated dashboard readback; the reviewer performed no provider action. Native auth's preceding ten-file review separately cleared 21 synthetic assertions. Source and evidence are pushed in stacked PR94; no signed build, device/provider acceptance or production activation. Apple remains pending by founder choice. This narrow configuration/evidence claim is released; required CI remains blocked without any authorised plan or budget increase.
+
+Prepared alignment: app.config.ts and the non-secret example point to don-pacho777 / zoot / b4c6e0b8-e2e7-40c5-b259-3b34c79be30b. Actual local Expo config resolution returns that exact triple, Xoot Preview, and unchanged za.co.xoot.app.preview iOS/Android IDs. Existing identity suite passes 5/5; mobile TypeScript and scoped config lint pass. This resolves configuration locally, without changing the remote project or starting a build. Founder requests keeping the current GitHub plan/spending limit; the suspected usage cap remains an external CI block, not approval to bypass checks or buy minutes.
+
+Founder completed the existing Expo login; read-only Project details confirms owner don-pacho777, slug zoot and ID b4c6e0b8-e2e7-40c5-b259-3b34c79be30b, with the correct GitHub repository link. The ID matches app.config.ts but its slug is xoot and owner is implicit. Claim only mobile/app.config.ts, the public owner/project example values and release evidence to align with this existing project; keep the displayed Xoot name and bundle identifiers. Read Expo v56 config reference before edits. No remote rename, new project/account, credential, build, upgrade, provider activation or Apple enrolment. Native auth at be3bd74 has now independently cleared 21 synthetic assertions across the ten changed paths; real signed-build/device/provider acceptance remains open. Apple stays pending at the founder's explicit request. This narrow configuration correction belongs only in stacked PR94, not website PR92.
+
+## RELEASED CLAIM — 25 October 2026 — signed-in handoff preparation
+
+Website source is prepared in PR92, independently reviewed at 26bb0ea, with final widget spacing checked separately. Local serial unit-only verification passed 166 files / 1,674 tests / 7 existing skips at 26bb0ea; TypeScript, scoped lint, production build, 50-page prerender, artifact and source/security scans passed. Final spacing follow-up passed 11 widget checks and scoped lint; its 390px browser screenshot was saved after verifying window.innerWidth=390. Visual previews use synthetic data, not real customer sessions. Required GitHub jobs did not start because of the account billing/spending block, so no production merge or publication is claimed. The founder was asked only to inspect the billing notice, with no plan or budget increase. Current live release remains e0c021e. All path claims in this 25 October website scope and the completed 24 October follow-up below are released; remaining work is documented in the production checklist. Preserve the unrelated growth claim. Native source is isolated in stacked PR94; communications is isolated in PR93. Expo owner don-pacho777 / zoot and its matching project ID are actually verified; Apple is pending at the founder's explicit choice. No build, membership, purchase or production activation.
+
+Native source is isolated on `fix/native-apple-pkce-20261025`, stacked on the website branch. It adds native Apple nonce/state/session validation, the official iOS Apple button, Android browser fallback, strict PKCE callback validation and the missing callback route. Direct follow-up found that a slow pending exchange could be evicted after two minutes and exchanged twice: the new regression failed against the old cache (1 failed/11 passed), then the correction retains pending work until it settles and starts bounded completion retention afterwards. Two pure native-auth suites now pass 18 tests, and both web and mobile TypeScript checks pass. These are synthetic unit checks, not real Apple/provider/device acceptance. The current Apple account is signed in but offers Join Apple Developer Program; production Auth publicly reports Apple disabled. No team, key, entitlement, signed build or real device was fabricated. Independent native review could not start due reviewer usage limits. No paid plan/build or production provider activation.
+
+Website PR #92 at 43c5058 received independent cross-review (21 website files; native excluded). The reviewer found a canonical booking-status omission in Widgets and three-character referral acceptance that disagreed with server parsing. Strengthened the database-filter mock and malformed-link tests: the old implementation failed 9 tests while 28 passed; the correction passes all 37 across the three affected suites. Widgets now includes pending-payment, payment-confirmed, accepted, replacement and reassigned states with canonical customer labels, and excludes draft/terminal records. Both new referral boundaries require the server's four-character minimum. Exact-head CI remains required: GitHub's 25 October check annotation says jobs were not started because recent account payments failed or a spending limit needs attention. No spending limit or paid plan was changed, and an unstarted job is not a passed security check.
+
+Additional native-auth finding: the native Supabase client uses PKCE but auth-links.ts only consumes implicit access/refresh-token callbacks, and the callback route is absent. Before edits, extend the claim to native auth-links, its pure callback helper/tests, callback route and account Apple button. Preserve iOS native Apple; Android uses the browser PKCE flow. Reject unbound legacy token links rather than changing PKCE or nonce security. Scope extension before editing: include owner-bound referral-code display in Rewards and its shared ReferralCodeCard, the existing install guide and signed-in widget route/navigation, and native Apple nonce/session handling. These implement the founder’s inside-Xoot chat and both desktop shortcut/upcoming-booking widget choices. Claim App.tsx route wiring, Loyalty, PwaInstall, a small Widgets destination and mobile apple-auth helper plus tests/config only where necessary. Actual desktop OS widgets and signed native OAuth/voice/chat acceptance remain dependent on platform tooling and authorised devices; a web shortcut or in-app card is not OS-widget completion.
+
+Founder requests signed-in booking flowers, company-wide Care+ and type/character fidelity, source referral/reviews composition, discoverable Airbnb/office dashboards, desktop widgets, native Apple sign-in and Twilio app voice/text plus website text. Claim the existing signed-in BookingFlow, Profile/AppShell, Plans and property dashboard presentation; shared CarePlusMark; ReferSection/Reviews; scoped handoff CSS, accessibility/interaction tests and release evidence. Preserve approved release e0c021e, public crawlability and all prior homepage/auth changes. Compare original design/handoff-2026-09-03 references; retain actual backend-bound data and truthful empty/unavailable states rather than publishing prototype testimonials, invented balances, provider success or unearned benefits. Cross-role kit/brand styles and guard tests are needed for the explicitly requested visual consistency. The previously planned home-first personalisation/data collection remains planning only; existing signed-in navigation and visual polish are authorised. Inventory native Apple/Twilio/widget implementation before claiming fixes; no paid plan, phone number, build or production communications activation. The founder approves the other email identities, but only one of four real staging alias sessions was actually verified; do not falsify authentication or GPS privacy acceptance. Current questions clarify inside-Xoot chat vs SMS and desktop widget intent while independent work continues. Separate PR71/81 implementation and staging privacy gates remain in force. Release this claim when stopping.
+
+## RELEASED CLAIM — 24 October 2026 — address, GPS acceptance and authentication follow-up
+
+This dated scope is closed; its earlier setup observations are historical. The current production checklist records the delivered website/email configuration and the remaining GPS/JWT/worker/provider/device/migration gates. Founder-authorised identities are not represented as completed sign-ins. The first real staging alias succeeded; the other three were deferred. No passwords, OTPs or JWTs were persisted. Separate PR71/81 source and staging evidence are retained, not production tracking activation.
+
+## RELEASED CLAIM — 26 October 2026 — actual encrypted-chat read-path diagnosis
+
+The two failed genuine-session reads were diagnosed as HTTP500/42P17 policy recursion. Independently reviewed PR96 fixes the root booking SELECT predicate and is applied only to staging. Four fresh normal sessions then passed all9 GPS/ETA/E2EE/closed-voice groups using this branch's f6dd7b6 harness; safe receipt bodyChecks=passed. GPS and disposable booking/job/worker/message counts are0 after cleanup; both new public devices revoked. Earlier failed runs are retained as failed evidence. No production activation/merge, provider voice call, browser Realtime, admin MFA or physical-device proof. Current26October checklist and acceptance evidence supersede old pending-chat instructions. Claim released; preserve unrelated growth claim.
+
+The refreshed four normal sessions executed the prepared module: one encrypted message and two newly revoked test public keys exist, but the run failed before its first full chat group; GPS cleanup confirmed. Claim the staging communications test module and a strictly non-sensitive local diagnostic receipt (fixed phase names, HTTP status/row counts/error code only; never JWT, key, plaintext, ciphertext or provider errors). Identify the actual failing boundary using these authorised ordinary sessions before proposing a fix. Existing booking/job RLS policies reference each other; verify actual client failure rather than assuming a cause. No RLS weakening, role grant, production write or provider call. Later migrations require a separate exact source review.
+
+## RELEASED CLAIM — 25 October 2026 — single-founder staging acceptance aliases
+
+All four authorised one-inbox aliases actually completed normal Auth and six real GPS/ETA groups passed. Parent STOP and physical fixture cleanup confirmed; zero remaining fixture locations, bookings, jobs, workers and messages. New encrypted-chat module was not executed by that run. Parent chat-device cleanup was independently cleared at 1d83852 (15/15); completeness guard independently cleared at 729a523 (17/17), with all three planted defects rejected. Original 45-minute helper erased its sessions; fresh private helper is prepared for owner-entered chat sign-ins. No code/token on disk, impersonation, actual worker approval, production rollout or live chat/call/device acceptance. Evidence/checklist updated; this file claim is released.
+
+Earlier preparation notes below are historical.
+
+Founder now explicitly authorises four staging-only aliases of the same founder email and has an iPhone 12 and Android tablet available. Claim the loopback Auth helper, its tests and parameterised fixture alias validation to accept distinct A/B role aliases from one authorised inbox, retaining ordinary real Auth sessions, exact staging target, pair/role binding, CSRF, private code entry and cleanup. No assumption of verification, Auth impersonation, real worker approval, paid build or production role change. Release owns acceptance delivery; correctness-owned guards change only for the founder-approved identity arrangement.
+
+Scope extension before tests: now all four aliases completed genuine normal Auth sign-in and GPS/ETA six groups passed with STOP/physical cleanup. Claim the existing staging journey acceptance child and a narrowly scoped communications acceptance module: reuse only these four in-memory sessions and disposable bookings to test participant/outsider voice gates, encrypted chat delivery/read/denials and cleanup. Generate ephemeral test-only chat keys in memory; publish only public keys via the user's ordinary RLS route and remove/revoke only the newly generated test devices. No real Twilio call, server credential, role grant, user impersonation or paid transport. Keep fixture messages synthetic and delete with owned fixtures. Release/correctness guard paths change for actual user-authorised staging acceptance, not to bypass verification.
+
+## RELEASED CLAIM — 25 October 2026 — authorised staging alias sign-in helper
+
+Source is retained in PR71 at 8e491fd after the approved release-base merge. The loopback helper and parent STOP/cleanup fix were independently reviewed; 11 synthetic checks pass. The separately reviewed parameterised fixture SQL was not executed. Staging Brevo SMTP is configured; only customerA completed a real normal Auth sign-in, and no helper tokens were persisted. Founder approval of the other aliases is recorded separately from actual Auth evidence. Fresh staging readback confirms xoot-job-location v11 ACTIVE with JWT enabled; private GPS table RLS is on, client policies and rows are zero, anon/authenticated have no CRUD privileges and service_role retains server privileges. No four-JWT/customer isolation, real GPS/ETA, STOP/purge, admin AAL2, worker or device acceptance is claimed. The helper is stopped; no synthetic booking/consent fixture, role, trust flag, production migration or tracking activation was written. Current checklist records the remaining gates and free-plan constraints. All helper/fixture/reconciliation/evidence path claims are released; preparation paragraphs below are historical.
+
+Claim scripts/ops/staging-founder-sessions.mjs and its meaningful transport/Auth tests, plus the private GPS staging evidence. The founder approved the four +xoot-customer/+xoot-xooter aliases of the two existing founder identities for normal staging-only sign-in. Prepare a loopback-only, exact Host/Origin/per-run CSRF protected form: owner enters email codes privately; normal public Supabase Auth issues sessions; no token/OTP/password readback or logging and no admin impersonation. Sessions remain in process memory and may be passed only to the existing staging GPS acceptance runner after distinct live Auth identity checks and explicitly synthetic fixtures/consent. This helper never creates production roles, approves real workers, runs production migration or enables tracking. Separate staging SMTP is still a founder-private credential dependency; do not reuse or retrieve the production SMTP key.
+
+Scope extension: claim a narrowly reviewed, parameterised staging-only synthetic fixture/cleanup SQL in `scripts/ops/staging-private-journey-fixtures.sql`, and the corresponding current release/evidence update. Live readback now confirms a separate active **Xoot Staging Auth** Brevo key and saved custom SMTP in `fxmxyabdjqviqbcxmvlp`; Magic link/OTP and Confirm sign up templates both retain the complete Token. No secret was retrieved. The helper's initial review found timeout/shutdown cleanup could be hidden; parent-owned bounded STOP, visible uncertainty/rerun blocking and abort/await shutdown are now independently verified at `7e02af6`, with all 11 synthetic checks passing and negative controls proving the Origin and parent-STOP regressions are caught. A first normal staging alias email request was accepted; actual four-session acceptance is pending owner-private code entry. The configured database operator is `postgres`, transaction read-only is off and booking INSERT privilege exists; no fixture, trust status, role or production row has been written. Synthetic fixture statuses must never be represented as real background checks or worker availability.
+
+## RELEASED CLAIM — 24 October 2026 — address, GPS acceptance and authentication follow-up
+
+This follow-up scope is closed. Use the production checklist for current website/email configuration and remaining genuine-account/provider/device/migration gates, rather than the dated setup observations below. The founder deferred the other three staging sign-ins; this never constitutes verified sessions.
+
+## RELEASED CLAIM — 25 October 2026 — bounded Mapbox address verification costs
+
+Reviewed d4d64e2 global non-renewing allowance applied only to staging as 20261025195100; exact source/remote SHA b5d83f923763fb55423a7783bb23941b6c357d7a4b0a7d6a226fcfc627960956. Actual allowance/consumed are zero, RPC zero-budget denial and all client privilege/RPC denials confirmed. Filename follows actual remote ledger without SQL changes or ledger repair. Real concurrent PostgreSQL and negative controls passed; independent review cleared zero-default staging delivery. Approved active zones remain zero. Owner has not authorised paid attempts; no production migration, provider request or worker/geography activation. Evidence/checklist current; claim released.
+
+Earlier preparation notes below are historical.
+
+Founder requests address coverage activation with minimum cost after a Mapbox invoice. Current Permanent Geocoding path has only a 12/hour/user limit, which is not a platform spending ceiling. Claim an additive service-only budget migration and disposable real PostgreSQL concurrent-budget checks, plus coverage release evidence. Keep the existing RPC signature and per-user guard, add a global non-renewing request ceiling set to zero until a specifically bounded owner allowance is approved. Every permitted attempt consumes that allowance before the provider request; never refund failures into an uncontrolled retry loop. No paid query, token readback, temporary-result caching shortcut, active-zone approval, worker approval or production rollout. Cross-role SQL and guard checks are required for the founder's explicit financial constraint. Preserve exact licensed Gauteng polygons and PR71/92/93/94/95.
+
+## RELEASED CLAIM — 25 October 2026 — PR #81 matched-address verification
+
+Reviewed source 0748885 safely includes approved release e0c021e. Smart Address Match now requires exact/high agreement with matched house number and street before returning address coverage; supplied uncertain/corrected components go to review. Independent review closed the provider-match regression; 22 focused checks pass. Staging check-service-coverage v8 is ACTIVE with verify_jwt=true, and all five returned runtime files exactly match the submitted source. Missing/malformed bearer requests return 401. Approved active zones remain zero, and paid address suggestions / verified coverage remain disabled. Exact Gauteng WGS84 geometry/licence/provenance and separately verified worker requirements are preserved. No production handler, booking writer, migration or activation changed. Actual four-session GPS/MFA/provider/device acceptance remains outstanding; only one authorised alias has a verified normal Auth sign-in. The current production checklist records live release e0c021e, free-plan limits and all remaining gates. Earlier paragraphs are historical preparation notes. This match/copy/conflict/evidence scope is released.
+
+Claim `supabase/functions/_shared/verified-coverage.ts`, its offline provider contract tests and the gated booking address-help copy. The founder prioritises real address validation while the second founder is unavailable for normal staging sign-in. Mapbox's current v6 Smart Address Match distinguishes query agreement from rooftop precision: require exact/high confidence and matched house number/street before the server claims address coverage. Missing, guessed or mismatched addresses go to review using the existing response, with no extra provider request, cache, licence shortcut or new customer-data storage. Cross-role backend truth/guard tests are necessary for this explicit false-input requirement. Preserve the full licensed Gauteng geometry, separately verified worker capacity, disabled rollout flags and actual JWT/device/POPIA/migration gates. Reconcile the approved release `e0c021e` without reverting its public-page crawlability work or PRs #88/#89. The founder has deferred completing the other three real staging sign-ins; do not mark them verified or run the four-session GPS test on assumptions. Staging SMTP and the first actual customer alias sign-in are verified; the remaining business inboxes are not yet provisioned.
+
+## RELEASED CLAIM — 24 October 2026 — address, GPS acceptance and authentication follow-up
+
+This scope is closed; current email/website configuration and remaining acceptance gates are recorded in the production checklist. The first staging alias completed actual sign-in; the other identities remain founder-approved but not verified sessions. Do not treat the older setup observations below as current instructions.
+
+## RELEASED CLAIM — 25 October 2026 — staged activation acceptance for calls, chat and private journeys
+
+Independent review cleared the shared-room atomic lifecycle at dbab693. Delivered exact migration 20261025191835 and status v1 / TwiML v22 / token v23 only to staging; all 16 bundled runtime files matched. RLS/client/RPC denials, empty rooms/sessions, active cron and dedicated voice-off state confirmed. Real PostgreSQL concurrency, reorder, redial, deletion and scheduled cascade tests passed; removing room lock failed. Two generated staging RPC signatures and filename alignment independently cleared at 183beb8; RPC guard11/11 and TS pass. Full broad rerun was interrupted after host memory exhaustion and is not green. Four-account real GPS/ETA is separately evidenced; no live encrypted-chat or provider-call/device acceptance, production change or paid upgrade. Evidence/checklist updated; all paths in this scope released.
+
+Earlier preparation notes below are historical.
+
+Founder explicitly requests activation of calls, inside-Xoot chat, GPS/ETA and address coverage, working together toward production. This authorises delivery/activation after substantive tests and safe migration checks; it does not waive genuine Auth/device/privacy/licensing or the current-plan/no-spending-increase constraints. Fresh readback confirms production chat is enabled already, production has no location/coverage function, and call handlers there are old. Staging call status schema lacks the three columns used by the inherited webhook and its legacy table still grants client TRUNCATE. Do not enable or treat those old callbacks as functional. Claim a separate short-lived service-only in-app voice correlation ledger and scheduled purge migration, the in-app status callback, existing TwiML/helper integration, matching config and meaningful actual-handler/SQL tests. Existing PSTN/Proxy handlers remain disabled for production and outside this activation. Avoid raw callback payload retention; correlate only signed account/call/conference identifiers inside a bounded lease. Claim useVoiceCall lifecycle cleanup and focused hook checks: prevent duplicate starts and late microphone/device creation after cancellation, logout or unmount. Cross-role shared helpers/guard tests are required for this concrete activation defect. Keep native Apple pending, preserve PR71/81/92/94 and approved homepage, and prepare the normal private staging sign-in page after founder confirms which aliases/devices are available. No new credentials, paid provider traffic, real worker approvals or broad production migration push.
+
+Review correction before delivery: claim a shared opaque in-app room and service-only SECURITY INVOKER registration/status RPCs that serialize on a room row. Conference-end must atomically complete every registered call, including a queued second participant, and reordered/concurrent joins must never reopen a terminal room. Cap all call leases at the shared room expiry and cascade cleanup. Replace the unshipped per-call-anchor migration/handler implementation and add real PostgreSQL concurrency evidence. Full unit run at 4755e27 completed with 1711 passed, 7 skipped and two guard failures: update the explicit signed-webhook allowlist and disambiguate the new ledger role column without weakening older forbidden-writer checks. Keep activation closed until independent review closes the callback findings.
+
+Type-contract follow-up: after the reviewed migration was actually applied to staging, the full unit suite correctly found its generated RPC declarations stale. Claim a narrow src/integrations/supabase/types.ts sync for only the two new service-only RPC signatures from fresh staging-generated types, with the existing RPC/schema guard rerun. Do not weaken or whitelist the missing-name test, refresh unrelated production/schema definitions or claim production has received these functions. The broad run also had a worker-process exit under concurrent local builds; repeat under lower memory pressure after contract correction.
+
+## RELEASED CLAIM — 25 October 2026 — in-app call access and cost containment
+
+Staging-only delivery is complete at reviewed source d3e27d7: TwiML v21, token v22, unavailable Conversations v22 and status v21 are ACTIVE; all 16 returned runtime files match source exactly. Missing-bearer user endpoints return 401; unsigned webhooks return 403. Post-delivery SQL confirms zero dedicated in-app-voice control rows / none enabled. No new migration, provider call or production deployment/activation. Independent review reran 28/28 and closed the signature finding. Full scoped evidence and bundle hashes are in docs/release/evidence/2026-10-25/in-app-communications.md and its JSON delivery record; the production checklist is current. Earlier paragraphs below are dated preparation history. Remaining status-correlation/retention, actual JWT/provider/native transport/device and cost acceptance are not claimed complete. Founder requests keeping the current GitHub plan and spending limit; required jobs remain externally blocked. All paths in this communications scope are released for a later claimed continuation.
+
+Independent review closed the ordinal signature finding at d3e27d7f3412423f0f9329412f8422ce612224c6; its independent actual-handler rerun passed 28/28. Both validators use Twilio's ordinal key/value order, with a separately ordered signer and the published fixed signature vector. The deliberately uncorrected validators failed three checks. Deno checks all four handlers; no new blocker was found. Proceed with staging-only fail-closed delivery in this order: TwiML join, token, unavailable Conversations, status signature fix. Read back the exact bundled files and unauthenticated/unsigned denials. The new gate remains absent/false, its migration is not applied, and no real Twilio call, production delivery or activation is authorised by this step. This is bounded five-minute eligibility leasing, not instantaneous mid-call cancellation.
+
+Independent review resumed and found an inherited provider-compatibility blocker: the two voice webhook validators sort parameter names with localeCompare, unlike Twilio's ordinal case-sensitive order, and the new synthetic signer repeated that mistake. Before edits, extend this claim narrowly to twilio-voice-status's matching HMAC ordering and an independently ordered regression. Correct the signer first and demonstrate the actual TwiML entrypoint rejects its official-order signed request before correcting both validators. Preserve timing-safe comparison, token-name fallback and all authorisation gates; do not weaken signatures or send real calls.
+
+Prepared source: a token identity includes verified actor and booking; both mint and each signed TwiML join require the separate `twilio.in_app_voice` gate and service-only `can_create_masked_call` window. Role is restricted to customer/Xooter, token/call duration is at most 300 seconds and the remaining window, conference maximum is two with distinct role labels, rate limits apply, recording is explicitly off. Duplicate identity/booking parameters, wrong account, unbound legacy/PSTN callers, missing signatures, oversized bodies, revoked eligibility and errors fail closed. Unsupported Conversations tokens/session creation now return unavailable with no credential, provider request or outbox write; existing Supabase E2EE is untouched. New actual-handler synthetic tests: old code 19 failed/1 passed; corrected 20 passed, then five suites/66 passed after added rate/window/body/chat checks. Deno 2.8.3 checks all three handlers; scoped lint passes. These are synthetic transport/signature tests, not a real Twilio call or authorised JWT/device acceptance. The new disabled-control migration is source only. Independent reviewer capacity became unavailable, so this patch still needs cross-review; no deployment, migration or production activation has happened.
+
+Before implementation, extend the test claim to `src/test/edge-handler.ts` only to expose standard Edge globals (FormData, URLSearchParams and base64 helpers) to actual-entrypoint tests. New signed synthetic webhook tests must execute the real handlers and local imports with fake external transport, never real provider calls. Native provider text remains unaccepted and must not mint broad Conversations grants or queue billable work; existing E2EE in-Xoot messages are preserved.
+
+Founder authorises in-Xoot messages and app voice, with no paid upgrade, credits, number purchase or production activation. From approved release e0c021e, claim twilio-token, twilio-conversation, twilio-voice-twiml, a narrowly shared/testable communications authorisation helper, related guard/behavior tests and release evidence. Release-owned provider handlers and correctness-owned helper/tests must change together: existing Twilio signatures authenticate Twilio but do not authorise a user-supplied booking room. Bind the voice token identity to the actual booking and actor; recheck authoritative booking contact-window eligibility and operational controls before each conference join; retain signed webhooks and deny unsupported/unaccepted provider chat transport. Existing Supabase E2EE text remains the current website transport. Add separate disabled-by-default in-app controls only as a reviewed migration, never apply a production migration or enable them here. Read-only 25 October evidence: staging twilio.masked_voice/operational_messages are enabled, production both are disabled, booking.chat_send is enabled in both. Therefore old source comments claiming all controls are disabled are not evidence. Twilio console is Trial; no provider traffic or paid settings changed. Cross-review and real authorised participants/devices are still required before activation. Preserve PR71/81, homepage and unrelated work.
+
+## RELEASED CLAIM — 24 October 2026 — address, GPS acceptance and authentication follow-up
+
+This scope is closed; older setup observations below are historical. See the current production checklist for delivered email and website configuration, actual one-of-four staging sign-in evidence and remaining GPS/worker/provider/device/migration gates. No unverified identity is represented as a signed-in customer or worker.
+
+The founder prioritises functioning address entry/selection and private GPS/ETA before Apple OAuth. Claim `src/components/xoot/{BookingHero,VerifiedAddressInput,SuburbPicker}*`, `src/pages/{Auth,AuthCallback}*`, `src/pages/app/BookingFlow*`, the shared booking input/contract helpers and generated web/native mirrors, auth/public-origin helpers, `vercel.json` canonical-host redirects, targeted address-input CSS, scoped tests and release evidence. Cross-role shared estimates/order, hosting configuration and auth tests are necessary to correct reported mobile address taps, invisible suburb selection, add-on order, canonical post-auth URLs and complete email sign-in. Inspect repository commercial duration rules before changing estimates; do not invent measured accuracy or new prices. Inspect Google Xoot branding, canonical Site URL and Apple setup using existing owner access; buy no custom-domain or Apple plan and expose no credentials. Preserve #85/#86/#87, approved homepage, `main` and unrelated PRs. Separately claim release-base conflict reconciliation and evidence in existing PR #71/#81 clones; preserve privacy/licensing, actual authorised JWT/MFA/worker/device and exact production migration requirements. Never treat a staging ACTIVE function as accepted GPS/ETA. Personalisation stays planning only: home/first booking, optional home setup and browsing before verified-address booking, as selected by the founder. No production tracking, role, trust-status or payment/voice switch is implied.
+
+The founder explicitly approved four staging-only `+xoot-customer` / `+xoot-xooter` email aliases of the two supplied founder identities on 24 October, with private normal sign-in and no production role changes. Email failure is specifically non-arrival. Initial read-only logs show one older OTP delivered/opened in Brevo; no fresh failed SMTP request is yet evidenced. Production Site URL was the Vercel alias and omitted canonical callback/reset paths; the founder-authorised correction uses `https://xoot.co.za` and its three precise callback/reset patterns. The founder completed a fresh real production email-code sign-in and confirmed it worked; genuine sign-out was observed first. At the founder's subsequent request, production Email OTP length was prepared at six, saved privately by the founder and reopened to verify value 6 on 24 October. The client restores placeholder 000000 and retains complete 6–10 digit input during transition. Staging custom SMTP is absent, so four normal alias sign-ins require a separate Brevo staging key; its identity check is pending. Latest mailbox spelling is newsletter@xoot.co.za, alongside support@ and the two founder addresses. Public DNS currently returns no MX record. Google brand verification and inbox sender-photo behaviour require provider review; no paid certificate or email plan is authorised.
+
+## Released edit claim - 24 October 2026 - booking-entry indexing follow-up
+
+The expanded live crawlability verification found that /book still returns the correct empty client shell, but its pre-existing host rules omit noindex and private/no-store headers. No customer data was rendered. Claim only vercel.json, the read-only live-site verifier and its meaningful header fixture tests to keep this transactional entry out of search results and shared caching. Cross-role hosting and correctness-owned tests are needed for this directly observed SEO/operations defect. Preserve public-page rendering, all existing headers, PR89 behaviour and every backend/authentication/payment/provider gate. No new backend or monetary behaviour is authorised by this follow-up.
+
+**RELEASED EDIT CLAIM:** the bounded header implementation is complete in PR #91; four meaningful header tests and the static hosting guard pass. Its HTTP negative control rejects an unprotected /book while accepting healthy auth headers. No further source edits are held. Exact-head release CI, independent hosted-header verification and actual production verification remain the release gates; this ownership release does not assert that PR #91 is deployed. Dated final evidence belongs with outputs/public-crawlability and the operating report. Preserve the separate active address/GPS/authentication claim above.
+
+## Released growth correction - 24 October 2026
+
+**RELEASED - Codex public-page crawlability.** Founder explicitly requests practical SEO/GEO/AEO growth, competitor research and earned backlinks. Conqueror audit 00971334-9a0d-4d64-a723-4d6359d52572 found all 15 checked URLs expose the same empty initial SPA HTML, missing content/H1/links and homepage canonical. Based on production release 952d2284, claim a public-only build-time render entry/generator, public SEO serialisation, package/build/Vercel routing configuration and meaningful no-JavaScript/browser/security checks. Reuse actual public React components and content so crawlers and visitors receive the same information and design. Render no authenticated/account/booking/payment/customer state; block network reads while generating, preserve the SPA shell for private/interactive routes, existing headers and provider gates. Cross-role build/routing and correctness-owned metadata/tests are required for this concrete audited growth defect. No backend, monetary calculation, plugin PR #78 or operational activation change. Outreach research and authorised personalised emails remain outside production source.
+
+Prepared public-only implementation: 50 actual React pages match the complete sitemap, with one page-specific canonical/title/description, readable main/H1/internal links and parseable JSON-LD in the first response. The original index shell remains unchanged for private, sign-in and transactional deep links. Build-time fetch is blocked; no AuthProvider, session restoration or API prefetch is used. Current route CSS is copied from the real client build manifest, with duplicate styles excluded. The two existing artifact browser runners now select public snapshots when present. TypeScript and lint pass; 54 focused checks pass. Removing the JSON-LD escape makes its injection guard fail, and the restored guard passes. Production build, 50-page HTML validation and artifact scan pass. Existing header negative controls expose a global Node 24.16.0 Windows UV_HANDLE_CLOSING crash; all three pass under the bundled Node 24.19.0, as do the remaining source/security scans. Rebase onto the independently released PR #89 before final CI/publication, preserving its address/authentication changes and canonical-host redirects. Independent review is in progress; no live crawlability release is claimed yet.
+
+Review follow-up and scope extension: independent review found that Vercel's filesystem index takes precedence over the proposed root rewrite, and that editable snapshot controls could lose input when createRoot mounts. Serve actual home HTML as dist/index.html and preserve the original anonymous client shell as dist/_spa.html for private/transactional fallbacks; align Vercel, Netlify and Apache fallback destinations. Disable only snapshot controls until the real React controls replace them; ordinary anchor navigation stays usable. Also holding the minimal public-page bootstrap/preloader in src/main.tsx and src/lib plus focused checks so a slow current-page chunk cannot replace readable static content with an avoidable loading screen. No authentication/session/booking logic or provider state changes. These cross-role hosting/bootstrap corrections are necessary to preserve the founder's production experience while making the first response crawlable.
+
+Corrected review findings: root is a real rendered index; all three host fallbacks use the separate empty client shell. Snapshot controls are disabled until live handlers exist, and the public current-page module is loaded before mounting. Independent held-main and held-page-module Chromium checks confirm readable content stays present during download, live controls become enabled and typed address survives, with no page errors. All 50 generated pages validate content, canonicals, JSON-LD and actual CSS paths; no private snapshots exist. Current focused suite: 57 passed; desktop/mobile design and typing checks passed at 390px and 1440px. The Windows libuv crash also reproduced on the newer bundled runtime, so the read-only live-site verifier now sets exitCode after asynchronous requests rather than forcibly exiting; the unchanged three positive/negative header controls pass and retain their failure statuses. Source/security and artifact scans pass. PR #90 is open; final corrected commit still requires exact-head release CI, real Vercel preview routing and live production verification. Preserve the separate active address/GPS/authentication claim above.
+
+Publication verified: PR #90 merged as e0c021e9fde328098f33fb216b1efa720eadf2f1. Existing Git pipeline produced READY production dpl_ASWQX8BSgase9gUDTAZLxiF5GwDn, assigned xoot.co.za; live build-info matches. Exact reviewed head 40be48e passed full release CI (164 files, 1,690 tests, 7 existing skips), PostgreSQL17, public-directory, 57 focused crawlability checks and desktop/mobile design/typing checks. Independent real Vercel preview review passed 50 pages, 7 stylesheets and 7 private/fallback paths. Live public verification passed all 50 pages and 7 stylesheets; live existing header contract passed47/47 and Trust/Journal/article browser checks passed35. The expanded /book header finding is separately claimed above. External Claude audit could not complete because its credit balance is too low; CodeRabbit skipped this base. Post-release Conqueror audit a1bc2e30-a96a-4f63-9591-f03a02e51e56 completed15 pages: no missing-H1, no-outgoing-links, thin-content, orphan or canonicalized-page findings; 13 informational heading/metadata-length issues remain. Crawl samples differ and share9 URLs, so this is not an identical15-page paired study or evidence of ranking/traffic lift. Original crawlability claim is released; preserve the separate address/GPS/authentication claim.
+
+## Released website correction - 24 October 2026
+
+Publication verified: PR #88 merged as 952d2284c9a0d899556973e1664f654a2409b46d; existing release Git pipeline created READY production dpl_7JgQPNRAWRveRhUi8ZxiuEvX6JuU and xoot.co.za points to that exact commit. Full release CI passed 160 files / 1,616 tests / 7 existing skips, native/web types, lint, source/security checks, build/artifact checks; PostgreSQL and public-directory jobs passed. Final content/interaction tests: 20 passed. Live desktop/mobile: 35 passed, no runtime/console errors. External Claude audit could not run due depleted credits, CodeRabbit skips this base and independent reviewer dispatch failed before review due usage limit; direct scoped review completed, no false independent green. Previous Trust/Journal scope is released below.
+
+**RELEASED - Codex Trust and Journal handoff correction.** Founder requests live Trust and Journal fidelity to the supplied handoff. On fix/trust-journal-handoff-20261023 based on release fc39360, holding TrustMechanisms, AccessWindowTimeline, Journal/JournalCard, their scoped styles and meaningful checks. Compare rendered handoff and production before correcting presentation/content; preserve the current release, article, authentication and backend/payment/provider gates. Cross-role tests and design styles are necessary for the requested website fidelity. Conqueror research and trial reminders remain separate from production source edits.
+
+Scope clarification: the six handoff journal stories require real readable article routes, SEO metadata and sitemap entries. Holding their content/curation in src/lib/blog-posts.ts and public/sitemap.xml, plus homepage Trust/Journal navigation and the journal index heading. Current commercial facts override stale fees, commission, crew and geography claims in the prototype; no pricing or operational code changes. Scoped interaction tests and checks cover the actual regression.
+
+Prepared correction: both the homepage and existing Trust Centre now share the handoff mechanism component; existing navigation destinations are preserved. Scoped mechanism styles prevent SafetyTrust's 218px grid from overriding the handoff's 320px grid. The five-stage illustration restores the revoke switch and redacted states, with explicit iOS detection limits and all readiness gates retained. Journal and its index lead with the six supplied topics and palette at real article URLs, using current commercial/coverage facts, SEO fields and sitemap entries; all 30 prior posts remain. Correctness-owned content types and tests are touched because the founder requested readable, accurate handoff stories rather than nonfunctional cards. Local: TypeScript, scoped lint, 12 interaction tests, SEO validation of 36 posts, production build and artifact scan passed. Planted original components fail the regression tests, then corrected files are restored. Desktop/mobile browser checks: 35 passed; isolated section screenshots compared to supplied artboard. Localhost public-directory calls are rejected by the existing production CORS restriction, recorded as an expected preview limitation; no CORS setting changed. Full release CI and live verification still required.
+
+## Released founder website claim — 23 October 2026
+
+**RELEASED CLAIM — 23 October 2026 — founder website publication and signup-first navigation.** PR #85 merged as `81733006f3595f5f6a4ecce95265dd958fd0a898` into approved `release/xoot-production`, preserving the separate #86 article. Full final-head website/design/security and PostgreSQL CI passed on `956139e`; public directory and preview passed. Codex Security completed the immutable base-to-9b static review with no introduced exploitable candidates, and the later compatibility/navbar diff was independently reviewed. Claude's external scan failed for credits and CodeRabbit skipped the base branch; no false green. Automatic release Git deployment was a preview because Vercel production still tracked `main`; the exact release was explicitly built with production settings as READY `dpl_Bzu712eNxrcFQKYgdCEDWMxh3A4Y`. Both public domain stamps read back `81733006`. Production Branch Tracking was corrected to the approved release branch and verified after Save/reload, preserving auto-assignment. Live first-visit navbar navigation reaches Create your account and the hover is company purple. Website brand/Journal/Trust, Concierge removal, narrow-nav simplification and booking-map removal are published. Full eight-digit email entry is released; actual owner email-code sign-in is still pending. Google is Enabled and founder-reported working. No migration/admin grant, GPS/zone/address-enforcement activation, standalone laundry/annual-gift fulfilment, paid build/plan or financial/voice switch. Admin DDL/fixture is preserved separately at `9b23875` / local `feature/admin-aal2-prepared-20261023`. Personalisation remains planning only: home and a clear first-booking step. Current release checklist records the remaining gates. All path claims in the dated scope below are released; unfinished work is available for an explicitly claimed continuation.
+
+## Historical scope for the released claim
+
+**Scope continuation — 23 October 2026 — publish the requested website and correct navbar entry.** The founder reports that the requested website is still not live. Readback confirms production remains `805c02d`, while PR #85 is open and its website/design/PostgreSQL CI passed. Correct both guest navbar links to the existing sign-up default and replace the inherited orange ghost-button hover/focus with the handoff brand-purple token. Returning-user controls and post-sign-out entry remain available. Google is now Enabled in production after private founder credential entry. Finish the independent security review, classify the pre-existing type/schema difference without changing the database, and verify the actual release deployment. Personalisation is **planning only**: the founder selected their home and a clear first-booking step; do not implement a dashboard, profile collection or recommendations in this release. Preserve all earlier private GPS/ETA, worker, provider, migration and mobile gates.
+
+**Scope extension — 22 October 2026 — founder address/authentication and mail follow-up.** The founder requests removal of the redundant narrow-navbar Book action, removal of the website booking map panel and internal coverage instruction, genuine address validation on web/native, matching native map UX, the 52-week gift option, and complete email/Google/Apple account creation/sign-in. The founder reports that the delivered OTP is longer than the six-digit UI accepts: inspect the live provider's length and preserve provider entropy rather than truncating input or assuming a six-digit template enforces length. Claim the corresponding booking/address/auth-security and gift-contract paths, native auth helpers and protected provider configuration, preserving commercial facts, permanent-geocoding licensing/cost controls and real-JWT/device gates. Also prepare the requested `newletter@`, `support@`, `Nkosinathi@` and `Tshepang@xoot.co.za` addresses; distinguish verified outbound senders from real inbound mailboxes and buy no plan. Brevo domain/sender is verified on Free; the founder explicitly approved SMTP key authentication and private key entry. SMTP IP checking is now off under that specific approval while API IP checking remains on. No new role or production tracking is authorised by an email setup step.
+
+**Scope extension — 22 October 2026 — actual email sign-in acceptance and website icon branding.** Founder acceptance exposed a Magic Link/OTP mismatch: the deployed page asks for six digits but the default production email contained only a link. Through the founder-authenticated Supabase dashboard, replaced only the Magic Link/OTP subject/body with the reviewed `supabase/templates/magic-link.html`; saved and reloaded to verify persistence. No login token, password or verification code was read or stored. The founder also requests Xoot-branded sender emails. Custom SMTP is currently off; prepare the repository-planned Brevo free provider and verified `Xoot <no-reply@xoot.co.za>` sender, preserving DNS records and requiring private founder entry of any new SMTP credential. No SMTP switch is saved without a verified provider. Also claim `index.html`, public web favicon/PWA icons and a deterministic website-only handoff-icon renderer: the existing favicon still depicts a legacy terracotta Z. Keep native launcher assets and their Remotion freshness manifest separate from this website icon correction. Cross-role build/brand source is necessary for the explicit company branding request.
+
+**Scope extension — 22 October 2026 — founder admin MFA and Laundry & Ironing.** The founder chose the existing Nkosiskosana account and directed use of repository laundry information. Read-only production inspection confirms the account has no verified authenticator and `private.has_role(uuid, app_role)` currently checks role membership without an AAL2 requirement. Claim an additive, individually reviewed admin-MFA predicate migration, its PostgreSQL integration fixture/checks and release notes before granting any admin role. Preserve all non-admin role semantics, current policy definitions, unrelated schema and pending migration history. Laundry implementation will use master brief §4.8 as the canonical catalogue rather than conflicting legacy `operations.ts` estimates, offer only specified bundles, preserve the long-job floor, and document the founder's instruction in the decision log. Any production activation still requires the exact server/DB delivery and genuine signed-in acceptance; do not present a UI toggle as working fulfilment.
+
+**Historical scope — 22 October 2026 — Codex founder website refinements and Mapbox acceptance.** Founder requested Mapbox first; correct first-visit sign-up while preserving copy; legitimate sign-in/out; temporary removal of Concierge across the website; handoff-faithful articles/journal/trust, Xoot logo and company-wide Care+ mark; and active, correctly applied Laundry & Ironing. Branch `feature/founder-website-refinements-20261022`, based on approved release `805c02d`. Claim targeted Auth/AuthContext/RequireRole/admin-MFA UI and tests, App/Concierge entry points, Navbar/Footer/BookingHero/Cta/Profile, Blog/BlogPost/Journal/Trust components and their styles, shared brand marks and corresponding native brand source, service-availability/booking catalogue paths and release evidence. Cross-role auth/guard tests, design-kit/shared marks and catalogue verification are necessary for the founder's explicit request; preserve server prices unless a concrete commercial correction is authorised. Founder selected `nkosiskosana11@gmail.com` for admin preparation; current production role is user-only. No role grant or credential extraction yet. Canonical production Mapbox reference map now genuinely rendered in Codex IAB with no logged warnings/errors, one map view, no typed address/paid Geocoding/booking submission. Private GPS/coverage gates remain closed pending real identities, MFA, devices, privacy/provider review and exact migrations. Preserve other homepage sections, `main`, unrelated PRs and native build/signing gates.
+
+**RELEASED CLAIM — 22 October 2026 — Codex PR #71 website launch compatibility.** Merged approved release `805c02d33a9bca5e047eb7c60e40f93c2770d982` and resolved worklog/checklist conflicts. Preserved both worklogs and this branch's staging/migration gates; superseded the older missing-browser-key checkpoint with verified current web delivery. Vercel `dpl_5K3537fPK2HLJepbLz6pQcEc3Bwr` is READY; public build stamp matches `805c02d`, homepage is HTTP 200, startup splash markers are absent, and inspected entry/booking assets retain the public map token. The runtime delta from this release is only the tested two-line web overlay removal. Retained GPS privacy, real-user acceptance and disabled rollout controls; no backend/native/geometry/env changes, provider request or private production activation. Source claim released.
+
+**RELEASED CLAIM — 22 October 2026 — Codex PR #81 website launch compatibility.** Merged approved release `805c02d33a9bca5e047eb7c60e40f93c2770d982` and resolved worklog/checklist conflicts. Preserved both worklogs and this branch's staging/migration gates; superseded the older missing-browser-key checkpoint with verified current web delivery. Vercel `dpl_5K3537fPK2HLJepbLz6pQcEc3Bwr` is READY; public build stamp matches `805c02d`, homepage is HTTP 200, startup splash markers are absent, and inspected entry/booking assets retain the public map token. The runtime delta from this release is only the tested two-line web overlay removal. Retained exact Gauteng geometry, separate worker availability and disabled rollout controls; no backend/native/geometry/env changes, provider request or private production activation. Source claim released.
+
+**RELEASED CLAIM — 22 October 2026 — Codex website launch-overlay removal.** Founder explicitly requested removal of the floating heart animation at website launch after the Mapbox setup. On `fix/remove-web-launch-hearts-20261022`, based on approved release `56d7c7386c1195b3bea398bb873a20c10f653176`, removed only the web root's `AppLaunch` import/mount so the homepage opens directly. Website TypeScript, targeted App lint, approved-design source/negative-control checks and all eight existing notifications-route/splash-parity tests passed. Auth/router wrappers, homepage source, native launch, shared animation/video source and Mapbox cost controls remain intact. The saved public website key was verified and deployed previously in `dpl_38BF3JviceQi7hCfY3SkhycxFsx9`; public stamp/static assets matched the intended release. Live provider tiles/JWT/MFA/devices and private GPS/coverage activation still need their substantive evidence. [Scope and checks](../release/evidence/2026-10-22/website-launch-overlay-removal.md). No migration, real provider request, paid native build, `main` or unrelated PR change. Source claim released; production deployment is authorised and must be verified against the merged revision.
+
+**RELEASED CLAIM — 22 October 2026 — Codex native monochrome token correction.** Automatic PR #82 CI found literal colours in the two native map components outside the shared token layer. Both now use existing light-theme text/card roles and derived alpha values, retaining the requested monochrome appearance. No guard, homepage or global token values changed. The existing native design-system guard and native compilation passed after correction. Native-only source, no paid builds/provider calls; cross-role token consumption fixes the observed failure. Website public-token form setup remains blocked by the browser-control connection. Claim released.
+
+**RELEASED CLAIM — 22 October 2026 — Codex monochrome maps and Mapbox cost controls.** Prepared the founder-authorised release from `release/xoot-production`: Standard monochrome/day basemap with 3D/POI/transit clutter disabled, black/white markers, neutral controls/loading/fallback, retained logo/attribution. Existing maps remain user-opened; homepage source is unchanged. Added default-off web/native address-suggestion switches because selected suggestions require paid Permanent Geocoding. Vercel `VITE_MAPBOX_ADDRESS_SUGGESTIONS_ENABLED=false` saved for production/preview; mobile source defaults off pending a separately signed build. Cross-role native components/env/templates and the existing web style assertion were needed for parity and the founder's cost request. Web/native TypeScript passed; earlier visual implementation development build passed. Founder waived a new acceptance cycle; no paid API calls/device builds performed. [Release scope, costs and evidence limits](../release/evidence/2026-10-22/monochrome-and-cost-controls.md). No GPS/zone production schema/function/rollout switch, commercial price, approved homepage, `main`, or unrelated PR changed. Claim released.
+
+**Scope extension — 22 October 2026 — Mapbox cost containment.** Founder confirmed the reported USD 6 invoice is from Mapbox and requested the lowest feasible cost. The connected billing notification names Permanent Geocoding; the invoice line quantities/tax are not yet inspected. Add default-off web/native address-suggestion switches so manual entry does not trigger paid Permanent confirmation. Keep the existing user-opened interactive maps and attribution; no provider calls, paid builds, plan changes or unrelated deployment changes. Cross-role `mobile/src/lib/env.ts`, native suggestions and public env templates are necessary to apply the founder's cost preference consistently. Public switches are application controls, not a provider spending cap. Browser connection currently cannot verify the founder-reported replacement secret save.
+
+**RELEASED CLAIM — 22 October 2026 — Codex PR #71 release conflict reconciliation.** Merged release `b6459eca` into this feature branch, preserving both sides of env/worklog/checklist conflicts and all GPS/native privacy controls. PR #82 web production deployment `dpl_5VRTJcw7E2w3EKVyfy8h247v6HDq` is READY; public build stamp matches `b6459eca`. The built web map has no usable public token and retains its fallback pending owner setup; staging replacement is founder-reported only. GPS PR #71 remains open with switches off. No production backend/provider calls/paid native build. Cross-role native/env and style assertion arrived from the approved release; no existing security check was removed. Claim released.
+
+**RELEASED CLAIM — 21 October 2026 — Codex GPS CI follow-up.** Repaired test-only CRLF normalisation with an ES2020-compatible regex after Linux CI caught `replaceAll`. Root TypeScript and eight routing tests pass; runtime/compiler settings unchanged. Owner saved both staging Mapbox secrets; dashboard names/matching digests and a default unexpired Mapbox payment method verified without reading values. Genuine user/provider/MFA/devices and production gates remain. No production or homepage changes. Claim released.
+
+**RELEASED CLAIM — 21 October 2026 — Codex GPS acceptance/conflict continuation (PR #71).** Reconciled release workflow conflict while retaining both branches checks and release's stricter shared region matcher. Hardened the manual staging runner with actual Auth identity preflight and visible attempted-write cleanup; corrected parser/source-mirror tests and missing Edge token template. Cross-role test/backend/CI and Expo slug repairs were necessary for safe validation. Staging GPS v6 remains JWT protected and source matched. Full Vitest: 1,612 passed, seven skipped; typecheck/mobile/lint/build/390px+1440px design, 18 privacy tests, four identity tests and 11 real PostgreSQL privacy/lifecycle checks passed. Live-header negative controls passed in isolated Linux; Windows subprocess exit crash retained as evidence. Real authorised JWT/provider/MFA/physical-expiry and signed-device acceptance, independent review and safe production migration sequence remain. No production, homepage, trust-status, unrelated PR or merge action. [Evidence](../release/evidence/2026-10-21/gps-staging.md). Claim released.
+
+**RELEASED CLAIM — 19 October 2026 — GPT-6 Mapbox Steps 5–12 staging continuation.** Deployed the exact PR #71 GPS/ETA Edge handler with preserved shared dependencies to **staging v5**, JWT verified; later Mapbox v6 address-only and 20-word-limit fix included. Staging readback shows RLS enforced, zero client policies and Realtime GPS publications, anon/authenticated direct SELECT and RPC EXECUTE denied, active pg_cron expiry. Added manual two-unrelated-pair consented staging JWT/GPS/ETA/STOP and optional AAL2 admin security harness (not run without test credentials), workflow syntax guard, backend source tests, documented Mapbox-only Edge secret requirement and canonical 12-step no-go release matrix. Verified Vercel public token variable exists by NAME only; actual provider/billing not verified. PR #81 added fail-closed all-zone geometry and native explicit-opt-in coverage parity separately, with zones and flags OFF. No production writes, client switch activation, real user locations, polygon assumptions, merge, main/Codex #46 changes or homepage changes. Full exact-head CI and independent security/POPIA/device staging tests and safe production migration reconciliation remain. Claim released.
+
+
+**RELEASED CLAIM — 19 October 2026 — GPT-6 authenticated, zone-independent Mapbox road ETA.** Continued [PR #71](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/71), source-only against approved `release/xoot-production` (no merge/main/Codex #46, production, GPS feature flag or booking-coverage PR #81 changes). New Edge `eta` action reuses existing JWT, participant/accepted-en-route/approved-Xooter and 60-second GPS controls, reads server-owned booking address (not client origin/destination), enforces service-role atomic 4/minute request budget and Mapbox ZA temporary geocoding + traffic-based Directions; no coverage-zone restriction for an active job. Rechecks job state and exact GPS point after provider latency, returns no-store ETA or unavailable without invented timing. Customer web/native opt-in viewers use the Edge action and 60-second parser; share messages contain no GPS/address. Added outside-zone security/parser tests, client guards, `MAPBOX_DIRECTIONS_TOKEN` Edge-only environment example and staged acceptance runbook. **Live staging read-only verification**: GPS table/RLS present, 0 client policies, anon/authenticated SELECT denied, 0 Realtime publications, 1 active cleanup and 3,238 successful cron executions, existing service-role route-budget RPC present. Staging deployed Edge remains v3 *without* new ETA; production remains without GPS schema/handler. **Fresh source CI has not yet been observed at this new PR head**, independent security/POPIA, provider credential/billing, two-user staging JWT, installed iOS/Android acceptance and production drift reconciliation remain blockers. Do not merge or activate without those gates. Claim released.
+
+**RELEASED CLAIM — 22 October 2026 — Codex PR #81 release conflict reconciliation.** Merged release `b6459eca` into this feature branch, preserving both sides of env/worklog/checklist conflicts, exact polygons, separately verified capacity and all default-off coverage controls. PR #82 web production deployment `dpl_5VRTJcw7E2w3EKVyfy8h247v6HDq` is READY; public build stamp matches `b6459eca`. The built web map has no usable public token and retains its fallback pending owner setup; staging replacement is founder-reported only. Coverage PR #81 remains open, dormant and gated. No production backend/provider calls/paid native build. Cross-role native/env and style assertion arrived from the approved release; no existing security check was removed. Claim released.
+
+**RELEASED CLAIM — 21 October 2026 — Codex Gauteng Mapbox continuation (PR #81).** Integrated exact licensed MDB/OCHA ZA7 source with 5,690 vertices, provenance/hash/topology checks, finite evaluator limits and inactive-only import tooling. Staging schema `20261019185331`, inactive candidate with NULL approval identity/date and JWT-protected coverage v2 were applied/read back; no active zone or capacity claim. Cross-role backend/type/template/CI and Expo project-slug changes were necessary for safe acceptance. Full Vitest: 1,622 passed, seven skipped; typecheck/mobile/lint/build/390px+1440px design and real PostgreSQL grants/concurrent 12-of-20 budget checks passed. Planted ring-limit regression failed then passed after restore. Live-header tests passed in isolated Linux; Windows subprocess exit crash recorded. Exact PR CI, owner-entered Mapbox credentials/billing, genuine four-identity/MFA tests, GIS/POPIA/security review, signed devices and migration reconciliation remain. No homepage, production, unrelated PR or merge changes. [Evidence](../release/evidence/2026-10-21/gauteng-staging.md). Claim released.
+
+**RELEASED CLAIM — 19 October 2026 — GPT-6 native verified Mapbox coverage parity (PR #81).** Added opt-in signed-in Expo booking verification against `check-service-coverage` with `EXPO_PUBLIC_VERIFIED_COVERAGE=false` by default, per-address/service stale-response guard, explicit third-party Permanent Geocoding/privacy wording, clear separation from the public neighbourhood map, disabled EAS/env examples and native source tests. No approved real polygons, migration, stage/prod Edge deployment, native binary, operational feature flags, customer data, homepage or PR #71 changed. Founder GeoJSON/Mapbox billing, exact-head CI, real staging and installed-device acceptance remain; claim released.
+
+
+**RELEASED CLAIM — 19 October 2026 — GPT-6 fail-closed geo-zone review (PR #81).** The geometry checker now prevalidates every matching active/approved service zone before granting availability, so a corrupted later row cannot be bypassed by an earlier valid result. Added regression cases in both database row orders and updated Mapbox zone runbook. No founder-approved zone polygons have been supplied; no zone migration or client/backend coverage flag was deployed/enabled, and GPS PR #71 remains independent. This is source-only pending CI, security sign-off and real GIS-approved boundaries. Claim released.
+
+
+**RELEASED CLAIM — 17 October 2026 — GPT-6 native account privacy and Xooter earnings integrity.** [PR #75](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/75) squash-merged as `3c2f75e95cd7e6144c2c1765ef76d9cc6a0a822a` into founder-approved `release/xoot-production`, leaving Codex PR #46 and `main` unchanged. The pre-existing Jobs/Earnings UI had already been integrated via PRs #62/#64; the obsolete branch was not resurrected. Corrected Expo You's saved-household-address account-switch flash with owner-tagged snapshots, synchronous render guard, proper loading/error and stale-request cancellation. Xooter Earnings now validates server pages by owner, date range, safe UUID ordering and duplicates; keyset cursors retain PostgreSQL microsecond timestamp precision and reject replayed pages. Financial total overflow shows a safe verification state instead of crashing or fabricating a balance. Added native tests and mandatory CI. Github `Verify approved Xoot redesign` and its PostgreSQL 17 job passed on reviewed SHA `8c6a624e6611f5bf6f1552804ca4f08bb0cbc369`; CodeRabbit and Vercel preview succeeded; the independent Claude scan still failed and is **not** a clean security audit. Still requires physical two-account iOS/Android testing, payout/ledger reconciliation and actual native binary distribution. No production DB writes, PayFast/Twilio switches, private record exports or payment operations; released file claim.
+
+**RELEASED CLAIM — 16 October 2026 — native Xooter Growth and Badges.** [PR #73](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/73) squash-merged as `4bbec7956475031b747e7a43acd7b25ed2f22e3b` into approved `release/xoot-production` from tested SHA `0455a64db39c6ebfd1133324bdf17bc9447c2763`. New Expo `/xooter/growth` follows original source recognition hierarchy with required Xoot Standard separate from optional badges, owner-bound `training_modules` and `xooter_training_progress`, exact-count truncation detection, unsafe/duplicate record rejection, no client self-awarding or pay claim, safe account remount and dashboard/Training links. Native test, TypeScript, lint, full web/visual/security and PostgreSQL CI success on reviewed PR; CodeRabbit success. Claude security review failed due API credit, Vercel PR preview rate-limited; these are not clean passes. Live mobile binary, real user walkthrough and handset visual proof remain open. No migrations, payments, provider flags, PR #46 or `main` changed; an independently discovered live training-progress public-read leak is being fixed separately in PR #74. Claim released; no active file lock.
+
+**RELEASED CLAIM — 19 October 2026 — GPT-6 private Xooter GPS and ETA sharing hardening.** [PR #71](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/71) remains **OPEN and unmerged** against founder-approved `release/xoot-production`, with live flags OFF. Staging has JWT-protected `xoot-job-location` Edge v3, service-only RLS GPS table and atomic publish RPC; compared deployed Edge entrypoint and shared dependencies byte-for-byte against branch source. Real staging catalogue checks confirm anon/authenticated GPS SELECT denied, no realtime publication or client policies, one scheduled active cron cleanup with a successful execution and no presently stale records. Web and native booking now include opt-in customer maps, Mapbox road estimates, and private-address-free Share ETA; 19 Oct fixes remove stale ETA/GPS, preserve actual server fix timestamp, stop web GPS on unmount AFTER in-flight publish and expire one-off worker route results. [GitHub full web/native/security CI 39199274802](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/39199274802) SUCCESS at exact code SHA `6d68baeb123f633625d06e67cddecb241b69a48c`; public directory SUCCESS, Vercel preview SUCCESS; independent Claude scan FAILED and CodeRabbit skipped. Production generated types FAIL because production schema is not migrated; **this is a safety gate, not a waived warning**. No real two-account JWT or Mapbox-device test and no Expo iOS/Android physical proof; production has not received GPS table/Edge and map flags remain disabled. Do not claim live GPS/ETA ready, merge PR, set production flags or repair migration ledger blindly. No payment/Twilio changes or main/Codex PR #46 modifications. File claim released for follow-on safe work.
+
+
+**RELEASED CLAIM / PENDING REVIEW — 16 October 2026 — PayFast sandbox integrity hardening.** Isolated [PR #70](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/70) to approved `release/xoot-production`: strict exact `VALID` server-to-server postback, bound merchant identity, duplicate-field rejection, exact ZAR integer cents and provider lane, fail-closed persisted checkout routing and paid-row updates, provider receipt ID retained for reconciliation. Added adversarial Vitest cases and [sandbox-to-production acceptance runbook](docs/release/payfast-sandbox-validation-20261016.md). Verified by read-only Supabase SQL that BOTH projects have `payments.provider_checkout=false`, `payments.hosted_checkout.payfast=false`, and all PayFast provider capability evidence false. Production/staging still have anonymous `confirm-payment` and JWT-protected `create-payment-session`. The Xooter job/earnings code was already superseded/merged from PR #62/#64; this task did not overwrite it. **PR #70 is OPEN, NOT MERGED, not deployed**, awaiting successful full CI/financial review. Vercel reported build-rate-limit failure; GitHub PR-specific workflow runs were not yet returned. A REAL merchant sandbox transaction, callback validation, partial-write/booking recovery, RLS, migrations and independent security signoff remain blocking. No provider credentials retrieved, no payments, flags, production functions, schemas, `main` or Codex PR #46 changed. Claim released; another session may continue safely.
+
+**RELEASED CLAIM — 16 October 2026 — GPT-6 Mapbox address, real route, and tracking truthfulness.** [PR #69](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/69) squash-merged as `8c705d05eebeb5a8819112ddd79f6ea2b94d3498` into approved `release/xoot-production` from exact tested head `78710c7d9e9f46951c0572dca7be98395d3324aa`. Web/public booking uses opt-in Mapbox v6 South African suggestions with selected permanent revalidation, optional real neighbourhood map on booking screen (public map design SVG unchanged). Native signed-in booking has equivalent opt-in SA address suggestions. Web booking detail has removed invented 12-min countdown and false worker/home positions. Assigned worker alone gets explicit foreground location-permission, one-shot real Mapbox driving-traffic road-time estimate with abort/cleanup, not customer GPS tracking. [CI 38921994144](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/38921994144) SUCCESS: full web+native source tests, rendering/design/keyboard, prod build, Postgres security; directory SUCCESS. **Claude review still fails due credits; Vercel newest preview fails due 24h build-rate limit** (older previews do not evidence merged HEAD), so no public promotion claims. Live Mapbox token billing, Permanent Geocoding acceptance, physical Android/iOS and production RLS-backed realtime customer/worker tracker remain unverified. Neither database has live location table. No production Supabase DB mutations, payments/Twilio toggles, main or Codex PR #46 changes. Claim released.
+
+
+**RELEASED CLAIM — 16 October 2026 — GPT-6 Mapbox native booking readiness.** [PR #68](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/68) squash-merged as `dc33d388b3d5e6431a403d2c7508b2dd96b0b614` into approved `release/xoot-production`. Xoot's signed-in native booking address step now opens an optional Mapbox neighbourhood map with only five public reference suburb pins; no typed home address, access notes, customer ID, geocode or GPS is passed to Mapbox. MapView retains logo/attribution and iOS telemetry setting, bounded loading state, offline/style error fallback, restartable retry and design-system contrast. Expo production EAS preflight and runtime config require public `EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN`, reject secret/malformed tokens and mismatched EAS build profiles; preview can operate without maps. [Mapbox production runbook](docs/release/mapbox-production-runbook.md) corrects the browser-only URL restriction error and documents token account, cost, native physical-device acceptance and privacy gates. Old release ledger test updated to assert these accurate Mapbox obligations instead of an obsolete mandatory private downloads token. [Release CI 38895830092](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/38895830092) SUCCESS: all native privacy/config tests, typechecks, full web suite (1577+ cases), source security scan, build, rendered design/keyboard checks, PostgreSQL 17 referral tests; Vercel PR build and CodeRabbit SUCCESS. **Independent Claude security review still fails due depleted API credit** and cannot count as approved. No Expo/EAS env read or device tile proof, Mapbox account/billing signoff, GPS/ETA implementation, store publish, production Supabase migration, payment/voice flag, website SVG change, `main` or Codex PR #46 change. Claim released.
+
+
+**RELEASED CLAIM — 16 October 2026 — GPT-6 Mapbox native attribution and Supabase PAT diagnostics.** Rebased prior conflicted PR #65 onto current release preserving newer Xooter Home/dashboard tests; [PR #67](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/67) squash-merged as `66c3ef02f1d16bea8e7ff5deb074d71c88e8e488` into `release/xoot-production`. Native Mapbox now retains logo and attribution, moves its explanatory overlay clear of footer/compass and gives honest absent-token fallback; public `pk.` token guard rejects malformed/secret values in Expo runtime and EAS preflight. GitHub `db-push.yml` now distinguishes Supabase PAT management permission failures from SQLSTATE 28P01 password failures without attempting any repair or schema write. New synthetic tests for both run as mandatory CI, alongside source map tests. [Release CI](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/38878761783) successful: full web/native tests including new Xooter Home, lint, typechecks, PostgreSQL 17 referral security, rendered design/keyboard, built artifact. Public directory action, Vercel preview and CodeRabbit passed. **Independent Claude Security Review failed due API credit** and remains unapproved. Neither staging nor production schema deployed; the founder reports adding environment-specific DB secrets, but `SUPABASE_ACCESS_TOKEN` permissions and successful `supabase link` are not verified. No paid/voice flag, native store release, production website promotion, `main` or draft PR #46 modification. [Maps and token evidence](docs/release/evidence/2026-10-16/maps-and-access-readiness.md). Claim released.
+
+
+**RELEASED CLAIM — 16 October 2026 — GPT-6 native Xooter Home/dashboard handoff.** [PR #66](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/66) squash-merged into approved `release/xoot-production` as `5033c9c03152a5e758af17b1e58aff61de158043`; Codex PR #46 and `main` unchanged. Expo `/xooter` now presents an owner-bound verified-worker greeting, server-confirmed offers and accepted assignments, a SAST-local today view with no stale past appointment as 'next', and shortcuts to Jobs, Earnings, Verification and Training. Worker eligibility requires active=true and approved background check, with RLS-backed table projection and JWT-protected get-xooter-job-cards (ACTIVE v3). Account switch remount and request cancellation prevent previous-user job flashes. No fictional payout, rank, addresses, customer access or native accept/decline side effects. New source/negative tests passed together with Expo typecheck, native booking/gift/visit/Xooter tests, lint, full Vitest, rendered design/browser guards, PostgreSQL referral contracts, Vercel preview, public directory checks and CodeRabbit on PR SHA `64200de656e67622e61ade9d72fdbc26a0b16563`. Claude independent audit failed because its API account credit remains depleted; not a clean security pass. Live signed-in two-account device tests, real worker settlements and iOS/Android builds remain outstanding. No database or provider writes. Claim released; no ownership lock.
+
+**RELEASED CLAIM — 15 October 2026 — GPT-6 Xooter job-detail and paginated earnings handoff.** PR #62 merged as `110d381bbe4f6bc471b43b6314a68b4d1c6b8b96` into approved `release/xoot-production`, rebased from the current release and preserving prior merged native verification/training PR #60; obsolete/conflicted PR #61 closed unmerged. Native `/xooter/job/[id]` validates a UUID and rechecks the signed-in worker via `get-xooter-job-cards`, showing only service, schedule, state and duration. Sensitive address/access codes, customer identity, false ETA/payout and job accept/decline writes stay inside existing server-authorised web controls. Native `/xooter/earnings` has worker-filtered exact-cent ledger projections, safe-integer totals and 50-row snapshot/keyset pagination with partial-vs-complete period labels. Native regression protects owner changes, malformed/overflow money and unsafe cursors. Reviewed PR SHA `9bd63a623c0c0984a6757fedd5d76e0706763b70`: `Verify approved Xoot redesign` (Expo/typechecks, all native tests, lint, full Vitest, build/browser/artifact) SUCCESS, production public directory SUCCESS, Vercel preview SUCCESS, CodeRabbit SUCCESS. Independent Claude security audit did not pass (provider credit blocker); no real production Xooter accounts/jobs/earnings exist for a live worker journey, and no app store/device distribution has happened. No schema/PayFast/Twilio changes, no website design regression, no changes to Codex PR #46 or `main`. Claim released.
+
+**STAGING DELIVERED — 15 October 2026 — Xooter checklist server RPC.** Applied approved `20261007150000_checklist_active_job_mutation.sql` to staging `fxmxyabdjqviqbcxmvlp`; connected migration ledger stamped `20261015155437`. Verified function exists, owns a service-only `EXECUTE` grant (anon/auth denied), checks actor and uses row locks, and synthetic unknown job safely returns `not_found`. [Live schema evidence](docs/release/evidence/2026-10-15/checklist-staging-rpc-verified.md). Production schema/functions untouched; signed-in hosted Xooter journey pending.
+
+**RELEASED CLAIM — 15 October 2026 — GPT-6 native Xooter verification/training.** [PR #60](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/60) squash-merged into approved `release/xoot-production` as `a3c25b71d5b4caca70fd101dd69ec47fb1834dd5`. The native `/xooter/kyc` and `/xooter/training` pages read only account-scoped status/document and server-provided module/progress metadata; private IDs/bank details/storage paths and quiz answer keys are excluded. Actual KYC, grading and file handling stay in the authenticated web workspace, not simulated on-device. Account navigation, cancellation-on-remount, optional/required grouping and bounded lists included. New native projection/privacy regression command, native booking/gift/visit/jobs, Expo typecheck, lint, full Vitest, production build, design/keyboard artifact guard and PostgreSQL referral contracts passed in [release CI 38765121718](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/38765121718). [Evidence](docs/release/evidence/2026-10-15/native-xooter-trust-training.md). No physical device proof or app-store distribution; independent Claude audit blocked on credits, automatic Codex review blocked by usage cap. `main`/Codex PR #46 unchanged.
+
+**RELEASED CLAIM — 15 October 2026 — GPT-6 production referral baseline preparation.** [PR #59](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/59) merged into `release/xoot-production` as `7fbf42bb844c2656749a1d402a31dac07ff52c43`. A non-destructive prerequisite `20260903000000_referral_base_prerequisite_convergence.sql` restores April referral tables and generator only when both are absent, checks exact schema and existing policies, applies safe owner RLS and grants, and aborts partial/unexpected states before existing ZD035. Actual unchanged ZD035 and downstream grant migration, generator, RLS, idempotency and planted failures passed on disposable PostgreSQL 17.6; web/native typechecks, lint, full Vitest, production build, design and keyboard checks, public directory CI passed in [run 38721999649](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/38721999649). [Audited evidence](docs/release/evidence/2026-10-15/referral-baseline-reconciliation.md) records the production-only safety-PIN authorization difference, preserved. No production database or checkout changes. Production type comparison still fails until missing schema is delivered; Claude independent review requires paid credit; Codex review usage cap remains; `main` and PR #46 untouched. Claim released.
+
+**RELEASED CLAIM — 15 October 2026 — GPT-6 referral privilege hardening.** [PR #58](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/58) squash-merged into approved `release/xoot-production` as `fba4a39f97a0e34b81b75cc7f3a4df4808c58f92`. In staging `fxmxyabdjqviqbcxmvlp`, applied additive privilege-only migration `20261015102137_referral_client_grants_least_privilege` and confirmed both RLS-enabled referral tables now give `anon` no table privileges, `authenticated` SELECT only, `service_role` full access. Live catalogue originally showed client TRUNCATE bypassing RLS. PostgreSQL 17 disposable SQL proof, planted missing-REVOKE/missing-table tests, full redesign checks and public-directory CI passed in [run 38720257465](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/38720257465). [Evidence](docs/release/evidence/2026-10-15/referral-privilege-verified.md). Production is deliberately untouched: it is still missing referrals tables and `gen_referral_code()`; do not mark this migration delivered there. Independent Claude review blocked by API credits, Codex automatic review blocked by usage cap, live types comparison failed because production has not received schema migrations; no false green claims. `main`, Codex PR #46, payments and voice flags unchanged. Claim released.
+
+**RELEASED CLAIM — 15 October 2026 — GPT-6 live Xooter header verifier regression.** [PR #57](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/57) was squash-merged into approved `release/xoot-production` at `5344dc9a62db1fdbfe76718ba8d9e74188f1c10f`; `main` and Codex PR #46 remain untouched. Fixed doubly escaped production HTTP header checks, added complete-case insensitive directive parsing and an actual local-server positive/negative verifier regression for an otherwise unlisted `/xooter/*` route. `security:scan`, the web/native unit suite, typechecks, lint, production Vite build, source visual guard and artifact scan passed in [redesign CI 38659301962](https://github.com/ROYAL777-21/xoot-your-local-helpers/actions/runs/38659301962); public-directory CI passed, and automatic Codex PR review completed with no findings. Vercel preview was blocked by the Hobby daily 100-build limit, and independent Claude Security Review failed again due `Credit balance is too low`; neither is reported green. No manual production promotion, database/migration writes, PayFast/Twilio switch, live-site verification or mobile distribution. Claim released; full six-gate GOAL remains open.
+
+**RELEASED CLAIM — 15 October 2026 — GPT-6 Xooter Jobs/Earnings native handoff.** PR #56 merged into founder-approved `release/xoot-production` as `ca7f2bae537da2b8470138292df3a564a54010b3`; Codex PR #46 and `main` unchanged. Native `/xooter/jobs` now uses signed-in Xooter identity and the production `get-xooter-job-cards` success/data envelope with strict worker-ID filtering and strips customer/address/payment fields. Offers, accepted and history cards display real schedule/status, and responding uses the existing authenticated web workspace opened through Expo WebBrowser, **not** Android-intercepted universal Links (Codex P1 review issue fixed). Native `/xooter/earnings` uses owner-scoped ledger, rolling 7/30-day views, finite ZAR amounts, limit of 100 visible rows, and no invented payout/clearing promise. You navigation and account-switch remount guards included. New native Xooter tests, Expo typecheck, lint, full Vitest, design/browser checks and public-directory CI passed on head `e7c34643127ad79bbf8162745084f26c76004ab2`; CodeRabbit passed. **External blockers**: Vercel preview status failed solely due build-rate limit; Claude independent security audit failed because API credits were depleted. Native source is merged, not distributed via iOS/Android EAS; no forced Vercel production deploy because the current website design is unchanged and build limit active. Remaining Xooter KYC/training, job acceptance atomicity, safe address reveal and settled payout proofs stay open in the coverage ledger. No live data writes, backend or price changes. Claim released.
+
+**RELEASED CLAIM — 15 October 2026 — GPT-6 native Visit Detail and Tracking UI handoff.** PR #55 merged into approved `release/xoot-production` as `6955aced9481fed200f2f199d12b17eb8da0b42f`, leaving Codex PR #46 and `main` untouched. Native `/visits/[id]` links from owner-scoped Visits list and displays genuine service, booked time/address, assignment and server status, with an indicative rather than fabricated history and safe rebooking/support actions. The optional Xooter profile query can fail without hiding an otherwise valid booking. Booking status normalization is now shared from canonical `src/lib/booking-state-machine.ts` to Expo via exact generated copy, handling legacy pending/confirmed/enroute. The existing native data provider now hides cached prior-account bookings, profiles and counters synchronously until fresh owner-ID-matched records load, preventing cross-account flash after sign-in change. Removed unverified 'Booking total' copy sourced solely from bookings.price. Focused native visit tests, existing native gift/booking tests, Expo typecheck, lint, full Vitest, design/browser gate, Vercel preview, CodeRabbit and public directory CI passed on reviewed head `9b0722ace88196d499c91e59a0284471569900a8`. Independent Claude review did not run owing to insufficient credits; this is not security signoff. Still missing real device visual comparison, live GPS/ETA, actual task/crew event history, provider-confirmed payments/receipts, calling/chat and remaining source screens. No DB, payment flags or provider writes. Claim released.
+
+**RELEASED CLAIM — 15 October 2026 — GPT-6 native Gift/Care+ design handoff.** PR #54 merged into founder-approved `release/xoot-production` as `158ade623aafcc90546942cfc1915b9494f2a506`, leaving Codex PR #46 and `main` unchanged. Native Gift a Clean now has card-first choose/personalise/review, server quote checks, five services, seven card colours, 1/3/4/6/12 visit presets, 52-week truth and account-change reset; payment, delivery and 52-visit checkout remain unavailable. Native Care+ now has source-inspired membership hero, real plan/status read, request and confirmed cancellation for both active and pending members, with You-navigation links. All 12 focused native tests, Expo typecheck, lint, full web unit suite, design/browser and public directory CI passed on reviewed PR SHA `173cce036eae76cf6f1f03cc3663e755362ef7e2`; Vercel preview and CodeRabbit reported success. External Claude security audit did not run because its API credit was insufficient, **not a clean security pass**. Full device/native visual acceptance, live gift fulfilment, PayFast/Care+ settlement, remaining account/worker UI and app-store release remain open in `docs/implementation/app-handoff-coverage.md`. No paid flags, schema, financial writes or Twilio were changed. Claim released.
+
+**RELEASED CLAIM — 14 October 2026 — GPT-6 weekly defaults and truthful gifting.** PR #53 merged as `0924cf4b96f13b6a21002f334eebe4edff6315cf` into founder-approved `release/xoot-production`, not `main` or Codex PR #46. Regular, Airbnb, express, office and moving booking inputs now default to once weekly and one first-visit weekday on web/native; explicit one-off and fortnightly survive, and date changes preserve manually added repeat weekdays. Public and signed-in Gift a Clean corrected unsupported 12-as-year and 6-as-half-year labels: 52 weekly visits make a year, while current gift bundles remain 1/3/4/6/12 separately redeemable visits, with backend checkout/annual packs still unavailable. Synced generated Expo input contract; added weekly/gift tests and updated the native booking test to check real date transitions. GitHub `Verify approved Xoot redesign` full web/native checks and Vercel/CodeRabbit checks passed on PR SHA `fe6725e9184da8034baeed99bdca22fe6273e5d6`. Vercel production deployment `dpl_BMxUcwSK1U6UTZzspWAMSchUSVs1` reported READY and assigned `xoot.co.za` and `xoot.vercel.app` on merge SHA `0924cf4b`. Cross-role `src/lib/**` and guard tests were intentional to honour founder request; no commercial server pricing, provider flags, DB migrations or Codex PR #46 changed. **Full handoff remains unfinished**: native screen-by-screen parity, payment/gift fulfilment, real device checks and authenticated journeys are listed in `docs/implementation/app-handoff-coverage.md`. Claim released; no open lock.
+
+**RELEASED CLAIM — 14 October 2026 — Xoot production GOAL/source alignment.** PR #52 targets `release/xoot-production` (not Codex PR #46 or `main`). Corrected obsolete Codex `/goal` instructions that still told agents to redeploy old `main`; added a real no-secret GitHub Actions smoke probe for the production public Xooter roster and kept quote/checklist gates strict; updated the live migration drift evidence. Supabase production `public-xooter-directory` function deployed from reviewed release source (ACTIVE v1, public profile projection, production zero eligible Xooters) and runner-tested: real HTTP response contract SUCCESS. Production `get-booking-quote` not deployed because live `public.referrals` and `public.referral_redemptions` tables do not exist, contrary to the ZD035 migration's assumption. Production `xooter-job-checklist` not deployed because its service-only update RPC is missing even in staging; stage migration 20261007150000 not yet applied. No schema, payment, voice or other provider flags changed. Independent security audit remains unverified. PR #52 queued broader design/CI checks; do not merge until green. No active ownership claim remains.
+
+**RELEASED CLAIM — 14 October 2026 — GPT-6 isolated GOAL gate work.** [PR #51](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/51) targets `release/xoot-production` only. Fixed the fail-open live check (wrong `main` identity, missing-stamp/access false passes), added release-branch-only database and Edge deployment provenance checks, a read-only public-directory/private-endpoint probe with planted negative controls, and expanded CI to lint/typecheck/full Vitest/build/browser/security. The first complete CI exposed a missing Chromium/mobile installation, fixed; the second exposed a generic smoke fixture conflict from the separate redesign check, fixed without bypassing either invariant. The subsequent rerun is in progress as of this log entry; do not merge until its result and reviews are examined. On Vercel the production public Supabase env variables were isolated from preview and set to the project's active key, and a revised `release/xoot-production` build was confirmed READY. No production Supabase schema/functions/provider flags were written. Codex PR #46 and `main` unchanged. Work on this slice is not actively held; pick up the PR after the CI result and owner Supabase deployment access are resolved. Detailed evidence: `docs/release/evidence/2026-10-14/goal-continuation.md`.
+
+**RELEASED — 14 October 2026: approved Xoot production branch.** A separate, founder-selected `release/xoot-production` now contains the handoff redesign and private Xooter route security work, leaving Codex PR #46 untouched. Vercel Ignored Build Step was configured to build production only for this release branch and the source marker/desktop-mobile Playwright design/focus guards were introduced, including planted-defect negative controls. The `npm run design:check` source guard passed in the release preview and production Vercel logs. Vercel production was confirmed READY on commit `a89ddbbc`, with `xoot.co.za` and `xoot.vercel.app` aliases. CI/browser live proof, DNS, the 6-phase GOAL, migrations, PayFast, Twilio and independent security scan remain open; no provider flags, schemas or payments were changed. Authoritative updated checklist: `docs/release/production-checklist.md` (14 October 2026 section). **Released claim**; no branch path is now held by GPT-6.
+
+
+**26 September checkpoint, same authorized cross-role Codex claim:** gift presentation/request
+contract is committed at `303bf9b`; native Search, notifications, Profile and Rewards work has passed
+scoped reviews. Dependency updates retain the existing web React and Expo SDK 56 runtimes; web
+audit reports zero advisories and mobile has three moderate findings in one dependency chain.
+The staging build, rendered homepage/sign-in artifact, artifact scan and security guards pass.
+Full-suite browser timeouts exposed resource contention; browser checks now run after unit/build
+checks. A collection check caught and corrected inherited include patterns before publication;
+the corrected run passed all 1,274 tests across 125 files. Dependency/runtime scoped review passed.
+Commit `438ace3` is now pushed and its Vercel preview is verified: hosted home/sign-in smoke,
+gift/offline layouts at six widths, GitHub Tests and Semgrep all pass. Draft PR 46 is open.
+Hosted screenshots and links are in `docs/release/evidence/2026-09-26/`. No production release.
+
+**21 September checkpoint, same authorized cross-role Codex claim:** native Search/notifications,
+Profile/Rewards/navigation and loaded profile editing are committed through `e2ec339` and have
+passed scoped review. Web Gift.jsx presentation plus atomic reviewed-request migration/functions
+are implemented and reviewed locally; staging delivery is pending database access. The full initial
+integration suite exposed four schema/writer/token guard issues; those are fixed and 64 focused
+checks pass. Dependency remediation and the final aggregate build/preview verification are underway.
+No production publication or new live database write. All uploaded references and remaining screens
+stay in scope; current coverage and external dependencies are in the visual ledger/release checklist.
+
+**13 September checkpoint, same Codex claim:** unified startup repair is committed at
+`b923980`; the uploaded ZIPs match the handoff already in Git. Header/hero now use the
+actual fonts, artwork and geometry. Six widths and service/auth/navigation interactions
+are checked; CodeRabbit's two minor findings are fixed. Cross-role follow-up: the rendered
+artifact check uses an existing allowlisted loopback origin, and two guard tests normalize
+Windows line endings. No backend policy, business price or production state changed.
+The full website/app fidelity goal remains active. See the visual ledger and Task 2a report.
+
+**Codex — 2026-09-11: HOLDING the approved website-first production implementation** on
+`codex/xoot-production-20260911`, based on `02bb284`.
+
+The founder explicitly approved the production plan: repair configuration and rendered deployment
+checks first, then the committed design, server quotes, crews, referrals and PayFast fulfilment,
+reviewed website release, remaining features and Expo. This crosses Release & Infrastructure and
+Correctness & Safety ownership; those owners should review their respective surfaces before merge.
+No previous local checkout is being modified. Other work must not be reverted.
+
+Verified during the 11 September planning audit: Vercel serves the current commit, but browser
+startup fails because `VITE_APP_ENV` is absent. The successful live-deploy check missed the broken
+render. The seven supplied HTML references match the committed handoff. Production is one migration
+behind staging; payment gates are closed. The older DNS and migration counts below are historical.
+Production publication remains dependent on reviewed code, release evidence and working provider
+configuration. No production migration, payment or operational action has been performed by this
+implementation session.
+
+---
+
+## ✅ RELEASED — 14 October 2026 — isolated private-route security release
+
+GPT-6 completed and released the isolated `goal/xoot-production-hardening-20261014` claim, based on the founder-selected redesigned release. [PR #50](https://github.com/ROYAL777-21/xoot-your-local-helpers/pull/50) remains separate from Codex PR #46 and `main`. Vercel production `dpl_CYGVbfpayMvcRxfS7ZSVRLgSNdBB` reported `READY` from commit `66bdf8d`; Vercel production aliases include `xoot.co.za` and `xoot.vercel.app`. Updated host policies, the static security assertions and live verifier for all `/xooter/*` paths. Cross-role security assertions changed deliberately to prevent a false pass; CodeRabbit and Vercel preview checks reported success. Browser/live HTTP verification and the independent Claude security review remain open, as do the actual PayFast, Twilio, Supabase database/function and full-handoff goals. The Claude scan failed due insufficient account credit. Direct production Supabase audit found 82 migration entries and 57 functions but no `public-xooter-directory`, `get-booking-quote`, or `xooter-job-checklist`. No production database writes, provider switches or Codex branch changes. Detailed evidence: `docs/release/evidence/2026-10-14/README.md`.
+
+---
+
 ## 🚢 Release & Infrastructure — 2026-09-03 — the design port, five sections in
 
 Founder supplied a full Claude Design redesign and asked for it built. Bundle committed at
@@ -2638,3 +3281,130 @@ planting the defect it describes and watching it fail.
 
 **Remaining orphans, harmless and left in place:** `LoadingScreen.tsx`, `AddressPicker.tsx`,
 `service-visual.ts`. None carries a claim.
+
+## 2026-10-29 — 🚢 Release — the Concierge retired into a human support directory; xooter momentum; first daily security sweep
+
+**Founder decisions executed this session:** remove the AI Concierge chat and replace it with the
+support@xoot.co.za directory (app + website), add newsletter@xoot.co.za everywhere, land the xooter
+side of the gamification documentation, run the first owner-authorised passive security sweep of
+xoot.co.za (≥5 findings/day cadence now scheduled), and ship the GEO/AEO `llms.txt`.
+
+### Concierge retirement (kill switch, not demolition)
+
+- `20261029090000_retire_concierge_chat_directory.sql`: `concierge.kill.global` ON for every
+  environment, every remaining `concierge.%` capability row OFF. Fails closed everywhere; rollback
+  is one UPDATE. Tables and functions stay for history and audit.
+- Mobile: `mobile/src/app/concierge.tsx` deleted; new `mobile/src/app/support.tsx` is the human
+  support directory (support@, newsletter@, 112-first emergency rule, what-makes-a-fast-answer
+  guidance). Every navigator entry point (account, search, visit detail, launch experience,
+  handoff search index, notification destinations) now routes to `/support`. The `concierge`
+  *launch intent name* is kept deliberately so existing deep links, the registered App Intents and
+  the web launcher keep resolving — its target moved.
+- Web: `useConciergeConfig` OPTIMISTIC default flipped to the retired off-state (the failure mode
+  reversed the day the feature retired: wrongly drawing a retired affordance is now the bug).
+  `Support.tsx` lost the AI first-reply block and gained the directory card (support@,
+  newsletter@, 112-first). Historical ticket `ai_response` rows still render, labelled as retired.
+  Footer carries both mailboxes. `/legal/ai-concierge` now leads with the retirement notice.
+- Test contracts updated to the retired reality: phase10 assistant-intents route list,
+  concierge-client-reporting (mobile half now asserts the directory and the *absence* of chat
+  invokes), concierge-provider (Support.tsx asserts no provider union), mobile-native-launch,
+  native-handoff-search.
+
+### Xooter gamification (master brief §6 — the missing third leg)
+
+- `mobile/src/lib/xooter-momentum.ts`: completed-job counts, consecutive-active-day streak
+  (SAST calendar days, never device time-zone; a streak survives one rest day), longest streak,
+  and the next published job milestone (10/25/50/100/250). Recognition only — no pay, ranking or
+  allocation effects, stated on the card itself.
+- `xooter/growth.tsx` renders a Momentum card fed by the same owner-scoped
+  `get-xooter-job-cards` projection the jobs screen uses; it refuses to render rather than guess.
+- `node --test` suite `native-xooter-momentum.test.mts` (7 tests) + `npm run test:momentum`.
+
+### Security sweep 1 (owner-authorised, passive) — docs/security/SEC-RECON-20261029.md
+
+10 new findings. Fixed in-repo today: dot-leading paths no longer fall through to the SPA shell
+(vercel rewrite `((?!\.well-known/)(?!\.).*)`), `public/manus-routes.json` (full route inventory)
+deleted, Hostinger `.htaccess` CSP `form-action` now carries the PayFast endpoints (checkout was
+broken there), `/book` noindex/no-store parity across Vercel/Netlify/Apache, `Options -Indexes`,
+obsolete `X-XSS-Protection` removed everywhere, and `assert-static-hosting-security.mjs` pins all
+of it so it cannot drift again. **The biggest finding is a deploy gap, not a code gap: production
+still runs a build from before the 2026-10-28 hardening commit — redeploying HEAD closes SEC-1/2/4
+by itself.**
+
+### GEO/AEO
+
+- `public/llms.txt` shipped: facts, services, areas, safety, payments, both mailboxes, an
+  AEO-shaped FAQ — the file AI assistants (Siri/ChatGPT/Perplexity/Google AI Overviews) read to
+  answer "what is Xoot" queries. No price figures (CPA discipline).
+
+### Growth
+
+- `docs/marketing/TRAFFIC-COMPOUNDING-PLAYBOOK-2026.md` (12 sections, Hormozi $100M Offers/Leads
+  + the 12 platform playbooks + SEO/GEO/AEO + 90-day calendar) and `growth-log.md` refreshed with
+  a 14-day daily action checklist. The playbook is registered in the marketing-claim-rules
+  ANALYSIS set alongside the other strategy docs.
+
+**Verified:** vitest 203 files / 2,144 passed / 0 failed; web + mobile `tsc --noEmit` clean;
+`assert-static-hosting-security` PASS; secret-scan clean; momentum suite 7/7; eslint clean on every
+changed file. Not verifiable from this sandbox (no credentials): live redeploy, production
+migration apply, Supabase drift checks — carried in the delivery note as founder actions.
+
+## 2026-10-29 — Session 9: the consolidated Codex handoff, one bookable roster, emulation-ready mobile
+
+**Branch tip:** `35ad599` on `feat/crew-eligibility-app-ux-20261028` (base `e292702`, 11 commits).
+
+### Matching roster contract — "ensure the xooters and users are matched appropriately"
+
+The database already defined who may be offered a job (`settle_booking_payment` 20261027150000 and
+the crew settlement contract 20261028160000 both require `active AND background_check_status =
+'approved' AND reliability_flagged = false` before creating an `xooter_jobs` offer), and the
+directory + ai-match showed customers exactly that roster. The three dispatch writers did not:
+`create-booking`, `create-booking-request` and `request-replacement` each validated a named or
+auto-matched Xooter against `active` alone, so a hand-built request could book someone the
+directory would never show and settlement would silently never offer — a paid booking whose
+assignment never happens, and a replacement notification claiming "a verified Xooter" that the
+query never verified.
+
+Fixed with one shared definition: `requireBookableXooter` + `BOOKABLE_XOOTER_GATES` in
+`supabase/functions/_shared/public-directory.ts`, applied by all five surfaces. `respond-xooter-job`
+now reads `reliability_flagged` and refuses to let a flagged Xooter ACCEPT an offer (declining
+stays open — refusing work is always allowed), closing the flagged-after-offer window. Migration
+`20261029110000_matching_roster_consistency.sql` tightens `xooters_public` to the same triple (it
+previously filtered only active+unflagged, so favourites, Care+ specialists, the ZOTM slot and the
+household layer could surface an unapproved contractor), restating the authenticated-only grants.
+`src/lib/matching-roster-contract.test.ts` (14 tests) pins the TS helper, all six function
+surfaces, the view, and the settlement SQL to each other. `public-directory.test.ts` and
+`pricing-parity.test.ts` re-pinned to the new shapes.
+
+### Emulation-ready mobile — "complete the app so I can emulate it on expo"
+
+The app cannot run in Expo Go (Mapbox, Twilio Voice and Sentry are outside the Go runtime) — it
+emulates through a development client, and both EAS profiles already existed. What was missing:
+out of the box a development build pointed at `http://127.0.0.1:54321`, a local Supabase CLI that
+only exists on a machine running one, so the founder's first emulated session would open an app
+whose every call failed. `mobile/config/public-environments.json` (the mobile twin of the website's
+committed public config) now gives development and preview builds the live project's public values
+— zero EAS console setup, the emulated app talks to the same backend as the website. staging and
+production are deliberately empty: a store build fails validation instead of inheriting.
+`scripts/validate-env.ts` and `mobile/src/lib/env.ts` resolve identically, pinned by
+`src/lib/mobile-env-defaults.test.ts` (9 tests). Verified end to end in-sandbox:
+`expo export` bundles clean for iOS (7.4MB Hermes) and Android; `config:check` passes for
+development, for a simulated `EAS_BUILD_PROFILE=preview-simulator` with nothing set, and correctly
+FAILS for a simulated production build with nothing set. `mobile/EMULATION-20261029.md` documents
+the dev-client paths and the honest emulator limits (SOS dial-out needs hardware; email sign-in
+needs `xoot://auth/callback` in the Supabase redirect allowlist; maps need a Mapbox pk token).
+
+### Fixed: drifted mobile booking suite
+
+`test:booking` was failing at `db49da9` (pre-existing, outside the root vitest run so sessions
+7–8 never saw it): the crew clamp moved to the founder eligibility rule in `6e40ae9` but the
+stale blanket-cap expectation (`crewSize 2` for a small regular clean) was never re-run. Corrected
+to 1 with the founder-rule comment, and a positive airbnb case added (large 4h clamps to 1; 8h
+re-offers the crew of 4). All ten mobile tsx suites now pass.
+
+**Verified at `35ad599`:** vitest 205 files / 2,165 passed / 7 skipped / 0 failed (Playwright
+chromium reinstalled after the sandbox reset); web `tsc --noEmit` clean; mobile `tsc --noEmit`
+clean; `expo lint` clean; `VITE_APP_ENV=production` build green; `security:scan`,
+`build:artifact-scan`, `lockfiles:check` and `ops:smoke:rendered:artifact` (origin
+`https://xoot.co.za`) all PASS. Delivery: final bundle + 11-commit patch series + this worklog +
+`CODEX-HANDOFF-V4-20261029.md` + `SESSION9-DELIVERY-20261029.md`.
