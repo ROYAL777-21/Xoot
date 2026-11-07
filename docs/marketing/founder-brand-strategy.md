@@ -207,3 +207,10 @@ exposure and precisely the credibility loss that building in public is meant to 
 
 A founder building in public and a service brand reassuring a woman about a stranger in her home
 should not sound alike. **Never reuse a founder draft as company copy.**
+
+
+## New founder reference — 2026-10-13 (transcript pending)
+
+Founder-supplied personal-brand video: https://youtu.be/7NbBPg1w6Zk?si=DGqu6jGRz4_1EPIx . Exact content and author **not verified** in this research pass; include in the reading queue and do not claim its lessons until its transcript is read and attributed accurately. Retain the existing **VOICE: UNCALIBRATED** gate, first-person proof standard and build-in-public emphasis. Xoot's fictional AI lifestyle presenter is *not* a stand-in for the founder's genuine work, founder identity or founder voice.
+
+Practical bridge from the existing confirmed doctrine: publish verified build/ship lessons, a specific failure and remedy, decisions and trade-offs; lead with the value in the first sentence, give contextual proof, and respect real customer/worker privacy. Repurpose one genuine founder insight weekly as a native Instagram face-to-camera/screen-recording variant only after personal approval; the company AI character should not narrate invented first-person founder achievements. Refer to [AI lifestyle Reels production pack](ai-lifestyle-reels-production-pack-2026-10.md) for channel separation and claims safeguards.

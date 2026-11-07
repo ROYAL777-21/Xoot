@@ -233,3 +233,12 @@ never recruited.
 | Every AI-generated asset carries its marker | Meta and TikTok both require disclosure |
 | Two registers, never blurred | Founder is futuristic and sharp; company is warm, calm, practical |
 | **Nothing publishes without the founder approving that exact text** | `founder-voice.md` |
+
+
+## October 2026 — AI lifestyle/Reels experiment (proposed)
+
+The founder provided a new YouTube reference for the Xoot Instagram programme on 2026-10-13: https://youtu.be/w6qpJ0eTB68?si=zd6SW1njGhReWr35 . The exact video transcript could not be verified in the research pass; do **not** attribute tips to the creator without source review. Full production-ready brief: [five original Xoot AI lifestyle Reels](ai-lifestyle-reels-production-pack-2026-10.md). Formats: (1) illustrated lived-in Sunday vlog, (2) vegetable-chopping talk-to-camera, (3) Saturday group-chat POV skit, (4) practical 15-minute reset, (5) ambient after-work ASMR.
+
+**Channel hierarchy unchanged:** TikTok remains the company primary engine; Instagram receives native 9:16 edits/Trial Reel tests from shared masters, not a new unsustainable production line. Test 3-second retention, average watch time, completion, shares and saves as diagnostics; business success remains local profile visits per 1,000 impressions and verified downstream qualified actions when enabled. Meta's own documentation supports Trial Reels as an experiment mechanism (https://about.fb.com/news/2024/12/trial-reels-try-content-non-followers-first-see-what-perfoms-best), not evidence these five concepts will go viral.
+
+**Operational guardrails:** Fictional AI narrator is unmistakably illustrated and labelled, never portrayed as an actual user or worker; no implied completed Xoot jobs, guarantee, price or booking availability. Founder approves each post. Confirm live domain, operational gates and city coverage before conversion CTA. Render originals; do not recreate a living creator's voice, footage, sequence, exact lines or identity.
