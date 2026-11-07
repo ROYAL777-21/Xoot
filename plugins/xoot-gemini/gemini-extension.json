@@ -1,0 +1,13 @@
+{
+  "name": "xoot-home-care",
+  "version": "0.1.0",
+  "description": "Xoot premium home care: explore cleaning services and securely create customer-reviewed booking drafts.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "xoot": {
+      "httpUrl": "https://mvlrkelahhsyjrwgsxaf.supabase.co/functions/v1/xoot-mcp",
+      "description": "Xoot South African cleaning services and secure account-linked booking intents. Requires OAuth consent for customer-specific actions.",
+      "timeout": 30000
+    }
+  }
+}

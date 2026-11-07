@@ -39,6 +39,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      // STAGED SCHEMA: 20261018210200_llm_booking_intents.sql. Confirm against generated
+      // Supabase types after applying the migration; production has not been changed.
+      llm_booking_intents: {
+        Row: {
+          id: string
+          user_id: string
+          oauth_client_id: string
+          idempotency_key: string
+          saved_address_id: string
+          service_key: string
+          hours: number
+          booking_date: string
+          booking_time: string
+          booking_cover_opt_in: boolean
+          quote_total_cents: number
+          quote_breakdown: Json
+          status: string
+          booking_id: string | null
+          payment_record_id: string | null
+          prepared_at: string
+          expires_at: string
+          submitted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          oauth_client_id: string
+          idempotency_key: string
+          saved_address_id: string
+          service_key: string
+          hours: number
+          booking_date: string
+          booking_time: string
+          booking_cover_opt_in?: boolean
+          quote_total_cents: number
+          quote_breakdown?: Json
+          status?: string
+          booking_id?: string | null
+          payment_record_id?: string | null
+          prepared_at?: string
+          expires_at?: string
+          submitted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          oauth_client_id?: string
+          idempotency_key?: string
+          saved_address_id?: string
+          service_key?: string
+          hours?: number
+          booking_date?: string
+          booking_time?: string
+          booking_cover_opt_in?: boolean
+          quote_total_cents?: number
+          quote_breakdown?: Json
+          status?: string
+          booking_id?: string | null
+          payment_record_id?: string | null
+          prepared_at?: string
+          expires_at?: string
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "llm_booking_intents_saved_address_id_fkey"
+            columns: ["saved_address_id"]
+            isOneToOne: false
+            referencedRelation: "saved_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "llm_booking_intents_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "llm_booking_intents_payment_record_id_fkey"
+            columns: ["payment_record_id"]
+            isOneToOne: false
+            referencedRelation: "payment_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_audit_log: {
         Row: {
           action: string

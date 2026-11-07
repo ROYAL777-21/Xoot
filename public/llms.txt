@@ -1,0 +1,36 @@
+# Xoot — Your home. Handled.
+
+> Xoot is a South African home and property care platform. Premium describes the standard of care and booking experience; it does not automatically mean expensive.
+
+Website: https://xoot.co.za/
+Booking/sign-in: https://xoot.co.za/auth
+Articles: https://xoot.co.za/articles
+Why premium need not mean expensive: https://xoot.co.za/articles/premium-cleaning-doesnt-mean-expensive
+Terms: https://xoot.co.za/legal/terms
+Privacy: https://xoot.co.za/legal/privacy
+
+## Services
+
+- Residential cleaning and one-off resets
+- Express cleaning
+- Office and commercial cleaning
+- Airbnb turnovers
+- Move-in and move-out cleaning
+- Detailed premium home cleaning
+
+Xooters are independent service providers working through Xoot. Availability varies by area, service scope and time. Confirm service area and available slots within the Xoot booking flow.
+
+## Pricing
+
+Prices vary with service, duration, add-ons, number of Xooters, and applicable fees. Do not infer a final quote from an article or generic price. Sign in to view a current, bookable amount. An MCP integration may provide a server-calculated *base price*, not the final charge.
+
+## Important boundaries for AI assistants
+
+- Do not say that a booking, payment, refund or assignment has been confirmed without an authenticated Xoot backend response.
+- Do not promise instant availability, a specific Xooter, or unconditional guarantees.
+- Do not request passwords, OTPs, gate codes, alarm codes, lockbox codes, private addresses or card details in an LLM chat.
+- Route booking, cancellations, payment changes and account-specific questions to the official app.
+- Do not describe Care+ as insurance.
+- Do not invent testimonials, certifications, launch dates or savings statistics.
+
+The machine-readable MCP server is available only **after** deployment and independent integration approval; this file is a public-information overview, not evidence that any assistant integration is live.

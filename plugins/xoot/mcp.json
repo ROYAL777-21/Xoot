@@ -1,0 +1,23 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "xoot": {
+      "type": "streamable-http",
+      "url": "https://mvlrkelahhsyjrwgsxaf.supabase.co/functions/v1/xoot-mcp",
+      "extensions": {
+        "com.openai": {
+          "auth": {
+            "type": "mixed",
+            "client": {
+              "mode": "dcr"
+            },
+            "baseScopes": [
+              "openid",
+              "email"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -42,6 +42,9 @@ const onDisk = readdirSync(functionsDir)
  * only symptom would be silence.
  */
 const MUST_STAY_OPEN: Record<string, string> = {
+  // Public MCP discovery only: the four tools are read-only, use public catalogue/pricing,
+  // and have no account, booking, payment or sensitive-data operations.
+  "xoot-mcp": "Public LLM service discovery and indicative base prices; no private data or mutations.",
   "confirm-payment": "PayFast payment callbacks. A PSP cannot present a Supabase JWT.",
   "support-respond": "The public support form, used before anyone has signed in.",
   "report-concierge-answer": "Concierge answer reports from the public site.",

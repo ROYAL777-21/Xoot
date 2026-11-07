@@ -34,6 +34,7 @@ const NotFound = lazy(() => import("./pages/NotFound.tsx"));
  */
 const KitGallery = import.meta.env.DEV ? lazy(() => import("./pages/dev/KitGallery")) : null;
 const Auth = lazy(() => import("./pages/Auth"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const Welcome = lazy(() => import("./pages/Welcome"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const BookingConfirm = lazy(() => import("./pages/BookingConfirm"));
@@ -158,6 +159,7 @@ const App = () => (
                   <Route path="/book/confirm" element={<BookingConfirm />} />
                   <Route path="/care-plus/join" element={<CarePlusPaywall />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/oauth/consent" element={<OAuthConsent />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/auth/reset" element={<AuthReset />} />
                   <Route path="/articles" element={<Blog />} />
